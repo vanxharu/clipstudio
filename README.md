@@ -39,6 +39,8 @@ npm start
 
 ## Dùng web app
 
+**🤖 AI viết video (Gemini miễn phí hoặc ChatGPT):** mở tab **🤖 AI viết video** bên trái, dán API key (Gemini dùng chung key với giọng đọc), chọn phong cách (Bảng trắng, Chữ động, 3D Three.js, Biểu đồ, Tự do) rồi mô tả video. AI viết code đúng chuẩn của app. App tự nạp, tạo giọng đọc, nhạc và xem trước. Muốn sửa thì nhắn tiếp, ví dụ "chữ to hơn", "thêm cảnh cuối". Mỗi bản AI viết đều có nút **↩ Dùng lại bản này**.
+
 **Cách nhanh nhất: dán code là xong.** Copy code (ví dụ ChatGPT viết theo `PROMPT-cho-AI.md`) rồi bấm **📋 Dán code**, hoặc nhấn Ctrl+V vào ô code. Nếu code có khối `<script type="application/json" id="h2v-audio">`, app sẽ tự đọc lời thoại, giọng, nhạc nền, tạo giọng đọc và khớp thời lượng. Lần đầu app hỏi Gemini API key (miễn phí, chỉ nhập một lần). Sau đó bấm **▶ Xuất video**.
 
 

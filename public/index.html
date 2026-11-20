@@ -38,6 +38,25 @@
   .tab.on { background: var(--bg); border-color: var(--line); color: var(--text); margin-bottom: -1px; }
   .tabs .sp { flex: 1; }
   .tabs select, .tabs .btn { margin-bottom: 6px; }
+  .ai-tab { color: var(--acc2) !important; font-weight: 600; }
+  .aipanel { flex: 1; display: flex; flex-direction: column; min-height: 0; background: var(--bg); }
+  .ai-cfg { display: flex; gap: 6px; padding: 10px 12px 6px; flex-wrap: wrap; align-items: center; font-size: 12px; }
+  .ai-cfg .inp { padding: 5px 8px; }
+  .ai-cfg #aiModel { width: 190px; } .ai-cfg #aiKey { flex: 1; min-width: 140px; }
+  .ai-cfg a { color: var(--acc2); white-space: nowrap; }
+  .ai-styles { display: flex; gap: 6px; flex-wrap: wrap; padding: 4px 12px 8px; border-bottom: 1px solid var(--line); }
+  .ai-log { flex: 1; overflow-y: auto; padding: 12px; display: flex; flex-direction: column; gap: 10px; }
+  .ai-msg { max-width: 92%; padding: 9px 12px; border-radius: 12px; font-size: 13px; line-height: 1.5; white-space: pre-wrap; word-break: break-word; }
+  .ai-msg.user { align-self: flex-end; background: color-mix(in srgb, var(--acc) 18%, var(--panel2)); border-bottom-right-radius: 4px; }
+  .ai-msg.bot { align-self: flex-start; background: var(--panel2); border: 1px solid var(--line); border-bottom-left-radius: 4px; }
+  .ai-msg.err { border-color: color-mix(in srgb, var(--err) 50%, transparent); color: #ffb3bb; }
+  .ai-msg .meta { display: flex; gap: 8px; align-items: center; margin-top: 6px; font-size: 12px; color: var(--mute); flex-wrap: wrap; }
+  .ai-msg .meta .btn { padding: 2px 8px; font-size: 12px; }
+  .ai-empty { color: var(--mute); font-size: 13px; text-align: center; margin: auto; max-width: 380px; line-height: 1.6; }
+  .ai-input { border-top: 1px solid var(--line); padding: 10px 12px; display: flex; flex-direction: column; gap: 8px; background: var(--panel); }
+  .ai-input textarea { width: 100%; resize: vertical; min-height: 64px; font: 13px/1.5 system-ui, sans-serif; }
+  .ai-actions { display: flex; gap: 8px; align-items: center; }
+  .ai-hint { flex: 1; font-size: 12px; color: var(--mute); }
   textarea.code { flex: 1; width: 100%; resize: none; border: 0; outline: none; padding: 14px 16px; background: var(--bg); color: #d6deeb;
     font: 13px/1.6 var(--mono); tab-size: 2; white-space: pre; overflow: auto; }
   .side { overflow-y: auto; min-height: 0; padding: 14px 16px 40px; display: flex; flex-direction: column; gap: 14px; }
@@ -126,6 +145,7 @@
 <main>
   <section class="editor">
     <div class="tabs">
+      <button class="tab ai-tab" data-tab="ai">🤖 AI viết video</button>
       <button class="tab on" data-tab="html">HTML</button>
       <button class="tab" data-tab="css">CSS</button>
       <button class="tab" data-tab="js">JS</button>
@@ -135,6 +155,30 @@
       </select>
     </div>
     <textarea class="code" id="code" spellcheck="false" autocomplete="off" autocapitalize="off"></textarea>
+    <div class="aipanel" id="aiPanel" style="display:none">
+      <div class="ai-cfg">
+        <select id="aiProvider" class="inp">
+          <option value="gemini">Gemini (miễn phí)</option>
+          <option value="openai">ChatGPT (OpenAI)</option>
+        </select>
+        <input id="aiModel" class="inp" list="aiModels" placeholder="model" title="Tên model. Bấm ↻ để tải danh sách model của key">
+        <datalist id="aiModels"></datalist>
+        <button class="btn icon" id="aiReloadModels" title="Tải danh sách model">↻</button>
+        <input id="aiKey" class="inp" type="password" placeholder="API key" autocomplete="off">
+        <a id="aiKeyLink" href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">Lấy key</a>
+      </div>
+      <div class="ai-styles" id="aiStyles"></div>
+      <div class="ai-log" id="aiLog"></div>
+      <div class="ai-input">
+        <textarea id="aiPrompt" class="inp" rows="3" placeholder="Mô tả video bạn muốn, ví dụ: Video dọc 20 giây giới thiệu quán cà phê Mộc, giọng nữ ấm áp, 4 cảnh…  (Ctrl+Enter để gửi)"></textarea>
+        <div class="ai-actions">
+          <span class="ai-hint" id="aiHint"></span>
+          <button class="btn" id="aiNew" title="Bắt đầu video mới, không dựa trên code hiện tại">＋ Video mới</button>
+          <button class="btn" id="aiStop" style="display:none">■ Dừng</button>
+          <button class="btn pri" id="aiSend">Gửi ➤</button>
+        </div>
+      </div>
+    </div>
   </section>
 
   <section class="side">
@@ -1270,6 +1314,248 @@ async function exportVideo() {
   await go();
 }
 
+/* ---------------- AI viết video (Gemini / ChatGPT) ---------------- */
+const AI_STYLES = [
+  { id: 'whiteboard', name: '✏️ Bảng trắng vẽ tay', ex: '06-', guide: `PHONG CÁCH: hoạt hình bảng trắng vẽ tay (nền trắng, nét mực đen hiện dần theo đầu bút chì, người que có biểu cảm, chữ viết tay).
+DÙNG ĐÚNG file mẫu làm khung: GIỮ NGUYÊN phần "Bộ máy vẽ", các hàm guy(), star(), text(), CSS và cấu trúc. Chỉ viết lại: nội dung #hook (tiêu đề trên), #cta (lời kêu gọi dưới), mảng SCENES, khối h2v-audio, thẻ meta h2v.
+Quy ước vẽ (khung SVG 1080×1180, phụ đề nằm ở y > 1000 nên không vẽ xuống đó):
+- class="d": nét được vẽ ra (path/circle/rect, không tô). Thêm "thin" cho nét mảnh, "red" cho nét đỏ nhấn mạnh.
+- class="f": hình tô đen hiện dần (mắt, chấm, nốt nhạc).
+- text(x, y, 'chữ', cỡ, thuộc_tính): chữ viết tay hiện dần.
+- guy(x, y, mood, arms, scale): người que; mood = happy | big | worried; arms = down | point | scratch | up | wave; chân dài 340px tính từ tâm đầu.
+- star(x, y, r): ngôi sao lấp lánh. Nhóm có class="wig" (kèm data-cx, data-cy) sẽ lắc lư.
+- Thứ tự phần tử = thứ tự được vẽ. Mỗi cảnh 4–6 giây, draw xong trước khi hết cảnh ~1 giây. Hình minh hoạ đơn giản, dễ hiểu, đúng nội dung từng câu thoại.
+- Cảnh cuối: end = thời lượng video + 0.01.` },
+  { id: 'motion', name: '🔤 Chữ động', ex: '02-', guide: 'PHONG CÁCH: video chữ động kiểu TikTok/Reels: tiêu đề lớn đập vào mắt, các ý/thẻ xuất hiện lần lượt có easing, thanh tiến trình, màu nổi bật, emoji hợp lý. Điều khiển chuyển động bằng window.h2vSeek(t) (ưu tiên) hoặc requestAnimationFrame + performance.now().' },
+  { id: '3d', name: '🧊 3D Three.js', ex: '05-', guide: 'PHONG CÁCH: cảnh 3D bằng Three.js r128: <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"><\/script> (bản UMD, dùng biến toàn cục THREE, KHÔNG dùng import/module, không dùng addons ngoài). Chuyển động theo THREE.Clock hoặc performance.now(). renderer.setPixelRatio(1), setSize(innerWidth, innerHeight). Có thể phủ chữ HTML lên trên canvas. Ánh sáng đẹp, màu hài hoà, chuyển động camera mượt.' },
+  { id: 'chart', name: '📊 Biểu đồ', ex: '03-', guide: 'PHONG CÁCH: biểu đồ/số liệu động: dữ liệu viết thẳng trong code, vẽ bằng div/SVG, số đếm tăng dần, cột/đường mọc lên có easing, chú thích rõ ràng. Bắt buộc dùng window.h2vSeek(t) để mọi trạng thái chỉ phụ thuộc thời gian t (giây).' },
+  { id: 'free', name: '✨ Tự do', ex: '01-', guide: '' }
+];
+const AI_RULES = `Bạn là chuyên gia làm VIDEO bằng một file HTML/CSS/JS. File sẽ được app "HTML Video Studio" mở trong Chrome với khung nhìn đúng bằng kích thước video, đóng băng thời gian và chụp từng khung hình để xuất MP4.
+
+QUY TẮC BẮT BUỘC
+1. Một file HTML hoàn chỉnh, tự chứa (CSS trong <style>, JS trong <script>). Trong <head> có: <meta name="h2v" content="width=W,height=H,fps=30,duration=D">.
+2. html, body { margin:0; width:100%; height:100%; overflow:hidden }. Thiết kế cố định đúng khung W×H (px), không cuộn, không responsive.
+3. Chuyển động phụ thuộc HOÀN TOÀN vào thời gian: ưu tiên window.h2vSeek = function(t){...} (t = giây, đặt toàn bộ trạng thái hình theo t, gọi h2vSeek(0) khi tải), hoặc CSS @keyframes với animation-delay, hoặc requestAnimationFrame + performance.now(). KHÔNG dùng click/hover/scroll, KHÔNG Math.random() không seed, KHÔNG fetch dữ liệu, KHÔNG giờ thật.
+4. Tài nguyên: font Google Fonts có tiếng Việt (Be Vietnam Pro, Inter, Montserrat, Patrick Hand…); thư viện chỉ từ cdnjs.cloudflare.com hoặc cdn.jsdelivr.net; ảnh bằng SVG/CSS/emoji/data URI. Không iframe, không video ngoài, không backdrop-filter.
+5. Video dọc 9:16: chừa ~180px trên và ~350px dưới cho giao diện TikTok. Chữ lớn (tiêu đề ≥ 80px, nội dung ≥ 44px ở 1080px), tương phản cao.
+6. Mọi chuyển động nằm gọn trong duration; cảnh cuối đứng yên ~1 giây.
+7. ÂM THANH: không chèn audio. Cuối <body> luôn có khối JSON hợp lệ (không comment, không dấu phẩy thừa):
+<script type="application/json" id="h2v-audio">
+{"voice":"Kore","style":"thân thiện, rõ ràng","lines":[[0.5,"Câu thoại 1."],[4.8,"Câu thoại 2."]],"music":{"preset":"lofi","volume":0.3},"fit":true}
+<\/script>
+ - lines: [giây bắt đầu, câu thoại tiếng Việt], khớp từng cảnh; ~2.5 từ/giây; các câu KHÔNG chồng lên nhau, cách nhau ≥0.3s. Không cần lời thoại thì "lines":[].
+ - voice: nữ Kore | Aoede | Zephyr | Leda; nam Puck | Charon | Fenrir | Orus. style: cách đọc ngắn gọn.
+ - music.preset: lofi | ambient | upbeat | cinematic | corporate, hoặc "music": false.
+ - Phụ đề (nếu có) đọc từ chính khối này: JSON.parse(document.getElementById('h2v-audio').textContent).
+ - duration trong meta dài hơn câu thoại cuối ít nhất 1 giây.
+
+ĐỊNH DẠNG TRẢ LỜI
+- Tiếng Việt: 1–3 câu ngắn nói đã làm/sửa gì.
+- Sau đó MỘT khối \`\`\`html chứa TOÀN BỘ file (không rút gọn, không "...", không bỏ phần nào). Không viết gì sau khối code.`;
+
+const AI = { provider: 'gemini', gModel: 'gemini-3.5-flash', oModel: '', oKey: '', style: 'whiteboard', editOpen: false, log: [], versions: [], ctrl: null, busy: false };
+function loadAiCfg() { try { const c = JSON.parse(localStorage.getItem('h2v-ai') || '{}'); Object.assign(AI, c.cfg || {}); AI.log = c.log || []; AI.versions = c.versions || []; } catch (e) {} }
+function saveAiCfg() {
+  try {
+    const cfg = { provider: AI.provider, gModel: AI.gModel, oModel: AI.oModel, oKey: AI.oKey, style: AI.style };
+    localStorage.setItem('h2v-ai', JSON.stringify({ cfg, log: AI.log.slice(-40), versions: AI.versions.slice(-8) }));
+  } catch (e) {}
+}
+const aiKey = () => AI.provider === 'gemini' ? TTS.gKey.trim() : AI.oKey.trim();
+const aiModel = () => AI.provider === 'gemini' ? AI.gModel : AI.oModel;
+
+function syncAiUI() {
+  $('aiProvider').value = AI.provider; $('aiModel').value = aiModel(); $('aiKey').value = aiKey();
+  $('aiKey').placeholder = AI.provider === 'gemini' ? 'Gemini API key (dùng chung với giọng đọc)' : 'OpenAI API key (sk-…)';
+  $('aiKeyLink').href = AI.provider === 'gemini' ? 'https://aistudio.google.com/apikey' : 'https://platform.openai.com/api-keys';
+  $('aiKeyLink').textContent = AI.provider === 'gemini' ? 'Lấy key miễn phí' : 'Lấy key OpenAI';
+  $('aiStyles').innerHTML = AI_STYLES.map(s => `<button class="chip ${s.id === AI.style ? 'on' : ''}" data-style="${s.id}">${s.name}</button>`).join('')
+    + `<button class="chip ${AI.editOpen ? 'on' : ''}" data-edit="1" title="AI sửa trên code đang mở trong ô HTML thay vì làm video mới">🛠 Sửa code đang mở</button>`;
+  const editing = AI.editOpen || AI.versions.length > 0;
+  $('aiHint').textContent = editing ? 'AI sẽ sửa trên code hiện tại' : `Video mới · ${AI_STYLES.find(s => s.id === AI.style).name} · ${S.width}×${S.height}`;
+}
+function renderAiLog() {
+  const box = $('aiLog');
+  if (!AI.log.length) {
+    const ideas = ['Video dọc 20 giây giới thiệu quán cà phê "Mộc" ở Đà Lạt, giọng nữ ấm áp', 'Giải thích lãi suất kép trong 30 giây cho người mới', 'Top 3 mẹo ngủ ngon, giọng nam, nhạc ambient', 'Doanh thu 4 quý năm nay tăng trưởng mạnh, quý 4 cao nhất'];
+    box.innerHTML = `<div class="ai-empty">Chọn phong cách ở trên, mô tả video bạn muốn rồi bấm <b>Gửi</b>.<br>AI viết code, app tự tạo giọng đọc, nhạc nền và xem trước ngay. Muốn sửa thì nhắn tiếp.<br><br>${ideas.map(i => `<button class="chip" data-idea="${escapeHtml(i)}" style="margin:3px">${escapeHtml(i)}</button>`).join('')}</div>`;
+    return;
+  }
+  box.innerHTML = AI.log.map((m, i) => {
+    let meta = '';
+    if (m.role === 'bot' && m.v != null && AI.versions[m.v]) meta = `<div class="meta">✓ Đã nạp vào app · ${AI.versions[m.v].lines} dòng<button class="btn" data-restore="${m.v}">↩ Dùng lại bản này</button></div>`;
+    return `<div class="ai-msg ${m.role}${m.err ? ' err' : ''}">${escapeHtml(m.text)}${meta}</div>`;
+  }).join('');
+  box.scrollTop = box.scrollHeight;
+}
+
+async function* sseData(resp) {
+  const rd = resp.body.getReader(), dec = new TextDecoder(); let buf = '';
+  for (;;) {
+    const { done, value } = await rd.read(); if (done) break;
+    buf += dec.decode(value, { stream: true });
+    let i; while ((i = buf.indexOf('\n')) >= 0) { const line = buf.slice(0, i).trim(); buf = buf.slice(i + 1); if (line.startsWith('data:')) yield line.slice(5).trim(); }
+  }
+  if (buf.trim().startsWith('data:')) yield buf.trim().slice(5).trim();
+}
+async function aiHttpError(r, who) {
+  let msg = ''; try { const j = await r.json(); msg = (j.error && (j.error.message || j.error)) || JSON.stringify(j); } catch (e) { try { msg = await r.text(); } catch (e2) {} }
+  msg = String(msg).slice(0, 300);
+  if (r.status === 429) return new Error(`${who} báo hết lượt (429). ${AI.provider === 'gemini' ? 'Gói miễn phí giới hạn số lượt mỗi phút/ngày: đợi một lát, hoặc đổi sang model "flash-lite" (nhiều lượt hơn).' : 'Tài khoản OpenAI hết hạn mức hoặc chưa nạp tiền.'}\n${msg}`);
+  if (r.status === 401 || r.status === 403 || /API key/i.test(msg)) return new Error(`${who}: API key không hợp lệ hoặc không có quyền.\n${msg}`);
+  if (r.status === 404) return new Error(`${who}: không thấy model "${aiModel()}". Bấm ↻ để tải danh sách model rồi chọn lại.\n${msg}`);
+  return new Error(`${who} lỗi ${r.status}: ${msg}`);
+}
+async function aiCall(system, user, onText, signal) {
+  const key = aiKey(), model = aiModel();
+  if (!model) throw new Error('Chưa chọn model. Bấm ↻ để tải danh sách model của key.');
+  let text = '', finish = '';
+  if (AI.provider === 'gemini') {
+    const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:streamGenerateContent?alt=sse`, {
+      method: 'POST', signal, headers: { 'Content-Type': 'application/json', 'x-goog-api-key': key },
+      body: JSON.stringify({ systemInstruction: { parts: [{ text: system }] }, contents: [{ role: 'user', parts: [{ text: user }] }], generationConfig: { temperature: 0.8 } })
+    });
+    if (!r.ok) throw await aiHttpError(r, 'Gemini');
+    for await (const d of sseData(r)) {
+      let j; try { j = JSON.parse(d); } catch (e) { continue; }
+      if (j.error) throw new Error('Gemini: ' + j.error.message);
+      const c = j.candidates && j.candidates[0];
+      ((c && c.content && c.content.parts) || []).forEach(p => { if (p.text && !p.thought) text += p.text; });
+      if (c && c.finishReason) finish = c.finishReason;
+      onText(text);
+    }
+    if (/SAFETY|PROHIBITED|BLOCK/i.test(finish) && !text) throw new Error('Gemini từ chối yêu cầu này (' + finish + '). Thử diễn đạt lại.');
+  } else {
+    const r = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST', signal, headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + key },
+      body: JSON.stringify({ model, stream: true, messages: [{ role: 'system', content: system }, { role: 'user', content: user }] })
+    });
+    if (!r.ok) throw await aiHttpError(r, 'OpenAI');
+    for await (const d of sseData(r)) {
+      if (d === '[DONE]') break;
+      let j; try { j = JSON.parse(d); } catch (e) { continue; }
+      if (j.error) throw new Error('OpenAI: ' + j.error.message);
+      const ch = j.choices && j.choices[0];
+      if (ch && ch.delta && ch.delta.content) { text += ch.delta.content; onText(text); }
+      if (ch && ch.finish_reason) finish = ch.finish_reason;
+    }
+  }
+  return { text, finish };
+}
+function extractHtml(text) {
+  const blocks = [...text.matchAll(/```[ \t]*(?:html|HTML|xml)?[ \t]*\r?\n([\s\S]*?)```/g)].map(m => m[1]);
+  let code = blocks.sort((a, b) => b.length - a.length)[0];
+  if (!code) { const m = text.match(/```[ \t]*(?:html|HTML)?[ \t]*\r?\n([\s\S]*)$/); if (m) code = m[1]; }
+  if (!code) { const k = text.search(/<!doctype html|<html[\s>]/i); if (k >= 0) code = text.slice(k); }
+  if (!code) return { code: null };
+  code = code.trim();
+  return { code, complete: /<\/html>\s*$/i.test(code) };
+}
+function aiNote(text) { const k = text.indexOf('```'); return (k >= 0 ? text.slice(0, k) : text).trim().slice(0, 800); }
+
+async function aiSend() {
+  const prompt = $('aiPrompt').value.trim();
+  if (!prompt || AI.busy) return;
+  if (!aiKey()) { toast(AI.provider === 'gemini' ? 'Dán Gemini API key vào ô "API key" trước nhé (miễn phí).' : 'Dán OpenAI API key vào ô "API key" trước nhé.', 5000); $('aiKey').focus(); return; }
+  const editing = AI.editOpen || AI.versions.length > 0;
+  const style = AI_STYLES.find(s => s.id === AI.style);
+  const ex = EXAMPLES.find(e => e.file && e.file.startsWith(style.ex));
+  let system = AI_RULES + `\n\nKÍCH THƯỚC MẶC ĐỊNH: ${S.width}×${S.height} (nếu người dùng không nói khác; video dọc dùng 1080×1920, ngang 1920×1080).`;
+  let user;
+  if (editing) {
+    const prev = AI.log.filter(m => m.role === 'user').slice(-4).map(m => '- ' + m.text).join('\n');
+    system += `\n\nNHIỆM VỤ: SỬA video theo yêu cầu, giữ nguyên những gì người dùng không yêu cầu đổi.${style.guide ? '\n\n' + style.guide : ''}`;
+    user = `${prev ? 'Các yêu cầu trước đó:\n' + prev + '\n\n' : ''}Code video hiện tại:\n\`\`\`html\n${S.code.html}\n\`\`\`\n\nYêu cầu sửa: ${prompt}\n\nTrả về TOÀN BỘ file đã sửa.`;
+  } else {
+    system += `\n\n${style.guide || 'PHONG CÁCH: tự chọn phong cách đẹp, hiện đại, phù hợp nội dung.'}${ex ? `\n\nFILE MẪU THAM KHẢO (đúng chuẩn của app${style.id === 'whiteboard' ? ', DÙNG LÀM KHUNG' : ''}):\n\`\`\`html\n${ex.html}\n\`\`\`` : ''}`;
+    user = `Yêu cầu video: ${prompt}`;
+  }
+  AI.log.push({ role: 'user', text: prompt }); $('aiPrompt').value = '';
+  const bot = { role: 'bot', text: '⏳ Đang gửi yêu cầu…' }; AI.log.push(bot); renderAiLog();
+  AI.busy = true; AI.ctrl = new AbortController(); $('aiSend').disabled = true; $('aiStop').style.display = '';
+  const t0 = performance.now();
+  const tick = setInterval(() => { if (bot.text.startsWith('⏳')) { bot.text = `⏳ ${AI.provider === 'gemini' ? 'Gemini' : 'ChatGPT'} đang suy nghĩ… ${Math.round((performance.now() - t0) / 1000)}s`; renderAiLog(); } }, 1000);
+  try {
+    let last = 0;
+    const { text, finish } = await aiCall(system, user, txt => {
+      const now = performance.now(); if (now - last < 250) return; last = now;
+      const note = aiNote(txt), codeLen = Math.max(0, txt.length - (txt.indexOf('```') >= 0 ? txt.indexOf('```') : txt.length));
+      bot.text = (note ? note + '\n\n' : '') + `✍️ Đang viết code… ${(codeLen / 1000).toFixed(1)}k ký tự · ${Math.round((now - t0) / 1000)}s`; renderAiLog();
+    }, AI.ctrl.signal);
+    const { code, complete } = extractHtml(text);
+    if (!code) throw new Error('AI không trả về code HTML. Thử nói rõ hơn, ví dụ "viết video…".\n\n' + text.slice(0, 400));
+    if (!complete) throw new Error(`Code bị cắt giữa chừng${finish ? ' (' + finish + ')' : ''}. Thử yêu cầu video ngắn hơn hoặc ít cảnh hơn, hoặc gửi lại.`);
+    AI.versions.push({ code, prompt, lines: code.split('\n').length });
+    bot.text = aiNote(text) || 'Xong!'; bot.v = AI.versions.length - 1;
+    loadCode(code);
+    toast('Đã nạp code mới, đang xem trước');
+  } catch (e) {
+    bot.err = true;
+    bot.text = e.name === 'AbortError' ? 'Đã dừng.' : (e instanceof TypeError ? 'Không kết nối được tới ' + (AI.provider === 'gemini' ? 'Gemini' : 'OpenAI') + '. Kiểm tra Internet (trang trên claude.ai bị chặn gọi ra ngoài, hãy dùng app hoặc file index.html).' : e.message);
+  } finally {
+    clearInterval(tick); AI.busy = false; AI.ctrl = null; $('aiSend').disabled = false; $('aiStop').style.display = 'none';
+    renderAiLog(); syncAiUI(); saveAiCfg();
+  }
+}
+
+async function aiLoadModels(silent) {
+  const key = aiKey(); if (!key) { if (!silent) toast('Nhập API key trước'); return; }
+  try {
+    let ids = [];
+    if (AI.provider === 'gemini') {
+      const r = await fetch('https://generativelanguage.googleapis.com/v1beta/models?pageSize=200', { headers: { 'x-goog-api-key': key } });
+      if (!r.ok) throw await aiHttpError(r, 'Gemini');
+      const j = await r.json();
+      ids = (j.models || []).filter(m => (m.supportedGenerationMethods || []).includes('generateContent')).map(m => m.name.replace(/^models\//, ''))
+        .filter(id => /^gemini/.test(id) && !/tts|image|embedding|audio|live|robotics|aqa|vision/.test(id));
+    } else {
+      const r = await fetch('https://api.openai.com/v1/models', { headers: { 'Authorization': 'Bearer ' + key } });
+      if (!r.ok) throw await aiHttpError(r, 'OpenAI');
+      const j = await r.json();
+      ids = (j.data || []).map(m => m.id).filter(id => /^(gpt|o\d|chatgpt)/.test(id) && !/audio|realtime|image|tts|transcribe|embedding|search|instruct|codex/.test(id));
+    }
+    ids.sort().reverse();
+    $('aiModels').innerHTML = ids.map(i => `<option value="${i}">`).join('');
+    const cur = aiModel();
+    if ((!cur || !ids.includes(cur)) && ids.length) {
+      const pref = AI.provider === 'gemini'
+        ? ['gemini-3.5-flash', 'gemini-3-flash-preview', 'gemini-2.5-flash', 'gemini-3.1-flash-lite', 'gemini-2.5-flash-lite'].find(p => ids.includes(p)) || ids.find(i => /flash/.test(i)) || ids[0]
+        : ids.find(i => /^gpt-5(\.\d+)?$/.test(i)) || ids.find(i => /^gpt-4\.1$/.test(i)) || ids.find(i => /^gpt-4o$/.test(i)) || ids[0];
+      if (AI.provider === 'gemini') AI.gModel = pref; else AI.oModel = pref;
+      syncAiUI(); saveAiCfg();
+      if (!silent) toast('Đã chọn model ' + pref);
+    } else if (!silent) toast('Đã tải ' + ids.length + ' model');
+  } catch (e) { if (!silent) toast(e instanceof TypeError ? 'Không kết nối được' : e.message, 6000); }
+}
+
+function initAi() {
+  loadAiCfg(); syncAiUI(); renderAiLog();
+  $('aiProvider').onchange = () => { AI.provider = $('aiProvider').value; syncAiUI(); saveAiCfg(); aiLoadModels(true); };
+  $('aiModel').onchange = () => { const v = $('aiModel').value.trim(); if (AI.provider === 'gemini') AI.gModel = v; else AI.oModel = v; saveAiCfg(); };
+  $('aiKey').onchange = () => {
+    const v = $('aiKey').value.trim();
+    if (AI.provider === 'gemini') { TTS.gKey = v; if (TTS.provider !== 'local' || !SERVER) TTS.provider = 'gemini'; saveTtsCfg(); syncTtsUI(); renderTracks(); }
+    else AI.oKey = v;
+    saveAiCfg(); aiLoadModels(true);
+  };
+  $('aiReloadModels').onclick = () => aiLoadModels(false);
+  $('aiStyles').onclick = e => {
+    const b = e.target.closest('.chip'); if (!b) return;
+    if (b.dataset.edit) AI.editOpen = !AI.editOpen; else AI.style = b.dataset.style;
+    syncAiUI(); saveAiCfg();
+  };
+  $('aiLog').onclick = e => {
+    const r = e.target.closest('[data-restore]'); if (r) { const v = AI.versions[+r.dataset.restore]; if (v) { loadCode(v.code); toast('Đã dùng lại bản này'); } return; }
+    const idea = e.target.closest('[data-idea]'); if (idea) { $('aiPrompt').value = idea.dataset.idea; $('aiPrompt').focus(); }
+  };
+  $('aiSend').onclick = aiSend;
+  $('aiStop').onclick = () => { if (AI.ctrl) AI.ctrl.abort(); };
+  $('aiNew').onclick = () => { if (AI.busy) return; AI.log = []; AI.versions = []; AI.editOpen = false; renderAiLog(); syncAiUI(); saveAiCfg(); $('aiPrompt').focus(); };
+  $('aiPrompt').addEventListener('keydown', e => { if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); aiSend(); } });
+  if (aiKey()) aiLoadModels(true);
+}
+
 /* ---------------- Xuất video trong trình duyệt ---------------- */
 let cancelFlag = false;
 function setStatus(msg, err) { $('status').textContent = msg; $('status').classList.toggle('err', !!err); }
@@ -1410,7 +1696,10 @@ async function saveVideo() {
 function setTab(t) {
   S.tab = t;
   document.querySelectorAll('.tab').forEach(b => b.classList.toggle('on', b.dataset.tab === t));
-  $('code').value = S.code[t];
+  const ai = t === 'ai';
+  $('code').style.display = ai ? 'none' : '';
+  $('aiPanel').style.display = ai ? 'flex' : 'none';
+  if (ai) { syncAiUI(); setTimeout(() => $('aiPrompt').focus(), 0); } else $('code').value = S.code[t];
 }
 function syncSettingsUI() {
   $('w').value = S.width; $('h').value = S.height; $('fps').value = S.fps; $('dur').value = S.duration;
@@ -1423,7 +1712,7 @@ function applyMeta(html) {
   if (m.fps) S.fps = m.fps; if (m.duration) S.duration = m.duration;
 }
 function loadCode(html, css = '', js = '', autoAudio = true) {
-  S.code = { html, css, js }; applyMeta(html); setTab('html'); syncSettingsUI(); markAudioDirty(); save(); reloadPreview(false);
+  S.code = { html, css, js }; applyMeta(html); setTab(S.tab === 'ai' ? 'ai' : 'html'); syncSettingsUI(); markAudioDirty(); save(); reloadPreview(false);
   detectAudio(autoAudio);
 }
 const looksLikeDoc = t => /^\s*(<!doctype\s+html|<html[\s>])/i.test(t);
@@ -1435,7 +1724,8 @@ function init() {
     c.onclick = () => { S.width = w; S.height = h; syncSettingsUI(); save(); reloadPreview(); }; $('sizePresets').appendChild(c); });
 
   if (!restore() && EXAMPLES.length) { S.code = { html: EXAMPLES[0].html, css: '', js: '' }; applyMeta(S.code.html); }
-  setTab('html'); syncSettingsUI(); renderTracks();
+  initAi();
+  setTab('ai'); syncSettingsUI(); renderTracks();
 
   document.querySelectorAll('.tab').forEach(b => b.onclick = () => setTab(b.dataset.tab));
   $('code').addEventListener('input', () => {
