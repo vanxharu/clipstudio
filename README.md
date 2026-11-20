@@ -39,6 +39,9 @@ npm start
 
 ## Dùng web app
 
+**Cách nhanh nhất: dán code là xong.** Copy code (ví dụ ChatGPT viết theo `PROMPT-cho-AI.md`) rồi bấm **📋 Dán code**, hoặc nhấn Ctrl+V vào ô code. Nếu code có khối `<script type="application/json" id="h2v-audio">`, app sẽ tự đọc lời thoại, giọng, nhạc nền, tạo giọng đọc và khớp thời lượng. Lần đầu app hỏi Gemini API key (miễn phí, chỉ nhập một lần). Sau đó bấm **▶ Xuất video**.
+
+
 1. Dán code vào tab **HTML** (có thể là cả một trang hoàn chỉnh), **CSS** hoặc **JS**. Bạn cũng có thể chọn **Mẫu có sẵn** hoặc **Mở file…**.
 2. Chọn khung hình: 16:9, 9:16 (TikTok/Reels/Shorts), 1:1, 4:5, 4K… Sau đó chọn FPS và thời lượng.
 3. Thêm âm thanh nếu muốn:

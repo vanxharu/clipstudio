@@ -19,7 +19,18 @@
   .badge { font-size: 12px; padding: 3px 9px; border-radius: 99px; border: 1px solid var(--line); color: var(--mute); }
   .badge.on { color: var(--ok); border-color: color-mix(in srgb, var(--ok) 40%, transparent); }
   header .sp { flex: 1; }
-  main { display: grid; grid-template-columns: minmax(360px, 1fr) minmax(420px, 1.15fr); height: calc(100% - 49px); }
+  main { display: grid; grid-template-columns: minmax(360px, 1fr) minmax(420px, 1.15fr); height: calc(100% - 49px - var(--abh, 58px)); }
+  .autobar { display: flex; align-items: center; gap: 10px; padding: 9px 18px; min-height: 58px; border-bottom: 1px solid var(--line);
+    background: linear-gradient(90deg, color-mix(in srgb, var(--acc) 12%, var(--panel)), var(--panel)); flex-wrap: wrap; }
+  .ab-text { flex: 1; min-width: 260px; display: flex; flex-direction: column; gap: 2px; }
+  .ab-text b { font-size: 14px; }
+  .ab-text span { font-size: 12px; color: var(--mute); }
+  .ab-text span.err { color: var(--err); }
+  .ab-text span.ok { color: var(--ok); }
+  .ab-key { display: flex; gap: 8px; align-items: center; font-size: 12px; }
+  .ab-key input { width: 240px; }
+  .ab-key a { color: var(--acc2); }
+  #abExport { padding: 8px 18px; font-size: 15px; }
   @media (max-width: 960px) { main { grid-template-columns: 1fr; height: auto; } .editor { height: 70vh; } }
   .editor { display: flex; flex-direction: column; border-right: 1px solid var(--line); min-height: 0; }
   .tabs { display: flex; gap: 2px; padding: 8px 10px 0; background: var(--panel); border-bottom: 1px solid var(--line); align-items: flex-end; }
@@ -99,6 +110,18 @@
   <button class="btn" id="btnOpen" title="Mở file .html từ máy">Mở file…</button>
   <input type="file" id="fileOpen" accept=".html,.htm,text/html" hidden>
 </header>
+
+<div class="autobar" id="autoBar">
+  <div class="ab-text"><b id="abTitle">Dán code vào ô bên trái (Ctrl+V): app tự nhận kịch bản, giọng đọc và nhạc nền</b><span id="abSub"></span></div>
+  <div class="ab-key" id="abKey" style="display:none">
+    <input id="abKeyInput" class="inp" type="password" placeholder="Dán Gemini API key (AIza…)" autocomplete="off">
+    <button class="btn" id="abKeySave">Lưu & tạo giọng</button>
+    <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">Lấy key miễn phí</a>
+  </div>
+  <button class="btn" id="abPaste" title="Dán code từ clipboard, thay toàn bộ code hiện tại">📋 Dán code</button>
+  <button class="btn" id="abVoice" style="display:none">🎙 Tạo giọng đọc</button>
+  <button class="btn pri" id="abExport">▶ Xuất video</button>
+</div>
 
 <main>
   <section class="editor">
@@ -643,6 +666,137 @@ async function runScript() {
   } finally { $('btnScript').disabled = false; }
 }
 
+/* ---------------- Tự nhận kịch bản trong code ----------------
+   Code có thể khai báo âm thanh bằng một thẻ script type="application/json" id="h2v-audio" chứa:
+   { "voice": "Kore", "style": "kể chuyện, ấm áp", "rate": 0,
+     "lines": [[0.5, "Câu thứ nhất"], [4.2, "Câu thứ hai"]],
+     "music": { "preset": "lofi", "volume": 0.3 }, "fit": true }
+   Hoặc chỉ cần các dòng "[0.5s] câu thoại" ở đâu đó trong code (vd trong comment). */
+const voiceCache = new Map();
+const AUTO = { spec: null, hash: null, busy: false };
+
+function normSpec(raw) {
+  const arr = raw.lines || raw.script || raw.voiceover || [];
+  const lines = arr.map(l => Array.isArray(l) ? { start: +l[0], text: String(l[1] ?? '') }
+      : { start: +(l.t ?? l.start ?? l.time ?? l.at), text: String(l.text ?? l.say ?? '') })
+    .filter(l => l.text.trim() && isFinite(l.start)).sort((a, b) => a.start - b.start);
+  let music = raw.music;
+  if (typeof music === 'string') music = { preset: music };
+  if (music && typeof music === 'object') {
+    const preset = H2VMusic.PRESETS[music.preset] ? music.preset : 'lofi';
+    music = { preset, volume: music.volume ?? 0.3, seed: music.seed ?? 7 };
+  } else music = null;
+  return { lines, voice: String(raw.voice || ''), style: String(raw.style || ''), rate: +raw.rate || 0, music, fit: raw.fit !== false, padEnd: raw.padEnd ?? 1 };
+}
+function readAudioSpec(html) {
+  const m = html.match(/<script[^>]*\bid\s*=\s*["']h2v-audio["'][^>]*>([\s\S]*?)<\/script>/i);
+  if (m) {
+    const txt = m[1].trim();
+    let raw;
+    try { raw = JSON.parse(txt); }
+    catch (e) {
+      try { raw = Function('"use strict";return (' + txt + ')')(); }
+      catch (e2) { return { error: 'Khối h2v-audio viết sai định dạng: ' + e.message }; }
+    }
+    return normSpec(raw || {});
+  }
+  const timed = parseScript(html).filter(l => l.start != null);
+  return timed.length ? normSpec({ lines: timed.map(l => [l.start, l.text]) }) : null;
+}
+function resolveVoice(spec) {
+  const v = spec.voice.trim().toLowerCase();
+  const g = GEMINI_VOICES.find(x => x[0].toLowerCase() === v);
+  const a = VOICES.find(x => x[0].toLowerCase() === v);
+  const male = /^(nam|male|man|boy)\b/.test(v);
+  return { gvoice: g ? g[0] : (male ? 'Charon' : 'Kore'), voice: a ? a[0] : (male ? 'vi-VN-NamMinhNeural' : 'vi-VN-HoaiMyNeural') };
+}
+function voiceLabel(spec) {
+  const r = resolveVoice(spec);
+  if (TTS.provider === 'gemini') return (GEMINI_VOICES.find(x => x[0] === r.gvoice) || [, r.gvoice])[1];
+  return (VOICES.find(x => x[0] === r.voice) || [, r.voice])[1];
+}
+function setAuto(sub, cls, opts = {}) {
+  const spec = AUTO.spec;
+  if (!spec) $('abTitle').textContent = 'Dán code vào ô bên trái (Ctrl+V): app tự nhận kịch bản, giọng đọc và nhạc nền';
+  else if (spec.error) $('abTitle').textContent = '⚠️ ' + spec.error;
+  else {
+    const parts = [];
+    if (spec.lines.length) parts.push(`🎙 ${spec.lines.length} câu thoại · ${voiceLabel(spec)}`);
+    parts.push(spec.music ? `🎵 ${H2VMusic.PRESETS[spec.music.preset].name}` : '🎵 không nhạc');
+    parts.push(`⏱ ${S.duration}s`);
+    $('abTitle').textContent = parts.join('   ');
+  }
+  $('abSub').textContent = sub || ''; $('abSub').className = cls || '';
+  $('abKey').style.display = opts.needKey ? '' : 'none';
+  $('abVoice').style.display = opts.voiceBtn ? '' : 'none';
+  if (opts.voiceBtn) $('abVoice').textContent = opts.voiceBtn;
+}
+
+async function applyAudioSpec() {
+  const spec = AUTO.spec;
+  if (!spec || spec.error || AUTO.busy) return;
+  AUTO.hash = JSON.stringify(spec);
+  // Bỏ âm thanh tự động cũ, giữ các track bạn tự thêm
+  S.tracks = S.tracks.filter(t => !t.auto);
+  if (spec.music) addTrack({ kind: 'music', auto: true, preset: spec.music.preset, seed: spec.music.seed, volume: spec.music.volume, fadeOut: 1.5, name: H2VMusic.PRESETS[spec.music.preset].name + ' (từ code)' });
+  markAudioDirty(); renderTracks();
+  if (!spec.lines.length) { setAuto('✓ Đã thêm nhạc nền. Bấm ▶ Xuất video khi sẵn sàng.', 'ok'); return; }
+  const nr = ttsNotReady();
+  if (nr) {
+    const needKey = TTS.provider !== 'local' || !SERVER;
+    setAuto(needKey ? 'Cần Gemini API key (miễn phí, chỉ nhập một lần) để tạo giọng đọc.' : nr, 'err', { needKey });
+    return;
+  }
+  AUTO.busy = true; $('abExport').disabled = true;
+  const vv = resolveVoice(spec);
+  const made = [];
+  try {
+    for (let i = 0; i < spec.lines.length; i++) {
+      const ln = spec.lines[i];
+      const tr = { kind: 'tts', auto: true, text: ln.text, start: ln.start, voice: vv.voice, gvoice: vv.gvoice, style: spec.style, rate: spec.rate, volume: 1 };
+      const key = [TTS.provider, TTS.provider === 'gemini' ? TTS.gModel + ':' + vv.gvoice : vv.voice, spec.style, spec.rate, ln.text].join('|');
+      if (voiceCache.has(key)) tr.buffer = voiceCache.get(key);
+      else {
+        setAuto(`Đang tạo giọng đọc ${i + 1}/${spec.lines.length}: "${ln.text.slice(0, 60)}"…`);
+        tr.buffer = await synthesize(tr, s => setAuto(`Đạt giới hạn miễn phí, chờ ${s}s rồi tạo tiếp (${i + 1}/${spec.lines.length})…`));
+        voiceCache.set(key, tr.buffer);
+      }
+      tr.name = ln.text.slice(0, 40) + (ln.text.length > 40 ? '…' : '');
+      addTrack(tr); made.push(S.tracks[S.tracks.length - 1]);
+    }
+    // Cảnh báo câu đè lên nhau
+    const warn = [];
+    made.forEach((t, i) => { const n = made[i + 1]; if (n && t.start + t.buffer.duration > n.start + 0.05) warn.push(`câu ${i + 1} dài ${t.buffer.duration.toFixed(1)}s, đè sang câu ${i + 2}`); });
+    // Kéo dài video nếu giọng đọc dài hơn
+    const end = Math.max(...made.map(t => t.start + t.buffer.duration));
+    if (spec.fit && end + spec.padEnd > S.duration) { S.duration = Math.ceil((end + spec.padEnd) * 2) / 2; syncSettingsUI(); updateTime(); save(); }
+    markAudioDirty(); renderTracks();
+    setAuto(warn.length ? '⚠️ ' + warn.join('; ') + '. Hãy giãn mốc thời gian hoặc rút gọn câu.' : `✓ Đã tạo ${made.length} câu giọng đọc (đến giây ${end.toFixed(1)}). Bấm ▶ để nghe thử hoặc ▶ Xuất video.`, warn.length ? 'err' : 'ok');
+  } catch (e) {
+    setAuto('Lỗi tạo giọng đọc: ' + netHint(e), 'err', { voiceBtn: '↻ Thử lại', needKey: /key/i.test(e.message) });
+  } finally { AUTO.busy = false; $('abExport').disabled = false; }
+}
+
+/** Gọi khi code thay đổi. auto = true: tạo âm thanh ngay (khi dán/mở file/chọn mẫu). */
+function detectAudio(auto) {
+  const spec = readAudioSpec(S.code.html);
+  AUTO.spec = spec;
+  if (!spec) { setAuto(''); return; }
+  if (spec.error) { setAuto('Sửa lại khối <script id="h2v-audio"> rồi thử lại.', 'err'); return; }
+  if (auto) { applyAudioSpec(); return; }
+  if (JSON.stringify(spec) !== AUTO.hash) {
+    const hasAuto = S.tracks.some(t => t.auto);
+    setAuto(hasAuto ? 'Kịch bản trong code đã thay đổi.' : 'Đã nhận kịch bản trong code.', '', { voiceBtn: hasAuto ? '🎙 Cập nhật giọng đọc' : '🎙 Tạo giọng đọc & nhạc' });
+  } else setAuto(S.tracks.some(t => t.auto && t.kind === 'tts' && t.buffer) ? '✓ Giọng đọc đã sẵn sàng.' : '', 'ok');
+}
+
+async function exportVideo() {
+  if (AUTO.busy) { toast('Đang tạo giọng đọc, đợi xong rồi xuất nhé'); return; }
+  const go = SERVER ? renderOnServer : renderInBrowser;
+  $('result').closest('.card').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  await go();
+}
+
 /* ---------------- Xuất video trong trình duyệt ---------------- */
 let cancelFlag = false;
 function setStatus(msg, err) { $('status').textContent = msg; $('status').classList.toggle('err', !!err); }
@@ -795,9 +949,11 @@ function applyMeta(html) {
   if (m.width) S.width = even(m.width); if (m.height) S.height = even(m.height);
   if (m.fps) S.fps = m.fps; if (m.duration) S.duration = m.duration;
 }
-function loadCode(html, css = '', js = '') {
+function loadCode(html, css = '', js = '', autoAudio = true) {
   S.code = { html, css, js }; applyMeta(html); setTab('html'); syncSettingsUI(); markAudioDirty(); save(); reloadPreview(false);
+  detectAudio(autoAudio);
 }
+const looksLikeDoc = t => /^\s*(<!doctype\s+html|<html[\s>])/i.test(t);
 
 let editTimer = null;
 function init() {
@@ -811,8 +967,27 @@ function init() {
   document.querySelectorAll('.tab').forEach(b => b.onclick = () => setTab(b.dataset.tab));
   $('code').addEventListener('input', () => {
     S.code[S.tab] = $('code').value; save();
-    clearTimeout(editTimer); editTimer = setTimeout(() => reloadPreview(true), 700);
+    clearTimeout(editTimer); editTimer = setTimeout(() => { reloadPreview(true); detectAudio(false); }, 900);
   });
+  // Dán cả một trang HTML -> thay toàn bộ code và tự nhận kịch bản
+  $('code').addEventListener('paste', e => {
+    const t = (e.clipboardData || window.clipboardData).getData('text');
+    if (t && looksLikeDoc(t) && S.tab === 'html') { e.preventDefault(); loadCode(t); toast('Đã nhận code mới'); }
+  });
+  $('abPaste').onclick = async () => {
+    try {
+      const t = await navigator.clipboard.readText();
+      if (!t.trim()) { toast('Clipboard đang trống. Hãy copy code trước.'); return; }
+      loadCode(t); toast('Đã dán code mới');
+    } catch (e) { $('code').focus(); $('code').select(); toast('Nhấn Ctrl+V để dán code (sẽ thay toàn bộ)', 4000); }
+  };
+  $('abExport').onclick = exportVideo;
+  $('abVoice').onclick = () => applyAudioSpec();
+  $('abKeySave').onclick = () => {
+    const k = $('abKeyInput').value.trim();
+    if (!/^AIza/.test(k)) { toast('Key Gemini thường bắt đầu bằng "AIza…". Kiểm tra lại nhé.', 4000); if (!k) return; }
+    TTS.provider = 'gemini'; TTS.gKey = k; saveTtsCfg(); syncTtsUI(); renderTracks(); applyAudioSpec();
+  };
   $('code').addEventListener('keydown', e => {
     if (e.key === 'Tab') { e.preventDefault(); const ta = e.target, s = ta.selectionStart; ta.setRangeText('  ', s, ta.selectionEnd, 'end'); ta.dispatchEvent(new Event('input')); }
   });
@@ -820,7 +995,8 @@ function init() {
   $('btnOpen').onclick = () => $('fileOpen').click();
   $('fileOpen').onchange = async e => { const f = e.target.files[0]; if (f) loadCode(await f.text()); e.target.value = ''; };
 
-  const num = (id, key, fn) => $(id).addEventListener('change', () => { S[key] = fn($(id).value); syncSettingsUI(); save(); markAudioDirty(); reloadPreview(); });
+  const refreshAutoTitle = () => { if (AUTO.spec) setAuto($('abSub').textContent, $('abSub').className, { needKey: $('abKey').style.display === '', voiceBtn: $('abVoice').style.display === '' ? $('abVoice').textContent : null }); };
+  const num = (id, key, fn) => $(id).addEventListener('change', () => { S[key] = fn($(id).value); syncSettingsUI(); save(); markAudioDirty(); reloadPreview(); refreshAutoTitle(); });
   num('w', 'width', v => even(+v || 1920)); num('h', 'height', v => even(+v || 1080));
   num('fps', 'fps', v => +v); num('dur', 'duration', v => Math.max(0.5, +v || 5));
   $('mode').onchange = () => { S.mode = $('mode').value; save(); };
@@ -874,6 +1050,7 @@ function init() {
 
   reloadPreview(false);
   detectServer();
+  detectAudio(false);
   if (window.claude && window.claude.use) window.claude.use('downloads').then(d => { downloadsCap = d; }).catch(() => {});
 }
 
@@ -904,6 +1081,8 @@ async function detectServer() {
     if (!r.ok) return;
     const j = await r.json();
     SERVER = true; SERVER_PROXY = !!j.proxy;
+    $('btnRenderHQ').classList.add('pri'); $('btnRender').classList.remove('pri'); $('btnRender').textContent = 'Xuất nhanh (trình duyệt)';
+    $('btnRenderHQ').textContent = 'Xuất video (chất lượng cao)';
     $('srvBadge').textContent = j.app ? 'Bản ứng dụng ✓' : 'Máy chủ local ✓';
     $('srvBadge').classList.add('on');
     $('btnRenderHQ').disabled = false; $('btnRenderHQ').title = 'Render bằng Chrome thật + FFmpeg (chính xác nhất)';

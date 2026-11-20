@@ -33,10 +33,28 @@ TÀI NGUYÊN
 - Tránh: iframe, video từ trang khác, backdrop-filter, position: sticky, phụ thuộc vào cuộn trang.
 - KHÔNG chèn âm thanh vào HTML. Âm thanh được thêm sau trong tool.
 
-LỜI THOẠI (khi người dùng cần giọng đọc)
-- Sau khối code, viết thêm mục "Lời thoại" chia theo cảnh, kèm thời điểm bắt đầu, ví dụ: [0.5s] Bạn có biết…
-- Tính khoảng 2.5 từ tiếng Việt mỗi giây để cảnh khớp với giọng đọc. Thời lượng video phải dài hơn lời thoại ít nhất 1 giây.
-- Gợi ý phong cách nhạc nền phù hợp: Lo-fi chill, Ambient, Sôi động, Điện ảnh hoặc Doanh nghiệp.
+ÂM THANH & LỜI THOẠI (app tự đọc, tự tạo giọng đọc và nhạc nền)
+- Luôn thêm vào cuối <body> một khối kịch bản âm thanh đúng định dạng JSON (không comment, không dấu phẩy thừa):
+  <script type="application/json" id="h2v-audio">
+  {
+    "voice": "Kore",
+    "style": "thân thiện, rõ ràng",
+    "lines": [
+      [0.5, "Câu thoại thứ nhất."],
+      [4.8, "Câu thoại thứ hai."]
+    ],
+    "music": { "preset": "lofi", "volume": 0.3 },
+    "fit": true
+  }
+  </script>
+- "lines": mỗi phần tử là [giây bắt đầu, câu thoại], khớp với mốc các cảnh. Tính khoảng 2.5 từ tiếng Việt mỗi giây, các câu không được chồng lên nhau, chừa ~0.3s giữa hai câu.
+- "voice": giọng Gemini, nữ: Kore, Aoede, Zephyr, Leda; nam: Puck, Charon, Fenrir, Orus. Hoặc ghi "nam"/"nữ".
+- "style": mô tả cách đọc ngắn gọn, ví dụ "hào hứng", "ấm áp, chậm rãi", "kể chuyện bí ẩn".
+- "music.preset": lofi | ambient | upbeat | cinematic | corporate, hoặc "music": false nếu không cần nhạc.
+- Không cần lời thoại thì để "lines": [].
+- Phụ đề trong video nên đọc từ chính khối này để luôn khớp:
+  const AUDIO = JSON.parse(document.getElementById('h2v-audio').textContent);
+- Thời lượng trong thẻ meta h2v phải dài hơn câu thoại cuối ít nhất 1 giây.
 
 CHẤT LƯỢNG
 - Chuyển động mượt nhờ hàm easing (easeOutCubic, easeInOutQuad…), có độ trễ so le giữa các phần tử, nhịp nhanh vừa phải.
@@ -47,7 +65,7 @@ CHẤT LƯỢNG
 
 - Nếu GPT trả về code chạy sai, hãy dán lỗi hoặc mô tả hình bị lệch ở giây nào, rồi bảo nó sửa đúng phần đó.
 - Muốn đổi kích thước thì chỉ cần sửa dòng `<meta name="h2v">` hoặc chọn lại trong tool.
-- Lời thoại GPT viết thì dán vào ô **Giọng đọc (TTS)**, đặt "Bắt đầu" đúng mốc thời gian, rồi bấm **Khớp thời lượng**.
+- Chỉ cần copy toàn bộ code GPT trả về rồi dán vào app (Ctrl+V hoặc nút **📋 Dán code**). App tự nhận kịch bản, tạo giọng đọc, thêm nhạc và khớp thời lượng. Bạn chỉ còn bấm **▶ Xuất video**.
 
 ## Phong cách hoạt hình bảng trắng vẽ tay (người que)
 
@@ -56,7 +74,7 @@ Cách dễ nhất là gửi cho GPT **file mẫu `examples/06-bang-trang-ve-tay.
 ```text
 Dùng file HTML mẫu mình gửi làm khung. GIỮ NGUYÊN toàn bộ phần "Bộ máy vẽ" và hàm guy(). Chỉ viết lại:
 - Dòng chữ #hook (tiêu đề phía trên) và #cta (lời kêu gọi phía dưới).
-- Mảng SUBS: phụ đề [bắt đầu, kết thúc, câu] khớp với lời thoại.
+- Khối <script id="h2v-audio">: lời thoại [giây, câu], giọng đọc, nhạc nền. Phụ đề tự lấy từ khối này.
 - Mảng SCENES: mỗi cảnh có { start, end, draw: [lúc bắt đầu vẽ, lúc vẽ xong], svg: `...` }.
 - Thẻ meta h2v: duration bằng end của cảnh cuối.
 
@@ -68,5 +86,5 @@ Quy ước vẽ trong svg (khung 1080×1180, phụ đề nằm ở vùng y > 100
 - star(x, y, r): ngôi sao lấp lánh. Thêm class="wig" cho nhóm muốn lắc lư nhẹ (cần data-cx, data-cy).
 - Thứ tự phần tử trong svg chính là thứ tự được vẽ. Vẽ nhân vật trước, đồ vật sau, chữ cuối cùng.
 - Mỗi cảnh dài 4–6 giây, vẽ xong trước khi hết cảnh ~1 giây. Ý tưởng hình minh hoạ đơn giản, dễ hiểu, giống video giải thích trên TikTok.
-Sau code, ghi "Lời thoại" theo mốc thời gian của từng cảnh.
+Lời thoại nằm trong khối h2v-audio, không cần ghi riêng.
 ```
