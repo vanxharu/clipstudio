@@ -67,6 +67,21 @@ jobs:
         if: env.MODE != 'skip'
         run: npm install --no-audit --no-fund
 
+      - name: Tải Rhubarb Lip Sync (nhép miệng chính xác)
+        if: env.MODE != 'skip'
+        shell: pwsh
+        run: |
+          $v = "1.14.0"
+          Invoke-WebRequest -Uri "https://github.com/DanielSWolf/rhubarb-lip-sync/releases/download/v$v/Rhubarb-Lip-Sync-$v-Windows.zip" -OutFile rh.zip
+          Expand-Archive rh.zip -DestinationPath rh-tmp
+          $exe = Get-ChildItem rh-tmp -Recurse -Filter rhubarb.exe | Select-Object -First 1
+          if (-not $exe) { throw "Không thấy rhubarb.exe trong gói tải về" }
+          New-Item -ItemType Directory -Force vendor/rhubarb | Out-Null
+          Get-ChildItem $exe.DirectoryName -File | Copy-Item -Destination vendor/rhubarb
+          Copy-Item (Join-Path $exe.DirectoryName "res") vendor/rhubarb -Recurse
+          Remove-Item vendor/rhubarb/res/sphinx/en-us.lm.bin -ErrorAction SilentlyContinue
+          Get-ChildItem vendor/rhubarb -Recurse -File | Measure-Object -Property Length -Sum | ForEach-Object { "Rhubarb: {0:N1} MB" -f ($_.Sum / 1MB) }
+
       - name: Ghép web app
         if: env.MODE != 'skip'
         run: node build.js

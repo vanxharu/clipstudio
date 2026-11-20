@@ -115,6 +115,44 @@
   code { font: 12px var(--mono); background: var(--bg); padding: 1px 5px; border-radius: 4px; }
   .upd { display: flex; align-items: center; gap: 10px; font-size: 13px; padding: 4px 6px 4px 12px; border-radius: 8px;
     background: color-mix(in srgb, var(--acc) 14%, transparent); border: 1px solid color-mix(in srgb, var(--acc) 40%, transparent); }
+  .modal { position: fixed; inset: 0; background: rgba(0,0,0,.6); z-index: 20; display: grid; place-items: center; }
+  .modal-box { width: min(1100px, 94vw); height: min(760px, 90vh); background: var(--panel); border: 1px solid var(--line); border-radius: 14px; display: flex; flex-direction: column; overflow: hidden; }
+  .modal-head { display: flex; align-items: center; gap: 8px; padding: 12px 16px; border-bottom: 1px solid var(--line); }
+  .modal-head b { font-size: 15px; }
+  .ch-lipmode { font-size: 12px; color: var(--mute); margin-left: 10px; }
+  .modal-body { flex: 1; display: grid; grid-template-columns: 220px 1fr; min-height: 0; }
+  .ch-list { border-right: 1px solid var(--line); overflow-y: auto; padding: 10px; display: flex; flex-direction: column; gap: 6px; }
+  .ch-item { display: flex; gap: 8px; align-items: center; padding: 6px; border-radius: 8px; cursor: pointer; border: 1px solid transparent; }
+  .ch-item.on { border-color: var(--acc); background: color-mix(in srgb, var(--acc) 10%, transparent); }
+  .ch-item img, .ch-thumb { width: 40px; height: 40px; object-fit: contain; background: repeating-conic-gradient(#2a2d36 0 25%, #22252d 0 50%) 0 0/10px 10px; border-radius: 6px; }
+  .ch-item small { display: block; color: var(--mute); font: 11px var(--mono); }
+  .ch-edit { overflow-y: auto; padding: 14px 18px 30px; }
+  .ch-edit h4 { margin: 18px 0 8px; font-size: 13px; color: var(--mute); text-transform: uppercase; letter-spacing: .5px; display: flex; gap: 8px; align-items: center; }
+  .ch-edit .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .ch-edit textarea { width: 100%; min-height: 54px; resize: vertical; }
+  .pose-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; }
+  .pose-card { border: 1px solid var(--line); border-radius: 10px; padding: 8px; display: flex; flex-direction: column; gap: 6px; background: var(--bg); }
+  .pose-card .pimg { height: 150px; display: grid; place-items: center; background: repeating-conic-gradient(#22252d 0 25%, #1b1d23 0 50%) 0 0/14px 14px; border-radius: 6px; position: relative; overflow: hidden; }
+  .pose-card .pimg img { width: 100%; height: 100%; object-fit: contain; }
+  .pose-card .row { display: flex; gap: 4px; }
+  .pose-card .row .btn { flex: 1; padding: 3px 6px; font-size: 12px; }
+  .pose-card input { width: 100%; padding: 4px 6px; font-size: 12px; }
+  .dropzone { border: 2px dashed var(--line); border-radius: 10px; padding: 16px; text-align: center; color: var(--mute); font-size: 13px; cursor: pointer; }
+  .dropzone.over { border-color: var(--acc); color: var(--text); }
+  .mouth-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(92px, 1fr)); gap: 8px; }
+  .mslot { border: 1px dashed var(--line); border-radius: 8px; padding: 6px; text-align: center; cursor: pointer; font-size: 11px; color: var(--mute); background: var(--bg); position: relative; }
+  .mslot.has { border-style: solid; color: var(--text); }
+  .mslot .mimg { height: 46px; display: grid; place-items: center; }
+  .mslot .mimg img { height: 46px; width: 100%; object-fit: contain; }
+  .mslot b { display: block; font-size: 13px; color: var(--acc2); }
+  .mslot .x { position: absolute; top: 2px; right: 4px; color: var(--mute); }
+  .anchor-box { position: absolute; inset: 0; background: rgba(0,0,0,.65); display: grid; place-items: center; }
+  .anchor-panel { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; width: min(720px, 92vw); }
+  .anchor-stage { position: relative; height: 60vh; display: grid; place-items: center; background: repeating-conic-gradient(#22252d 0 25%, #1b1d23 0 50%) 0 0/16px 16px; cursor: crosshair; overflow: hidden; }
+  .anchor-stage #anchorImg { max-height: 100%; max-width: 100%; }
+  .anchor-stage #anchorMouth { position: absolute; pointer-events: none; transform: translate(-50%, -50%); }
+  .anchor-ctl { display: flex; gap: 10px; align-items: center; padding: 10px 14px; font-size: 13px; }
+  .anchor-ctl .sp { flex: 1; }
   .kbd { font: 11px var(--mono); border: 1px solid var(--line); padding: 0 5px; border-radius: 4px; color: var(--mute); }
 </style>
 </head>
@@ -126,6 +164,7 @@
   <div class="sp"></div>
   <div id="updBar" class="upd" style="display:none"><span id="updText"></span><button class="btn pri" id="updBtn" style="display:none">Khởi động lại để cập nhật</button></div>
   <button class="btn" id="btnCheckUpd" style="display:none" title="Kiểm tra phiên bản mới">Kiểm tra cập nhật</button>
+  <button class="btn" id="btnChars" title="Thư viện nhân vật bạn tự vẽ">🧑‍🎨 Nhân vật</button>
   <button class="btn" id="btnOpen" title="Mở file .html từ máy">Mở file…</button>
   <input type="file" id="fileOpen" accept=".html,.htm,text/html" hidden>
 </header>
@@ -287,6 +326,26 @@
 </main>
 <div class="hidden-host" id="hiddenHost"></div>
 <div class="toast" id="toast"></div>
+<div class="modal" id="charModal" style="display:none">
+  <div class="modal-box">
+    <div class="modal-head"><b>🧑‍🎨 Nhân vật của bạn</b><span class="ch-lipmode" id="chLipMode"></span><span class="sp"></span>
+      <button class="btn" id="chImport" title="Nhập nhân vật từ file .json">Nhập…</button>
+      <button class="btn" id="chExport" title="Lưu nhân vật ra file .json để dùng ở máy khác">Xuất…</button>
+      <button class="btn icon" id="chClose">✕</button></div>
+    <div class="modal-body"><div class="ch-list" id="chList"></div><div class="ch-edit" id="chEdit"></div></div>
+  </div>
+  <div class="anchor-box" id="anchorBox" style="display:none">
+    <div class="anchor-panel">
+      <div class="modal-head"><b>👄 Đặt vị trí miệng</b><span class="sp"></span><span style="font-size:12px;color:var(--mute)">Bấm vào đúng chỗ miệng trên hình</span></div>
+      <div class="anchor-stage" id="anchorStage"><img id="anchorImg"><img id="anchorMouth"></div>
+      <div class="anchor-ctl">Cỡ miệng <input type="range" id="anchorSize" min="3" max="60" step="0.5"> <span id="anchorSizeV"></span>
+        <span class="sp"></span><button class="btn" id="anchorClear">Bỏ miệng</button><button class="btn pri" id="anchorDone">Xong</button></div>
+    </div>
+  </div>
+</div>
+<input type="file" id="chFilePoses" accept="image/png,image/webp,image/gif" multiple hidden>
+<input type="file" id="chFileMouth" accept="image/png,image/webp,image/gif" hidden>
+<input type="file" id="chFileImport" accept=".json,application/json" hidden>
 
 <script>
 /* Muxer MP4 tối giản cho WebCodecs: H.264 (avc) + AAC hoặc Opus. Ghi moov ở đầu (faststart). */
@@ -764,6 +823,7 @@ var H2VMusic = (function () {
 </script>
 <script>
 const SHIM = "/* html2video time-shim: đóng băng thời gian của trang để chụp từng khung hình chính xác.\n   Được chèn vào <head> trước mọi script của người dùng. */\n(function () {\n  if (window.__h2v) return;\n  var RealDate = Date;\n  var realSetTimeout = window.setTimeout.bind(window);\n  var epoch = RealDate.now();\n  var t = 0;                       // thời gian ảo (ms)\n  var timers = new Map(), nextTimer = 1;\n  var rafs = new Map(), nextRaf = 1;\n  var seen = new WeakMap();        // animation -> thời điểm ảo lần đầu thấy\n\n  // ---- Đồng hồ ----\n  performance.now = function () { return t; };\n  var FakeDate = function Date() {\n    var a = Array.prototype.slice.call(arguments);\n    if (!(this instanceof FakeDate)) return new RealDate(epoch + t).toString();\n    var d = a.length ? new (Function.prototype.bind.apply(RealDate, [null].concat(a)))() : new RealDate(epoch + t);\n    Object.setPrototypeOf(d, FakeDate.prototype);\n    return d;\n  };\n  FakeDate.prototype = Object.create(RealDate.prototype);\n  FakeDate.prototype.constructor = FakeDate;\n  FakeDate.now = function () { return epoch + t; };\n  FakeDate.parse = RealDate.parse;\n  FakeDate.UTC = RealDate.UTC;\n  window.Date = FakeDate;\n\n  // ---- Hẹn giờ ----\n  window.setTimeout = function (fn, ms) {\n    var args = Array.prototype.slice.call(arguments, 2);\n    var id = nextTimer++;\n    timers.set(id, { fn: fn, at: t + Math.max(0, +ms || 0), every: 0, args: args });\n    return id;\n  };\n  window.setInterval = function (fn, ms) {\n    var args = Array.prototype.slice.call(arguments, 2);\n    var id = nextTimer++;\n    var every = Math.max(1, +ms || 0);\n    timers.set(id, { fn: fn, at: t + every, every: every, args: args });\n    return id;\n  };\n  window.clearTimeout = window.clearInterval = function (id) { timers.delete(id); };\n  window.requestAnimationFrame = function (cb) { var id = nextRaf++; rafs.set(id, cb); return id; };\n  window.cancelAnimationFrame = function (id) { rafs.delete(id); };\n\n  // ---- WebGL: giữ lại buffer để chụp được ----\n  var origGetContext = HTMLCanvasElement.prototype.getContext;\n  HTMLCanvasElement.prototype.getContext = function (type, opts) {\n    if (/webgl/.test(type)) opts = Object.assign({}, opts || {}, { preserveDrawingBuffer: true });\n    return origGetContext.call(this, type, opts);\n  };\n\n  function runTimersUntil(target) {\n    var guard = 0;\n    while (guard++ < 100000) {\n      var bestId = null, best = null;\n      timers.forEach(function (v, k) { if (v.at <= target && (!best || v.at < best.at)) { best = v; bestId = k; } });\n      if (!best) break;\n      t = Math.max(t, best.at);\n      if (best.every) best.at += best.every; else timers.delete(bestId);\n      try { typeof best.fn === 'function' ? best.fn.apply(window, best.args) : (0, eval)(best.fn); }\n      catch (e) { console.error(e); }\n    }\n  }\n\n  function syncAnimations() {\n    if (!document.getAnimations) return;\n    document.getAnimations().forEach(function (a) {\n      try {\n        if (!seen.has(a)) seen.set(a, t);\n        if (a.playState !== 'paused') a.pause();\n        a.currentTime = t - seen.get(a);\n      } catch (e) {}\n    });\n  }\n\n  function syncMedia() {\n    var ps = [];\n    document.querySelectorAll('video,audio').forEach(function (m) {\n      try {\n        m.muted = true; if (!m.paused) m.pause();\n        var target = (t / 1000) % (m.duration || Infinity);\n        if (Math.abs(m.currentTime - target) > 0.001) {\n          ps.push(new Promise(function (r) { m.addEventListener('seeked', r, { once: true }); realSetTimeout(r, 500); }));\n          m.currentTime = target;\n        }\n      } catch (e) {}\n    });\n    return Promise.all(ps);\n  }\n\n  async function advance(ms) {\n    if (ms < t) throw new Error('h2v: không thể lùi thời gian (' + ms + ' < ' + t + ')');\n    runTimersUntil(ms);\n    t = ms;\n    var cbs = Array.from(rafs.values()); rafs.clear();\n    cbs.forEach(function (cb) { try { cb(t); } catch (e) { console.error(e); } });\n    if (typeof window.h2vSeek === 'function') { try { await window.h2vSeek(t / 1000); } catch (e) { console.error(e); } }\n    syncAnimations();\n    await syncMedia();\n    return t;\n  }\n\n  window.__h2v = {\n    advance: advance,\n    now: function () { return t; },\n    ready: function () {\n      var imgs = Array.from(document.images).map(function (i) { return i.complete ? 0 : new Promise(function (r) { i.onload = i.onerror = r; }); });\n      return Promise.all([document.fonts ? document.fonts.ready : 0].concat(imgs));\n    }\n  };\n  syncAnimations();\n})();\n";
+const CHAR_RT = "/* H2V.character: đưa nhân vật bạn tự vẽ (thư viện trong app) vào video.\n   App tự chèn: window.H2V_CHARS (ảnh tư thế + hình miệng) và window.H2V_LIPSYNC (dữ liệu nhép miệng).\n\n   H2V.character('ten', {\n     x: 540, y: 1500,            // vị trí CHÂN nhân vật (px, giữa-dưới)\n     height: 700,                // chiều cao nhân vật (px)\n     poses: [[0, 'chao'], [5, 'chi-tay']],   // [giây, tư thế]\n     start: 0, end: 20,          // xuất hiện / biến mất (giây)\n     enter: 'pop',               // pop | left | right | bottom | fade | none\n     exit: 'fade',               // như enter\n     motion: 'breathe',          // breathe | bounce | none\n     move: [[0, 540, 1500], [8, 300, 1500]],  // di chuyển [giây, x, y]\n     flip: false,                // lật ngang\n     talk: true,                 // nhép miệng theo giọng đọc: true | false | [[từ, đến], ...]\n     z: 5\n   });                                                                       */\n(function () {\n  if (window.H2V && window.H2V.character) return;\n  var LIB = window.H2V_CHARS || {};\n  var LIP = window.H2V_LIPSYNC || null;\n  var clamp = function (v) { return Math.max(0, Math.min(1, v)); };\n  var easeOut = function (v) { v = clamp(v); return 1 - Math.pow(1 - v, 3); };\n  var easeIO = function (v) { v = clamp(v); return v < 0.5 ? 4 * v * v * v : 1 - Math.pow(-2 * v + 2, 3) / 2; };\n  var backOut = function (v) { v = clamp(v); var c = 1.70158; return 1 + (c + 1) * Math.pow(v - 1, 3) + c * Math.pow(v - 1, 2); };\n\n  function cueAt(t) {\n    if (!LIP) return 'X';\n    if (LIP.cues && LIP.cues.length) {\n      var lo = 0, hi = LIP.cues.length - 1;\n      while (lo <= hi) { var mid = (lo + hi) >> 1, c = LIP.cues[mid]; if (t < c[0]) hi = mid - 1; else if (t >= c[1]) lo = mid + 1; else return c[2]; }\n      return 'X';\n    }\n    var lv = levelAt(t);\n    return lv < 0.12 ? 'X' : lv < 0.3 ? 'B' : lv < 0.55 ? 'C' : 'D';\n  }\n  function levelAt(t) {\n    if (!LIP || !LIP.level) return 0;\n    var i = Math.floor(t * (LIP.fps || 60)); return LIP.level[i] || 0;\n  }\n  var SIMPLE = { X: 'closed', A: 'closed', B: 'half', C: 'half', D: 'open', E: 'half', F: 'half', G: 'half', H: 'half' };\n  function mouthSrc(ch, v) {\n    var m = ch.mouths || {};\n    return m[v] || m[SIMPLE[v]] || (v === 'X' ? m.A : null) || m.closed || null;\n  }\n  function inRanges(t, r) { if (r === true) return true; if (!r) return false; for (var i = 0; i < r.length; i++) if (t >= r[i][0] && t < r[i][1]) return true; return false; }\n  function lerpPath(path, t) {\n    if (!path || !path.length) return null;\n    if (t <= path[0][0]) return [path[0][1], path[0][2]];\n    for (var i = 0; i < path.length - 1; i++) {\n      var a = path[i], b = path[i + 1];\n      if (t < b[0]) { var k = easeIO((t - a[0]) / Math.max(0.001, b[0] - a[0])); return [a[1] + (b[1] - a[1]) * k, a[2] + (b[2] - a[2]) * k]; }\n    }\n    var l = path[path.length - 1]; return [l[1], l[2]];\n  }\n\n  var actors = [];\n  function frame(now) {\n    var t = now / 1000;   // thời gian tính từ lúc mở trang (app điều khiển khi xuất video)\n    for (var i = 0; i < actors.length; i++) actors[i](t);\n    requestAnimationFrame(frame);\n  }\n\n  function character(id, o) {\n    o = o || {};\n    var ch = LIB[id];\n    var H = o.height || 600, x0 = o.x != null ? o.x : innerWidth / 2, y0 = o.y != null ? o.y : innerHeight - 100;\n    var root = document.createElement('div');\n    root.className = 'h2v-char h2v-char-' + id;\n    root.style.cssText = 'position:absolute;left:0;top:0;pointer-events:none;transform-origin:50% 100%;z-index:' + (o.z != null ? o.z : 5);\n    (o.parent || document.body).appendChild(root);\n    if (!ch) {\n      root.innerHTML = '<div style=\"width:' + (H * 0.5) + 'px;height:' + H + 'px;border:4px dashed #e63946;border-radius:16px;display:grid;place-items:center;font:700 28px sans-serif;color:#e63946;background:rgba(255,255,255,.7);text-align:center\">Chưa có nhân vật<br>\"' + id + '\"<\/div>';\n      root.style.width = (H * 0.5) + 'px';\n    }\n    var poses = {}, names = ch ? Object.keys(ch.poses || {}) : [];\n    names.forEach(function (n) {\n      var p = ch.poses[n], w = H * (p.w / p.h);\n      var box = document.createElement('div');\n      box.style.cssText = 'position:absolute;left:50%;bottom:0;width:' + w + 'px;height:' + H + 'px;margin-left:' + (-w / 2) + 'px;opacity:0';\n      var img = document.createElement('img'); img.src = p.src; img.style.cssText = 'position:absolute;inset:0;width:100%;height:100%';\n      box.appendChild(img);\n      var mouth = null;\n      if (p.mouth) {\n        mouth = document.createElement('img');\n        var mw = p.mouth.w * w;\n        mouth.style.cssText = 'position:absolute;width:' + mw + 'px;left:' + (p.mouth.x * w - mw / 2) + 'px;top:' + (p.mouth.y * H) + 'px;transform:translateY(-50%);display:none';\n        box.appendChild(mouth);\n      }\n      root.appendChild(box);\n      poses[n] = { box: box, mouth: mouth, w: w };\n    });\n    var timeline = (o.poses || [[0, names[0]]]).slice().sort(function (a, b) { return a[0] - b[0]; });\n    var start = o.start != null ? o.start : 0, end = o.end != null ? o.end : 1e9;\n    var enter = o.enter || 'pop', exit = o.exit || 'fade', motion = o.motion || 'breathe';\n    var talk = o.talk === undefined ? true : o.talk;\n    var lastMouth = {};\n\n    function poseAt(t) {\n      var cur = timeline[0], prev = null;\n      for (var i = 0; i < timeline.length; i++) if (timeline[i][0] <= t) { prev = i > 0 ? timeline[i - 1] : null; cur = timeline[i]; }\n      return { cur: cur[1], since: t - cur[0], prev: prev && prev[1] };\n    }\n    function update(t) {\n      if (t < start || t >= end) { root.style.display = 'none'; return; }\n      root.style.display = '';\n      var pos = lerpPath(o.move, t) || [x0, y0];\n      var tx = 0, ty = 0, sc = 1, sx = 1, sy = 1, op = 1;\n      var e = t - start, xOut = end - t;\n      var off = Math.max(innerWidth, innerHeight) * 0.6;\n      if (e < 0.6) {\n        var k = enter === 'pop' ? backOut(e / 0.5) : easeOut(e / 0.6);\n        if (enter === 'pop') { sc = Math.max(0.001, k); }\n        else if (enter === 'left') tx = -off * (1 - k);\n        else if (enter === 'right') tx = off * (1 - k);\n        else if (enter === 'bottom') ty = H * 1.2 * (1 - k);\n        else if (enter === 'fade') op = k;\n      }\n      if (end < 1e8 && xOut < 0.5) {\n        var q = 1 - clamp(xOut / 0.5);\n        if (exit === 'pop') sc *= 1 - easeIO(q);\n        else if (exit === 'left') tx -= off * easeIO(q);\n        else if (exit === 'right') tx += off * easeIO(q);\n        else if (exit === 'bottom') ty += H * 1.2 * easeIO(q);\n        else if (exit === 'fade') op *= 1 - q;\n      }\n      if (motion === 'breathe') { sy *= 1 + 0.012 * Math.sin(t * 2.4); sx *= 1 - 0.006 * Math.sin(t * 2.4); }\n      else if (motion === 'bounce') ty -= Math.abs(Math.sin(t * 4.2)) * H * 0.025;\n      // Đổi tư thế: nảy nhẹ + chuyển mờ\n      var ps = poseAt(t), sw = clamp(ps.since / 0.16);\n      if (ps.prev && ps.since < 0.3) { var b = Math.sin(clamp(ps.since / 0.3) * Math.PI); sy *= 1 - 0.04 * b; sx *= 1 + 0.03 * b; }\n      var speaking = talk && inRanges(t, talk);\n      var lv = speaking ? levelAt(t) : 0;\n      if (speaking) ty -= lv * H * 0.006;\n      for (var n in poses) {\n        var P = poses[n], a = n === ps.cur ? (ps.prev && ps.prev !== ps.cur ? sw : 1) : (n === ps.prev && ps.since < 0.16 ? 1 - sw : 0);\n        P.box.style.opacity = a;\n        if (P.mouth) {\n          if (a > 0 && speaking) {\n            var src = mouthSrc(ch, cueAt(t));\n            if (src) { if (lastMouth[n] !== src) { P.mouth.src = src; lastMouth[n] = src; } P.mouth.style.display = ''; }\n            else P.mouth.style.display = 'none';\n          } else P.mouth.style.display = 'none';\n        }\n      }\n      var w = (poses[ps.cur] && poses[ps.cur].w) || H * 0.5;\n      root.style.width = w + 'px'; root.style.height = H + 'px';\n      root.style.opacity = op;\n      root.style.transform = 'translate(' + (pos[0] - w / 2 + tx) + 'px,' + (pos[1] - H + ty) + 'px) scale(' + (sc * sx * (o.flip ? -1 : 1)) + ',' + (sc * sy) + ')';\n    }\n    actors.push(update);\n    if (actors.length === 1) requestAnimationFrame(frame);\n    update(performance.now() / 1000);\n    return { el: root, update: update };\n  }\n\n  window.H2V = window.H2V || {};\n  window.H2V.character = character;\n  window.H2V.characters = Object.keys(LIB);\n  window.H2V.mouthAt = cueAt;\n  window.H2V.voiceLevel = levelAt;\n})();\n";
 const EXAMPLES = [{"name":"Intro motion graphics","file":"01-intro-16x9.html","html":"<!DOCTYPE html>\n<html lang=\"vi\">\n<head>\n<meta charset=\"utf-8\">\n<meta name=\"h2v\" content=\"width=1920,height=1080,fps=30,duration=6\">\n<title>Intro motion graphics<\/title>\n<link rel=\"stylesheet\" href=\"https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;800&display=swap\">\n<style>\n  html, body { margin: 0; width: 100%; height: 100%; overflow: hidden; }\n  body {\n    font-family: 'Be Vietnam Pro', system-ui, sans-serif;\n    background: radial-gradient(circle at 30% 30%, #2b1055, #0b0b1a 70%);\n    color: #fff; display: grid; place-items: center;\n  }\n  .ring { position: absolute; border-radius: 50%; border: 3px solid rgba(255,255,255,.15); animation: spin 8s linear infinite; }\n  .ring.a { width: 900px; height: 900px; border-top-color: #ff5f6d; }\n  .ring.b { width: 650px; height: 650px; border-right-color: #ffc371; animation-duration: 5s; animation-direction: reverse; }\n  .dot { position: absolute; width: 22px; height: 22px; border-radius: 50%; background: #ffc371; animation: float 3s ease-in-out infinite alternate; }\n  .wrap { position: relative; text-align: center; }\n  h1 { font-size: 150px; font-weight: 800; margin: 0; letter-spacing: -3px; }\n  h1 span { display: inline-block; opacity: 0; transform: translateY(80px) rotate(8deg); animation: up .7s cubic-bezier(.2,.8,.2,1.2) forwards; }\n  .line { height: 8px; width: 0; margin: 24px auto; border-radius: 4px; background: linear-gradient(90deg, #ff5f6d, #ffc371); animation: grow 1s 1.6s ease-out forwards; }\n  p { font-size: 44px; margin: 0; opacity: 0; animation: fade 1s 2.2s forwards; color: #ddd; }\n  .out { animation: out .8s 5s ease-in forwards; }\n  @keyframes spin { to { transform: rotate(360deg); } }\n  @keyframes float { from { transform: translate(-500px, -300px); } to { transform: translate(-460px, -240px); } }\n  @keyframes up { to { opacity: 1; transform: none; } }\n  @keyframes grow { to { width: 520px; } }\n  @keyframes fade { to { opacity: 1; } }\n  @keyframes out { to { opacity: 0; transform: scale(1.15); filter: blur(10px); } }\n<\/style>\n<\/head>\n<body>\n  <div class=\"ring a\"><\/div><div class=\"ring b\"><\/div><div class=\"dot\"><\/div>\n  <div class=\"wrap out\">\n    <h1 id=\"title\">Xin chào!<\/h1>\n    <div class=\"line\"><\/div>\n    <p>Video này được tạo từ HTML, CSS và JS<\/p>\n  <\/div>\n<script>\n  const h = document.getElementById('title');\n  h.innerHTML = [...h.textContent].map((c, i) =>\n    `<span style=\"animation-delay:${0.2 + i * 0.08}s\">${c === ' ' ? '&nbsp;' : c}<\/span>`).join('');\n<\/script>\n<\/body>\n<\/html>\n"},{"name":"Video dọc 9:16","file":"02-social-9x16.html","html":"<!DOCTYPE html>\n<html lang=\"vi\">\n<head>\n<meta charset=\"utf-8\">\n<meta name=\"h2v\" content=\"width=1080,height=1920,fps=30,duration=10\">\n<title>Video dọc 9:16<\/title>\n<link rel=\"stylesheet\" href=\"https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@500;800&display=swap\">\n<style>\n  html, body { margin: 0; width: 100%; height: 100%; overflow: hidden; }\n  body { font-family: 'Be Vietnam Pro', system-ui, sans-serif; background: linear-gradient(160deg, #fceabb, #f8b500); color: #1d1d1f; }\n  .bar { position: absolute; top: 60px; left: 60px; right: 60px; height: 14px; border-radius: 7px; background: rgba(0,0,0,.12); overflow: hidden; }\n  .bar i { display: block; height: 100%; width: 0; background: #1d1d1f; }\n  h1 { position: absolute; top: 170px; left: 70px; right: 70px; font-size: 104px; line-height: 1.05; margin: 0; font-weight: 800; }\n  .card { position: absolute; left: 70px; right: 70px; padding: 48px 56px; border-radius: 40px; background: #fff;\n          box-shadow: 0 30px 60px rgba(0,0,0,.15); display: flex; gap: 36px; align-items: center; opacity: 0; }\n  .card b { font-size: 120px; line-height: 1; color: #f8b500; font-weight: 800; }\n  .card span { font-size: 54px; font-weight: 500; line-height: 1.2; }\n  .cta { position: absolute; bottom: 150px; left: 0; right: 0; text-align: center; font-size: 60px; font-weight: 800; opacity: 0; }\n<\/style>\n<\/head>\n<body>\n  <div class=\"bar\"><i id=\"prog\"><\/i><\/div>\n  <h1 id=\"title\">3 mẹo học code nhanh hơn<\/h1>\n  <div class=\"card\" style=\"top:700px\"><b>1<\/b><span>Làm dự án nhỏ mỗi ngày<\/span><\/div>\n  <div class=\"card\" style=\"top:1030px\"><b>2<\/b><span>Đọc code của người khác<\/span><\/div>\n  <div class=\"card\" style=\"top:1360px\"><b>3<\/b><span>Giải thích lại cho bạn bè<\/span><\/div>\n  <div class=\"cta\" id=\"cta\">Lưu lại & theo dõi 👉<\/div>\n<script>\n  // Hoạt ảnh điều khiển bằng JS + requestAnimationFrame (tool sẽ đóng băng thời gian khi render)\n  const DURATION = 10;\n  const ease = t => 1 - Math.pow(1 - Math.min(Math.max(t, 0), 1), 3);\n  const cards = [...document.querySelectorAll('.card')];\n  const title = document.getElementById('title'), cta = document.getElementById('cta'), prog = document.getElementById('prog');\n  const start = performance.now();\n  function frame(now) {\n    const t = (now - start) / 1000;\n    prog.style.width = Math.min(100, t / DURATION * 100) + '%';\n    const k = ease(t / 0.8);\n    title.style.opacity = k; title.style.transform = `translateY(${(1 - k) * 60}px)`;\n    cards.forEach((c, i) => {\n      const p = ease((t - 1.2 - i * 1.6) / 0.6);\n      c.style.opacity = p;\n      c.style.transform = `translateX(${(1 - p) * (i % 2 ? 300 : -300)}px) scale(${0.9 + 0.1 * p})`;\n    });\n    const q = ease((t - 6.6) / 0.6);\n    cta.style.opacity = q; cta.style.transform = `scale(${0.8 + 0.2 * q + Math.sin(t * 6) * 0.02 * q})`;\n    requestAnimationFrame(frame);\n  }\n  requestAnimationFrame(frame);\n<\/script>\n<\/body>\n<\/html>\n"},{"name":"Biểu đồ động","file":"03-bieu-do.html","html":"<!DOCTYPE html>\n<html lang=\"vi\">\n<head>\n<meta charset=\"utf-8\">\n<meta name=\"h2v\" content=\"width=1920,height=1080,fps=30,duration=8\">\n<title>Biểu đồ động<\/title>\n<style>\n  html, body { margin: 0; width: 100%; height: 100%; overflow: hidden; }\n  body { font-family: system-ui, 'Segoe UI', sans-serif; background: #0f172a; color: #e2e8f0; padding: 90px 120px; box-sizing: border-box; }\n  h1 { font-size: 64px; margin: 0 0 8px; }\n  .sub { font-size: 30px; color: #94a3b8; margin-bottom: 60px; }\n  .row { display: grid; grid-template-columns: 260px 1fr 180px; align-items: center; gap: 24px; height: 110px; }\n  .name { font-size: 36px; text-align: right; }\n  .track { height: 70px; }\n  .fill { height: 100%; border-radius: 0 14px 14px 0; width: 0; }\n  .val { font-size: 40px; font-weight: 700; font-variant-numeric: tabular-nums; }\n<\/style>\n<\/head>\n<body>\n  <h1>Doanh thu theo quý<\/h1>\n  <div class=\"sub\">Đơn vị: tỷ đồng · dữ liệu minh hoạ<\/div>\n  <div id=\"chart\"><\/div>\n<script>\n  const data = [\n    { name: 'Quý 1', v: 42, c: '#38bdf8' },\n    { name: 'Quý 2', v: 67, c: '#a78bfa' },\n    { name: 'Quý 3', v: 55, c: '#f472b6' },\n    { name: 'Quý 4', v: 91, c: '#facc15' },\n  ];\n  const max = 100;\n  const chart = document.getElementById('chart');\n  const rows = data.map(d => {\n    const r = document.createElement('div'); r.className = 'row';\n    r.innerHTML = `<div class=\"name\">${d.name}<\/div><div class=\"track\"><div class=\"fill\" style=\"background:${d.c}\"><\/div><\/div><div class=\"val\">0<\/div>`;\n    chart.appendChild(r); return { d, fill: r.querySelector('.fill'), val: r.querySelector('.val') };\n  });\n  const easeOut = t => 1 - Math.pow(1 - Math.min(Math.max(t, 0), 1), 4);\n  // Cách khuyên dùng: viết hàm vẽ theo thời gian t (giây). Tool gọi window.h2vSeek(t) cho mỗi khung hình.\n  window.h2vSeek = function (t) {\n    rows.forEach((r, i) => {\n      const p = easeOut((t - 0.6 - i * 0.5) / 1.6);\n      r.fill.style.width = (r.d.v / max * 100 * p) + '%';\n      r.val.textContent = (r.d.v * p).toFixed(0);\n    });\n  };\n  window.h2vSeek(0);\n<\/script>\n<\/body>\n<\/html>\n"},{"name":"Canvas hạt","file":"04-canvas-hat.html","html":"<!DOCTYPE html>\n<html lang=\"vi\">\n<head>\n<meta charset=\"utf-8\">\n<meta name=\"h2v\" content=\"width=1080,height=1080,fps=60,duration=8\">\n<title>Canvas hạt<\/title>\n<style>html, body { margin: 0; height: 100%; overflow: hidden; background: #000; } canvas { display: block; width: 100%; height: 100%; }<\/style>\n<\/head>\n<body>\n<canvas id=\"c\"><\/canvas>\n<script>\n  const c = document.getElementById('c'), x = c.getContext('2d');\n  const W = c.width = innerWidth, H = c.height = innerHeight;\n  let seed = 7; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647; // ngẫu nhiên có seed -> video lặp lại được\n  const P = Array.from({ length: 500 }, () => ({ a: rnd() * Math.PI * 2, r: 60 + rnd() * W * 0.45, s: 0.2 + rnd() * 0.8, z: 1 + rnd() * 3, h: 180 + rnd() * 140 }));\n  const t0 = performance.now();\n  function draw(now) {\n    const t = (now - t0) / 1000;\n    x.fillStyle = 'rgba(0,0,10,0.18)'; x.fillRect(0, 0, W, H);\n    for (const p of P) {\n      const a = p.a + t * p.s * 0.6, rr = p.r * (0.85 + 0.15 * Math.sin(t * 1.5 + p.a * 3));\n      x.fillStyle = `hsl(${p.h + t * 20},90%,65%)`;\n      x.beginPath(); x.arc(W / 2 + Math.cos(a) * rr, H / 2 + Math.sin(a) * rr * 0.9, p.z, 0, 7); x.fill();\n    }\n    x.fillStyle = '#fff'; x.font = `800 ${W * 0.09}px system-ui, sans-serif`; x.textAlign = 'center'; x.textBaseline = 'middle';\n    x.globalAlpha = Math.min(1, t / 1.5); x.fillText('CANVAS', W / 2, H / 2); x.globalAlpha = 1;\n    requestAnimationFrame(draw);\n  }\n  requestAnimationFrame(draw);\n<\/script>\n<\/body>\n<\/html>\n"},{"name":"Three.js 3D","file":"05-threejs.html","html":"<!DOCTYPE html>\n<html lang=\"vi\">\n<head>\n<meta charset=\"utf-8\">\n<meta name=\"h2v\" content=\"width=1920,height=1080,fps=30,duration=8\">\n<title>Three.js 3D<\/title>\n<style>html, body { margin: 0; height: 100%; overflow: hidden; background: #111; } canvas { display: block; }<\/style>\n<script src=\"https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js\"><\/script>\n<\/head>\n<body>\n<script>\n  const W = innerWidth, H = innerHeight;\n  const renderer = new THREE.WebGLRenderer({ antialias: true });\n  renderer.setSize(W, H); renderer.setPixelRatio(1);\n  document.body.appendChild(renderer.domElement);\n  const scene = new THREE.Scene();\n  scene.background = new THREE.Color(0x111122);\n  const cam = new THREE.PerspectiveCamera(45, W / H, 0.1, 100); cam.position.set(0, 0, 9);\n  const mesh = new THREE.Mesh(new THREE.TorusKnotGeometry(1.8, 0.55, 220, 32),\n    new THREE.MeshStandardMaterial({ color: 0xff6b6b, metalness: 0.35, roughness: 0.25 }));\n  scene.add(mesh);\n  scene.add(new THREE.AmbientLight(0x404060, 1.2));\n  const l1 = new THREE.PointLight(0x66ccff, 2, 30); l1.position.set(5, 4, 6); scene.add(l1);\n  const l2 = new THREE.PointLight(0xffcc66, 1.5, 30); l2.position.set(-6, -3, 4); scene.add(l2);\n  const clock = new THREE.Clock(); // dùng performance.now -> tool điều khiển được\n  function loop() {\n    const t = clock.getElapsedTime();\n    mesh.rotation.x = t * 0.5; mesh.rotation.y = t * 0.8;\n    mesh.scale.setScalar(Math.min(1, t / 1.2));\n    renderer.render(scene, cam);\n    requestAnimationFrame(loop);\n  }\n  loop();\n<\/script>\n<\/body>\n<\/html>\n"},{"name":"Hoạt hình bảng trắng vẽ tay (9:16)","file":"06-bang-trang-ve-tay.html","html":"<!DOCTYPE html>\n<html lang=\"vi\">\n<head>\n<meta charset=\"utf-8\">\n<meta name=\"h2v\" content=\"width=1080,height=1920,fps=30,duration=26\">\n<title>Hoạt hình bảng trắng vẽ tay (9:16)<\/title>\n<link rel=\"stylesheet\" href=\"https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@700;800&family=Patrick+Hand&display=swap\">\n<style>\n  html, body { margin: 0; width: 100%; height: 100%; overflow: hidden; background: #0b0b0c; }\n  body { font-family: 'Be Vietnam Pro', system-ui, sans-serif; color: #fff; }\n  .band { position: absolute; left: 0; right: 0; text-align: center; font-weight: 800; line-height: 1.25; }\n  #hook { top: 150px; font-size: 62px; }\n  #cta { top: 1590px; font-size: 56px; }\n  #board { position: absolute; left: 0; top: 330px; width: 1080px; height: 1180px; background: #fbfbf8; display: block; }\n  #sub { position: absolute; left: 60px; right: 60px; top: 1375px; text-align: center; font: 50px/1.25 'Patrick Hand', 'Comic Sans MS', cursive; color: #111; }\n  .d { fill: none; stroke: #141414; stroke-width: 7; stroke-linecap: round; stroke-linejoin: round; }\n  .d.thin { stroke-width: 5; }\n  .d.red { stroke: #e63946; }\n  .f { fill: #141414; }\n  .w { font-family: 'Patrick Hand', 'Comic Sans MS', cursive; fill: #141414; text-anchor: middle; }\n<\/style>\n<\/head>\n<body>\n  <div class=\"band\" id=\"hook\">Biến code thành video<br>Không cần biết dựng phim<\/div>\n  <svg id=\"board\" viewBox=\"0 0 1080 1180\" xmlns=\"http://www.w3.org/2000/svg\">\n    <defs>\n      <filter id=\"rough\" x=\"-5%\" y=\"-5%\" width=\"110%\" height=\"110%\">\n        <feTurbulence type=\"fractalNoise\" baseFrequency=\"0.035\" numOctaves=\"2\" seed=\"4\"/>\n        <feDisplacementMap in=\"SourceGraphic\" scale=\"3.5\"/>\n      <\/filter>\n    <\/defs>\n    <g id=\"scenes\" filter=\"url(#rough)\"><\/g>\n    <g id=\"pen\" style=\"display:none\">\n      <path d=\"M0,0 L16,-6 L128,-118 L110,-136 L-2,-24 Z\" fill=\"#f4c542\" stroke=\"#141414\" stroke-width=\"4\" stroke-linejoin=\"round\"/>\n      <path d=\"M0,0 L16,-6 L-2,-24 Z\" fill=\"#f2d3a7\" stroke=\"#141414\" stroke-width=\"3\" stroke-linejoin=\"round\"/>\n      <path d=\"M0,0 L5,-2 L-1,-7 Z\" fill=\"#141414\"/>\n      <path d=\"M110,-136 L128,-118 L140,-130 L122,-148 Z\" fill=\"#f08a9b\" stroke=\"#141414\" stroke-width=\"4\" stroke-linejoin=\"round\"/>\n    <\/g>\n  <\/svg>\n  <div id=\"sub\"><\/div>\n  <div class=\"band\" id=\"cta\">Lưu lại để dùng nha 👇<br><span style=\"font-weight:700;font-size:44px;opacity:.75\">Theo dõi để xem thêm mẹo<\/span><\/div>\n\n<\!-- Kịch bản âm thanh: app tự đọc khối này để tạo giọng đọc + nhạc nền -->\n<script type=\"application/json\" id=\"h2v-audio\">\n{\n  \"voice\": \"Kore\",\n  \"style\": \"thân thiện, rõ ràng\",\n  \"lines\": [\n    [0.3,  \"Muốn làm video mà không biết dựng phim?\"],\n    [5.4,  \"Chỉ cần viết vài dòng HTML, CSS và JS.\"],\n    [10.5, \"Tool sẽ chụp từng khung hình, rồi ghép lại thành video.\"],\n    [16.4, \"Thêm nhạc nền, giọng đọc, bấm xuất là xong.\"],\n    [21.4, \"Hoàn toàn miễn phí. Lưu lại để dùng nha!\"]\n  ],\n  \"music\": { \"preset\": \"lofi\", \"volume\": 0.3 },\n  \"fit\": true\n}\n<\/script>\n<script>\n// Phụ đề lấy luôn từ kịch bản ở trên\nconst AUDIO = JSON.parse(document.getElementById('h2v-audio').textContent);\nconst SUBS = AUDIO.lines.map(([t, text], i, a) => [t, i + 1 < a.length ? a[i + 1][0] - 0.4 : 26, text]);\n\n/* ---------- Nhân vật người que ---------- */\nconst MOUTH = {\n  happy: '<path class=\"d\" d=\"M -26,20 Q 0,46 26,20\"/>',\n  big: '<path class=\"d\" d=\"M -32,14 Q 0,64 32,14 Q 0,26 -32,14\"/>',\n  worried: '<path class=\"d\" d=\"M -22,34 Q -11,24 0,32 Q 11,40 22,30\"/>'\n};\nconst BROW = {\n  happy: '', big: '',\n  worried: '<path class=\"d thin\" d=\"M -36,-26 L -14,-36\"/><path class=\"d thin\" d=\"M 36,-26 L 14,-36\"/>'\n};\nconst ARMS = {\n  down: 'M 0,100 L -52,190|M 0,100 L 52,190',\n  point: 'M 0,100 L -50,188|M 0,100 L 72,64 L 118,52',\n  scratch: 'M 0,100 L -50,188|M 0,100 L 66,58 L 52,-34',\n  up: 'M 0,100 L -56,184|M 0,100 L 62,36 L 84,-34',\n  wave: 'M 0,100 L -66,30 L -84,-40|M 0,100 L 62,36 L 84,-34'\n};\nfunction guy(x, y, mood = 'happy', arms = 'down', s = 1) {\n  const a = ARMS[arms].split('|');\n  const end = p => p.trim().split(' ').slice(-1)[0].split(',').map(Number);\n  const hands = a.map(p => { const [hx, hy] = end(p); return `<circle class=\"d\" cx=\"${hx}\" cy=\"${hy}\" r=\"11\"/>`; }).join('');\n  return `<g transform=\"translate(${x},${y}) scale(${s})\">\n    <path class=\"d\" d=\"M -2,-62 C 36,-64 64,-34 62,2 C 60,38 32,62 -2,62 C -38,62 -64,34 -62,-2 C -60,-38 -34,-60 6,-61\"/>\n    ${BROW[mood]}\n    <ellipse class=\"f\" cx=\"-22\" cy=\"-6\" rx=\"9\" ry=\"13\"/><ellipse class=\"f\" cx=\"22\" cy=\"-6\" rx=\"9\" ry=\"13\"/>\n    ${MOUTH[mood]}\n    <path class=\"d\" d=\"M 0,62 C 3,120 -3,170 0,232\"/>\n    <path class=\"d\" d=\"${a[0]}\"/><path class=\"d\" d=\"${a[1]}\"/>${hands}\n    <path class=\"d\" d=\"M 0,232 L -42,340 L -66,342\"/><path class=\"d\" d=\"M 0,232 L 42,340 L 66,342\"/>\n  <\/g>`;\n}\nconst star = (x, y, r = 22) => `<path class=\"d thin\" d=\"M ${x},${y - r} Q ${x + 4},${y - 4} ${x + r},${y} Q ${x + 4},${y + 4} ${x},${y + r} Q ${x - 4},${y + 4} ${x - r},${y} Q ${x - 4},${y - 4} ${x},${y - r}\"/>`;\nconst text = (x, y, s, size = 60, extra = '') => `<text class=\"w\" x=\"${x}\" y=\"${y}\" font-size=\"${size}\" ${extra}>${s}<\/text>`;\n\n/* ---------- Các cảnh ---------- */\nconst SCENES = [\n  { start: 0, end: 5.2, draw: [0.15, 3.8], svg: `\n      <path class=\"d\" d=\"M 90,760 L 990,760\"/>\n      ${guy(260, 420, 'worried', 'scratch')}\n      <g class=\"wig\" data-cx=\"390\" data-cy=\"300\">\n        <path class=\"d\" d=\"M 352,250 C 350,186 446,184 446,246 C 446,296 398,298 398,346\"/>\n        <circle class=\"f\" cx=\"398\" cy=\"384\" r=\"10\"/>\n      <\/g>\n      <path class=\"d\" d=\"M 470,560 L 960,560\"/><path class=\"d\" d=\"M 500,560 L 500,760\"/><path class=\"d\" d=\"M 930,560 L 930,760\"/>\n      <circle class=\"d\" cx=\"620\" cy=\"500\" r=\"56\"/><circle class=\"d thin\" cx=\"620\" cy=\"500\" r=\"12\"/>\n      <circle class=\"d thin\" cx=\"620\" cy=\"466\" r=\"10\"/><circle class=\"d thin\" cx=\"592\" cy=\"518\" r=\"10\"/><circle class=\"d thin\" cx=\"648\" cy=\"518\" r=\"10\"/>\n      <circle class=\"d\" cx=\"760\" cy=\"500\" r=\"56\"/><circle class=\"d thin\" cx=\"760\" cy=\"500\" r=\"12\"/>\n      <circle class=\"d thin\" cx=\"760\" cy=\"466\" r=\"10\"/><circle class=\"d thin\" cx=\"732\" cy=\"518\" r=\"10\"/><circle class=\"d thin\" cx=\"788\" cy=\"518\" r=\"10\"/>\n      <path class=\"d thin\" d=\"M 800,540 C 860,600 780,640 860,680 C 930,712 840,740 900,756\"/>\n      ${text(720, 880, 'Không biết làm…', 64)}` },\n\n  { start: 5.2, end: 10.3, draw: [5.35, 9.0], svg: `\n      <path class=\"d\" d=\"M 90,760 L 990,760\"/>\n      ${guy(220, 420, 'happy', 'point')}\n      <path class=\"d\" d=\"M 470,320 L 910,320 L 910,600 L 470,600 Z\"/>\n      <path class=\"d\" d=\"M 430,600 L 950,600 L 990,650 L 390,650 Z\"/>\n      <path class=\"d\" d=\"M 400,650 L 400,760\"/><path class=\"d\" d=\"M 980,650 L 980,760\"/>\n      <path class=\"d red\" d=\"M 600,410 L 548,460 L 600,510\"/>\n      <path class=\"d red\" d=\"M 712,392 L 670,528\"/>\n      <path class=\"d red\" d=\"M 782,410 L 834,460 L 782,510\"/>\n      ${star(950, 270)}${star(420, 260, 16)}\n      ${text(690, 880, 'HTML · CSS · JS', 72)}` },\n\n  { start: 10.3, end: 16.2, draw: [10.45, 14.6], svg: `\n      ${text(540, 250, 'Chụp từng khung hình', 66)}\n      <path class=\"d\" d=\"M 90,300 L 990,300 L 990,520 L 90,520 Z\"/>\n      <path class=\"d thin\" d=\"M 130,316 h20 v18 h-20 z M 330,316 h20 v18 h-20 z M 530,316 h20 v18 h-20 z M 730,316 h20 v18 h-20 z M 930,316 h20 v18 h-20 z\"/>\n      <path class=\"d thin\" d=\"M 130,486 h20 v18 h-20 z M 330,486 h20 v18 h-20 z M 530,486 h20 v18 h-20 z M 730,486 h20 v18 h-20 z M 930,486 h20 v18 h-20 z\"/>\n      <path class=\"d\" d=\"M 140,350 L 370,350 L 370,470 L 140,470 Z\"/>\n      <circle class=\"d thin\" cx=\"255\" cy=\"410\" r=\"28\"/><path class=\"d thin\" d=\"M 255,362 v-6 M 255,458 v6 M 207,410 h-6 M 303,410 h6 M 222,377 l-5,-5 M 288,443 l5,5 M 288,377 l5,-5 M 222,443 l-5,5\"/>\n      <path class=\"d\" d=\"M 425,350 L 655,350 L 655,470 L 425,470 Z\"/>\n      ${star(540, 410, 40)}\n      <path class=\"d\" d=\"M 710,350 L 940,350 L 940,470 L 710,470 Z\"/>\n      <path class=\"d red\" d=\"M 825,450 C 760,410 780,365 825,392 C 870,365 890,410 825,450\"/>\n      <path class=\"d\" d=\"M 540,540 C 530,610 600,620 600,690\"/><path class=\"d\" d=\"M 574,664 L 600,694 L 626,664\"/>\n      <path class=\"d\" d=\"M 520,720 L 640,720 L 690,770 L 690,960 L 520,960 Z\"/><path class=\"d thin\" d=\"M 640,720 L 640,770 L 690,770\"/>\n      ${text(605, 880, 'MP4', 60, 'font-weight=\"700\"')}\n      ${guy(860, 700, 'big', 'up', 0.62)}` },\n\n  { start: 16.2, end: 21.2, draw: [16.35, 19.8], svg: `\n      <path class=\"d\" d=\"M 90,760 L 520,760\"/>\n      ${guy(270, 420, 'big', 'wave')}\n      <path class=\"d\" d=\"M 640,290 L 640,170 L 740,146 L 740,266\"/><path class=\"d\" d=\"M 640,190 L 740,166\"/>\n      <ellipse class=\"f\" cx=\"622\" cy=\"292\" rx=\"22\" ry=\"16\" transform=\"rotate(-20 622 292)\"/>\n      <ellipse class=\"f\" cx=\"722\" cy=\"268\" rx=\"22\" ry=\"16\" transform=\"rotate(-20 722 268)\"/>\n      ${text(860, 250, 'Nhạc nền', 56)}\n      <path class=\"d\" d=\"M 640,410 C 640,370 700,370 700,410 L 700,490 C 700,530 640,530 640,490 Z\"/>\n      <path class=\"d thin\" d=\"M 640,440 h60 M 640,465 h60\"/>\n      <path class=\"d\" d=\"M 618,470 C 618,560 722,560 722,470\"/><path class=\"d\" d=\"M 670,546 L 670,600 M 630,600 L 710,600\"/>\n      ${text(860, 480, 'Giọng đọc', 56)}\n      <path class=\"d\" d=\"M 560,700 C 560,676 576,664 600,664 L 940,664 C 964,664 980,676 980,700 L 980,770 C 980,794 964,806 940,806 L 600,806 C 576,806 560,794 560,770 Z\"/>\n      ${text(770, 755, 'Xuất video ▶', 60, 'font-weight=\"700\"')}\n      <path class=\"d thin\" d=\"M 900,790 L 900,880 L 922,860 L 940,898 L 956,890 L 938,852 L 966,850 Z\"/>` },\n\n  { start: 21.2, end: 26.01, draw: [21.35, 24.2], svg: `\n      ${text(600, 400, 'MIỄN PHÍ!', 128, 'font-weight=\"700\"')}\n      <path class=\"d red\" d=\"M 300,440 C 460,470 700,420 900,450\"/>\n      <path class=\"d red thin\" d=\"M 230,330 C 240,240 520,226 770,236 C 960,244 1010,300 990,384 C 968,476 720,494 520,490 C 320,486 206,444 226,356\"/>\n      ${guy(230, 640, 'big', 'up')}\n      ${star(880, 220)}${star(980, 560, 18)}${star(420, 600, 16)}\n      ${text(680, 720, 'Lưu lại để dùng nha!', 62)}\n      <path class=\"d\" d=\"M 560,760 C 640,790 760,780 820,756\"/>` }\n];\n\n/* ---------- Bộ máy vẽ ---------- */\nconst NS = 'http://www.w3.org/2000/svg';\nconst root = document.getElementById('scenes'), defs = document.querySelector('defs');\nconst pen = document.getElementById('pen'), sub = document.getElementById('sub');\nconst clamp = v => Math.max(0, Math.min(1, v));\nconst ease = v => v < 0.5 ? 2 * v * v : 1 - Math.pow(-2 * v + 2, 2) / 2;\nlet clipN = 0;\nSCENES.forEach(s => {\n  const g = document.createElementNS(NS, 'g'); g.innerHTML = s.svg; root.appendChild(g); s.g = g;\n  s.items = [...g.querySelectorAll('.d, .f, .w')].map(el => {\n    if (el.classList.contains('d')) { const L = el.getTotalLength(); el.style.strokeDasharray = L + ' ' + (L + 10); return { el, type: 'd', L, wgt: Math.max(40, L) }; }\n    if (el.classList.contains('f')) return { el, type: 'f', wgt: 60 };\n    const cp = document.createElementNS(NS, 'clipPath'); cp.id = 'c' + clipN++;\n    const r = document.createElementNS(NS, 'rect'); r.setAttribute('width', 0); r.setAttribute('height', 0);\n    cp.appendChild(r); defs.appendChild(cp); el.setAttribute('clip-path', `url(#${cp.id})`);\n    return { el, type: 'w', clip: r, wgt: el.textContent.length * 38 };\n  });\n  const total = s.items.reduce((n, i) => n + i.wgt, 0), span = s.draw[1] - s.draw[0];\n  let acc = 0;\n  s.items.forEach(i => { i.t0 = s.draw[0] + acc / total * span; i.dur = i.wgt / total * span; acc += i.wgt; });\n});\nfunction toRoot(el, x, y) { const m = el.getCTM(); return { x: m.a * x + m.c * y + m.e, y: m.b * x + m.d * y + m.f }; }\n\nwindow.h2vSeek = function (t) {\n  let tip = null;\n  for (const s of SCENES) {\n    const on = t >= s.start && t < s.end;\n    s.g.style.display = on ? '' : 'none';\n    if (!on) continue;\n    s.g.style.opacity = clamp((s.end - t) / 0.35);\n    for (const i of s.items) {\n      const p = clamp((t - i.t0) / i.dur), e = i.type === 'd' ? ease(p) : p;\n      if (i.type === 'd') {\n        i.el.style.strokeDashoffset = i.L * (1 - e);\n        if (p > 0 && p < 1) { const q = i.el.getPointAtLength(i.L * e); tip = toRoot(i.el, q.x, q.y); }\n      } else if (i.type === 'f') {\n        i.el.style.opacity = p;\n      } else {\n        const b = i.el.getBBox();\n        i.clip.setAttribute('x', b.x - 12); i.clip.setAttribute('y', b.y - 30);\n        i.clip.setAttribute('height', b.height + 60); i.clip.setAttribute('width', (b.width + 24) * p);\n        if (p > 0 && p < 1) tip = toRoot(i.el, b.x + b.width * p, b.y + b.height * 0.75);\n      }\n    }\n    s.g.querySelectorAll('.wig').forEach(w => w.setAttribute('transform', `rotate(${Math.sin(t * 5) * 6} ${w.dataset.cx} ${w.dataset.cy})`));\n  }\n  pen.style.display = tip ? '' : 'none';\n  if (tip) pen.setAttribute('transform', `translate(${tip.x},${tip.y})`);\n  const line = SUBS.find(([a, b]) => t >= a && t < b);\n  sub.textContent = line ? line[2] : '';\n  sub.style.opacity = line ? clamp(Math.min((t - line[0]) / 0.2, (line[1] - t) / 0.2)) : 0;\n  const k = clamp(t / 0.5);\n  document.getElementById('hook').style.transform = `scale(${0.9 + 0.1 * k})`;\n  document.getElementById('hook').style.opacity = k;\n};\nwindow.h2vSeek(0);\n// Mở file trực tiếp trên trình duyệt (không qua tool) thì tự phát lặp lại\nif (!window.__h2v) { const t0 = performance.now(); const loop = n => { window.h2vSeek(((n - t0) / 1000) % 26); requestAnimationFrame(loop); }; requestAnimationFrame(loop); }\n<\/script>\n<\/body>\n<\/html>\n"}];
 const VOICES = [
   ['vi-VN-HoaiMyNeural', 'Tiếng Việt · Hoài My (nữ)'], ['vi-VN-NamMinhNeural', 'Tiếng Việt · Nam Minh (nam)'],
@@ -803,7 +863,7 @@ function readMeta(html) {
 }
 function composeDoc(withShim = true) {
   let html = S.code.html;
-  const shim = withShim ? '<script>' + SHIM + '<\/script>' : '';
+  const shim = (withShim ? '<script>' + SHIM + '<\/script>' : '') + charInject(html + '\n' + S.code.js);
   const css = S.code.css.trim() ? '<style>' + S.code.css + '</style>' : '';
   const js = S.code.js.trim() ? '<script>' + S.code.js + '<\/script>' : '';
   if (/<html[\s>]/i.test(html)) {
@@ -912,7 +972,7 @@ function stop() { P.playing = false; $('btnPlay').textContent = '▶'; stopAudio
 
 /* ---------------- Âm thanh ---------------- */
 let mixCache = null, mixDirty = true;
-function markAudioDirty() { mixDirty = true; }
+function markAudioDirty() { mixDirty = true; if (typeof scheduleLipsync === 'function') scheduleLipsync(); }
 function ac() { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 48000 }); return audioCtx; }
 
 async function ensureMusic(tr) {
@@ -1314,6 +1374,306 @@ async function exportVideo() {
   await go();
 }
 
+/* ---------------- Thư viện nhân vật tự vẽ ---------------- */
+const CHARS = { list: [], sel: null, anchorPose: null };
+const MOUTHS_SIMPLE = [['closed', 'Đóng', 'lúc im lặng'], ['half', 'Hé', 'nói nhỏ'], ['open', 'Mở', 'nói to']];
+const MOUTHS_FULL = [['A', 'A', 'm, b, p (môi khép)'], ['B', 'B', 'phần lớn phụ âm'], ['C', 'C', 'e, ê (mở vừa)'], ['D', 'D', 'a (mở to)'], ['E', 'E', 'o, ơ (tròn nhẹ)'],
+  ['F', 'F', 'u, ô (chu môi)'], ['G', 'G', 'ph, v (tuỳ chọn)'], ['H', 'H', 'l (tuỳ chọn)'], ['X', 'X', 'nghỉ (tuỳ chọn)']];
+const IDB = {
+  db: null,
+  open() {
+    if (this.db) return Promise.resolve(this.db);
+    return new Promise((res, rej) => { try { const r = indexedDB.open('h2v', 1); r.onupgradeneeded = () => r.result.createObjectStore('kv'); r.onsuccess = () => res(this.db = r.result); r.onerror = () => rej(r.error); } catch (e) { rej(e); } });
+  },
+  async get(k) { const db = await this.open(); return new Promise((res, rej) => { const r = db.transaction('kv').objectStore('kv').get(k); r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); }); },
+  async set(k, v) { const db = await this.open(); return new Promise((res, rej) => { const tx = db.transaction('kv', 'readwrite'); tx.objectStore('kv').put(v, k); tx.oncomplete = res; tx.onerror = () => rej(tx.error); }); }
+};
+async function loadChars() { try { CHARS.list = (await IDB.get('chars')) || []; } catch (e) { CHARS.list = []; } }
+let charSaveT = null;
+function saveChars() { clearTimeout(charSaveT); charSaveT = setTimeout(() => IDB.set('chars', CHARS.list).catch(e => toast('Không lưu được nhân vật: ' + e.message)), 300); }
+const slug = s => (s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/đ/g, 'd').replace(/Đ/g, 'D').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'nhan-vat';
+const safeJson = o => JSON.stringify(o).replace(/</g, '\\u003c');
+
+function readAsDataURL(f) { return new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(r.result); r.onerror = rej; r.readAsDataURL(f); }); }
+function loadImg(src) { return new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = () => rej(new Error('Không đọc được ảnh')); i.src = src; }); }
+/** Cắt bỏ viền trong suốt, thu nhỏ để nhẹ, giữ nền trong suốt. */
+async function prepImage(file, maxSide = 1000) {
+  const img = await loadImg(await readAsDataURL(file));
+  const c = document.createElement('canvas'); c.width = img.naturalWidth; c.height = img.naturalHeight;
+  const x = c.getContext('2d'); x.drawImage(img, 0, 0);
+  const d = x.getImageData(0, 0, c.width, c.height).data;
+  let x0 = c.width, y0 = c.height, x1 = -1, y1 = -1, opaque = 0;
+  for (let y = 0; y < c.height; y++) for (let i = 0; i < c.width; i++) {
+    const a = d[(y * c.width + i) * 4 + 3];
+    if (a > 10) { opaque++; if (i < x0) x0 = i; if (i > x1) x1 = i; if (y < y0) y0 = y; if (y > y1) y1 = y; }
+  }
+  if (x1 < 0) throw new Error('Ảnh trong suốt hoàn toàn');
+  const warnBg = opaque > c.width * c.height * 0.97;
+  const w = x1 - x0 + 1, h = y1 - y0 + 1, k = Math.min(1, maxSide / Math.max(w, h));
+  const o = document.createElement('canvas'); o.width = Math.round(w * k); o.height = Math.round(h * k);
+  const ox = o.getContext('2d'); ox.imageSmoothingQuality = 'high'; ox.drawImage(c, x0, y0, w, h, 0, 0, o.width, o.height);
+  return { src: o.toDataURL('image/png'), w: o.width, h: o.height, warnBg };
+}
+
+function charSummary(c) {
+  const full = MOUTHS_FULL.slice(0, 6).every(([k]) => c.mouths[k]), simple = MOUTHS_SIMPLE.some(([k]) => c.mouths[k]) || MOUTHS_FULL.some(([k]) => c.mouths[k]);
+  const anchored = c.poses.filter(p => p.mouth).length;
+  return { full, talk: simple && anchored > 0, anchored };
+}
+function charInject(src) {
+  if (!/H2V\.character\s*\(/.test(src)) return '';
+  const lib = {};
+  [...src.matchAll(/H2V\.character\(\s*['"`]([^'"`]+)['"`]/g)].forEach(m => {
+    const c = CHARS.list.find(c => c.id === m[1]); if (!c || lib[c.id]) return;
+    lib[c.id] = { poses: Object.fromEntries(c.poses.map(p => [p.name, { src: p.src, w: p.w, h: p.h, mouth: p.mouth || null }])), mouths: c.mouths };
+  });
+  return '<script>window.H2V_CHARS=' + safeJson(lib) + ';window.H2V_LIPSYNC=' + safeJson(LIP.data) + ';<\/script><script>' + CHAR_RT + '<\/script>';
+}
+const usesChars = () => /H2V\.character\s*\(/.test(S.code.html + S.code.js);
+
+/* ---- Dữ liệu nhép miệng từ các đoạn giọng đọc ---- */
+const LIP = { data: null, key: '', cueCache: new Map(), timer: null, rhubarb: false, running: null };
+function scheduleLipsync() { clearTimeout(LIP.timer); LIP.timer = setTimeout(() => updateLipsync(), 500); }
+async function updateLipsync() {
+  if (LIP.running) await LIP.running.catch(() => {});
+  LIP.running = (async () => {
+    const voices = S.tracks.filter(t => t.kind === 'tts' && t.buffer && !t.muted);
+    const key = voices.map(t => t.id + ':' + t.start + ':' + t.buffer.length + ':' + t.volume).join('|') + '|' + S.duration + '|' + LIP.rhubarb;
+    if (key === LIP.key) return;
+    LIP.key = key;
+    if (!voices.length) { LIP.data = null; if (usesChars()) reloadPreview(true); return; }
+    // Mức to/nhỏ của giọng theo từng 1/60 giây
+    const fps = 60, sr = 24000, len = Math.ceil(S.duration * sr);
+    const ctx = new OfflineAudioContext(1, Math.max(1, len), sr);
+    voices.forEach(t => { const s = ctx.createBufferSource(); s.buffer = t.buffer; s.connect(ctx.destination); s.start(t.start); });
+    const buf = (await ctx.startRendering()).getChannelData(0);
+    const hop = sr / fps, n = Math.ceil(S.duration * fps), raw = new Float32Array(n);
+    for (let i = 0; i < n; i++) { let sum = 0, a = Math.floor(i * hop), b = Math.min(buf.length, Math.floor((i + 1) * hop)); for (let j = a; j < b; j++) sum += buf[j] * buf[j]; raw[i] = Math.sqrt(sum / Math.max(1, b - a)); }
+    const sorted = Array.from(raw).filter(v => v > 0.003).sort((a, b) => a - b), ref = sorted[Math.floor(sorted.length * 0.95)] || 1;
+    const level = []; let v = 0;
+    for (let i = 0; i < n; i++) { const target = Math.min(1, raw[i] / ref); v = target > v ? v + (target - v) * 0.6 : v + (target - v) * 0.35; level.push(Math.round(v * 100) / 100); }
+    const data = { fps, level, cues: null };
+    // Chính xác hơn: Rhubarb (chỉ khi chạy bản app / máy chủ local có Rhubarb)
+    if (LIP.rhubarb) {
+      try {
+        const cues = [];
+        for (const t of voices) {
+          const ck = t.buffer.length + ':' + (t.text || t.name || '');
+          let c = LIP.cueCache.get(ck);
+          if (!c) {
+            const r = await fetch('/api/lipsync', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ wav: await blobToB64(wavEncode(t.buffer)) }) });
+            if (!r.ok) throw new Error(await r.text());
+            c = (await r.json()).cues; LIP.cueCache.set(ck, c);
+          }
+          c.forEach(([a, b, val]) => { if (val !== 'X') cues.push([+(a + t.start).toFixed(3), +(b + t.start).toFixed(3), val]); });
+        }
+        cues.sort((a, b) => a[0] - b[0]);
+        data.cues = cues;
+      } catch (e) { console.warn('Rhubarb lỗi, dùng nhép miệng đơn giản:', e); }
+    }
+    LIP.data = data;
+    if (usesChars()) reloadPreview(true);
+  })();
+  return LIP.running;
+}
+
+/* ---- Màn hình thư viện ---- */
+function openChars() { $('charModal').style.display = ''; if (!CHARS.sel && CHARS.list[0]) CHARS.sel = CHARS.list[0].id; renderCharList(); renderCharEditor(); }
+function closeChars() { $('charModal').style.display = 'none'; if (usesChars()) reloadPreview(true); }
+function curChar() { return CHARS.list.find(c => c.id === CHARS.sel) || null; }
+function renderCharList() {
+  $('chLipMode').textContent = LIP.rhubarb ? '👄 Nhép miệng: chính xác (Rhubarb) ✓' : '👄 Nhép miệng: theo độ lớn giọng' + (SERVER ? '' : ' (bản app có Rhubarb chính xác hơn)');
+  $('chList').innerHTML = CHARS.list.map(c => `<div class="ch-item ${c.id === CHARS.sel ? 'on' : ''}" data-id="${c.id}">
+      ${c.poses[0] ? `<img src="${c.poses[0].src}">` : '<div class="ch-thumb"></div>'}<div><div>${escapeHtml(c.name)}</div><small>${c.id}</small></div></div>`).join('')
+    + `<button class="btn" id="chNew">＋ Nhân vật mới</button>`;
+}
+function renderCharEditor() {
+  const c = curChar(), box = $('chEdit');
+  if (!c) {
+    box.innerHTML = `<div class="ai-empty" style="margin-top:60px">Chưa có nhân vật nào.<br><br>Bấm <b>＋ Nhân vật mới</b>, rồi kéo thả các ảnh PNG nền trong suốt của nhân vật (mỗi ảnh một tư thế: vui, buồn, chỉ tay…).<br>Vẽ thêm vài hình miệng nếu muốn nhân vật nhép miệng theo giọng đọc.</div>`;
+    return;
+  }
+  const sm = charSummary(c);
+  const slot = ([k, label, hint]) => `<div class="mslot ${c.mouths[k] ? 'has' : ''}" data-mouth="${k}" title="${hint}">${c.mouths[k] ? `<span class="x" data-mdel="${k}">✕</span>` : ''}<div class="mimg">${c.mouths[k] ? `<img src="${c.mouths[k]}">` : '＋'}</div><b>${label}</b>${hint}</div>`;
+  box.innerHTML = `
+    <div class="row2">
+      <label class="f">Tên nhân vật<input class="inp" id="chName" value="${escapeHtml(c.name)}"></label>
+      <label class="f">Tên dùng trong code / khi nhắn AI<input class="inp" value="${c.id}" disabled></label>
+    </div>
+    <label class="f" style="margin-top:10px">Mô tả cho AI (ngoại hình, tính cách, cách nói chuyện)
+      <textarea class="inp" id="chDesc" placeholder="Ví dụ: Mèo cam mập, đeo khăn đỏ, vui tính, hay pha trò">${escapeHtml(c.desc || '')}</textarea></label>
+    <h4>Tư thế (${c.poses.length}) <span class="sp" style="flex:1"></span><button class="btn" id="chAddPose">＋ Thêm ảnh tư thế</button></h4>
+    <div class="pose-grid">${c.poses.map((p, i) => `<div class="pose-card">
+        <div class="pimg"><img src="${p.src}"></div>
+        <input class="inp" data-pname="${i}" value="${escapeHtml(p.name)}" title="Tên tư thế (dùng trong code)">
+        <div class="row"><button class="btn" data-anchor="${i}">${p.mouth ? '👄 Sửa miệng' : '👄 Đặt miệng'}</button><button class="btn" data-pdel="${i}" title="Xoá tư thế">✕</button></div>
+      </div>`).join('')}</div>
+    <div class="dropzone" id="chDrop" style="margin-top:10px">Kéo thả ảnh PNG nền trong suốt vào đây. Mỗi ảnh là một tư thế, tên file thành tên tư thế.</div>
+    <h4>Hình miệng (để nhép theo giọng đọc)</h4>
+    <p class="note" style="margin-top:0">Vẽ miệng thành ảnh PNG riêng, cùng nét vẽ với nhân vật, có tô màu da để che miệng cũ. Rồi bấm <b>👄 Đặt miệng</b> trên từng tư thế để chỉ chỗ đặt.
+      Cách <b>đơn giản</b> cần 3 hình. Cách <b>chính xác</b> cần ít nhất 6 hình A–F, dùng với Rhubarb trong bản app.</p>
+    <div style="font-size:12px;color:var(--mute);margin:6px 0">Đơn giản (3 hình)</div>
+    <div class="mouth-grid">${MOUTHS_SIMPLE.map(slot).join('')}</div>
+    <div style="font-size:12px;color:var(--mute);margin:12px 0 6px">Chính xác (Rhubarb, 6–9 hình)</div>
+    <div class="mouth-grid">${MOUTHS_FULL.map(slot).join('')}</div>
+    <p class="note">${sm.talk ? `✓ Nhân vật sẽ nhép miệng ở ${sm.anchored} tư thế đã đặt miệng${sm.full ? ' (đủ bộ A–F)' : ''}.` : '⚠️ Chưa nhép miệng được: cần ít nhất một hình miệng và đặt vị trí miệng trên tư thế.'}</p>
+    <div class="addbar" style="margin-top:16px">
+      <button class="btn pri" id="chTry" ${c.poses.length ? '' : 'disabled'}>▶ Thử nhân vật trong video mẫu</button>
+      <button class="btn" id="chDel">🗑 Xoá nhân vật</button>
+    </div>`;
+  const dz = $('chDrop');
+  dz.onclick = () => $('chFilePoses').click();
+  dz.ondragover = e => { e.preventDefault(); dz.classList.add('over'); };
+  dz.ondragleave = () => dz.classList.remove('over');
+  dz.ondrop = e => { e.preventDefault(); dz.classList.remove('over'); addPoses([...e.dataTransfer.files]); };
+}
+async function addPoses(files) {
+  const c = curChar(); if (!c) return;
+  let n = 0, warn = false;
+  for (const f of files) {
+    if (!/^image\//.test(f.type)) continue;
+    try {
+      const im = await prepImage(f, 1000); warn = warn || im.warnBg;
+      let name = slug(f.name.replace(/\.[^.]+$/, '')); while (c.poses.some(p => p.name === name)) name += '-2';
+      c.poses.push({ name, src: im.src, w: im.w, h: im.h, mouth: null }); n++;
+    } catch (e) { toast(f.name + ': ' + e.message); }
+  }
+  saveChars(); renderCharList(); renderCharEditor();
+  if (n) toast(`Đã thêm ${n} tư thế` + (warn ? '. ⚠️ Có ảnh không có nền trong suốt, nên xuất PNG nền trong suốt.' : ''), warn ? 6000 : 2500);
+}
+let mouthTarget = null;
+function openAnchor(i) {
+  const c = curChar(), p = c.poses[i]; CHARS.anchorPose = i;
+  if (!p.mouth) p.mouth = { x: 0.5, y: 0.3, w: 0.18 };
+  $('anchorImg').src = p.src;
+  const ms = c.mouths.open || c.mouths.D || c.mouths.C || c.mouths.half || Object.values(c.mouths)[0];
+  $('anchorMouth').src = ms || 'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 50"><ellipse cx="50" cy="25" rx="46" ry="20" fill="#c0392b" stroke="#111" stroke-width="5"/></svg>');
+  $('anchorSize').value = p.mouth.w * 100; $('anchorSizeV').textContent = Math.round(p.mouth.w * 100) + '%';
+  $('anchorBox').style.display = '';
+  requestAnimationFrame(placeAnchor); setTimeout(placeAnchor, 100);
+}
+function placeAnchor() {
+  const c = curChar(), p = c && c.poses[CHARS.anchorPose]; if (!p || !p.mouth) return;
+  const img = $('anchorImg'), st = $('anchorStage').getBoundingClientRect(), r = img.getBoundingClientRect();
+  const m = $('anchorMouth');
+  m.style.width = (p.mouth.w * r.width) + 'px';
+  m.style.left = (r.left - st.left + p.mouth.x * r.width) + 'px';
+  m.style.top = (r.top - st.top + p.mouth.y * r.height) + 'px';
+}
+function demoCode(c) {
+  const poses = c.poses.map(p => p.name), step = 2.5, dur = Math.max(8, poses.length * step + 2);
+  const tl = poses.map((n, i) => `[${(i * step).toFixed(1)}, '${n}']`).join(', ');
+  return `<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="h2v" content="width=1080,height=1920,fps=30,duration=${dur}">
+<title>Thử nhân vật ${c.name}</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@800&display=swap">
+<style>
+  html, body { margin: 0; width: 100%; height: 100%; overflow: hidden; }
+  body { background: linear-gradient(180deg, #fff7e6, #ffe0b8); font-family: 'Be Vietnam Pro', sans-serif; }
+  h1 { position: absolute; top: 220px; left: 60px; right: 60px; text-align: center; font-size: 84px; margin: 0; color: #2d2d2d; }
+  .floor { position: absolute; left: 0; right: 0; top: 1500px; bottom: 0; background: #f4c27a; }
+</style>
+</head>
+<body>
+  <h1>Xin chào, mình là ${escapeHtml(c.name)}!</h1>
+  <div class="floor"></div>
+<script>
+  H2V.character('${c.id}', { x: 540, y: 1520, height: 820, poses: [${tl}], enter: 'pop', motion: 'breathe', talk: true });
+<\/script>
+<script type="application/json" id="h2v-audio">
+{"voice":"Kore","style":"vui vẻ, thân thiện","lines":[[0.6,"Xin chào các bạn, mình là ${c.name.replace(/"/g, '')}."],[3.6,"Đây là video thử nhân vật do chính bạn vẽ."]],"music":{"preset":"upbeat","volume":0.25},"fit":true}
+<\/script>
+</body>
+</html>`;
+}
+function initChars() {
+  loadChars().then(() => { renderCharList(); });
+  $('btnChars').onclick = openChars;
+  $('chClose').onclick = closeChars;
+  $('charModal').addEventListener('click', e => { if (e.target === $('charModal')) closeChars(); });
+  $('chList').onclick = e => {
+    if (e.target.id === 'chNew') {
+      let base = 'nhan-vat', id = base, k = 2; while (CHARS.list.some(c => c.id === id)) id = base + '-' + k++;
+      CHARS.list.push({ id, name: 'Nhân vật ' + (CHARS.list.length + 1), desc: '', poses: [], mouths: {} });
+      CHARS.sel = id; saveChars(); renderCharList(); renderCharEditor(); setTimeout(() => $('chName').select(), 0); return;
+    }
+    const it = e.target.closest('.ch-item'); if (it) { CHARS.sel = it.dataset.id; renderCharList(); renderCharEditor(); }
+  };
+  $('chEdit').addEventListener('change', e => {
+    const c = curChar(); if (!c) return;
+    if (e.target.id === 'chName') {
+      const name = e.target.value.trim() || c.name, newId = slug(name);
+      c.name = name;
+      if (newId !== c.id && !CHARS.list.some(o => o.id === newId)) { const old = c.id; c.id = newId; CHARS.sel = newId; if (S.code.html.includes(`'${old}'`)) toast(`Tên trong code đổi thành "${newId}". Code cũ dùng "${old}" cần sửa lại.`, 6000); }
+      saveChars(); renderCharList(); renderCharEditor();
+    }
+    if (e.target.id === 'chDesc') { c.desc = e.target.value; saveChars(); }
+    if (e.target.dataset.pname != null) {
+      const p = c.poses[+e.target.dataset.pname], v = slug(e.target.value);
+      if (!c.poses.some(o => o !== p && o.name === v)) p.name = v; saveChars(); renderCharEditor();
+    }
+  });
+  $('chEdit').addEventListener('click', e => {
+    const c = curChar(); if (!c) return;
+    const t = e.target.closest('[data-anchor],[data-pdel],[data-mouth],[data-mdel],#chAddPose,#chTry,#chDel'); if (!t) return;
+    if (t.dataset.mdel) { e.stopPropagation(); delete c.mouths[t.dataset.mdel]; saveChars(); renderCharEditor(); return; }
+    if (t.dataset.anchor != null) return openAnchor(+t.dataset.anchor);
+    if (t.dataset.pdel != null) { c.poses.splice(+t.dataset.pdel, 1); saveChars(); renderCharList(); renderCharEditor(); return; }
+    if (t.dataset.mouth) { mouthTarget = t.dataset.mouth; $('chFileMouth').click(); return; }
+    if (t.id === 'chAddPose') return $('chFilePoses').click();
+    if (t.id === 'chTry') { closeChars(); loadCode(demoCode(c)); toast('Đã nạp video thử nhân vật'); return; }
+    if (t.id === 'chDel') { if (t.dataset.sure) { CHARS.list = CHARS.list.filter(o => o !== c); CHARS.sel = CHARS.list[0] && CHARS.list[0].id; saveChars(); renderCharList(); renderCharEditor(); } else { t.dataset.sure = 1; t.textContent = 'Bấm lần nữa để xoá'; } }
+  });
+  $('chFilePoses').onchange = e => { const fs = [...e.target.files]; e.target.value = ''; addPoses(fs); };
+  $('chFileMouth').onchange = async e => {
+    const f = e.target.files[0], c = curChar(); e.target.value = '';
+    if (!f || !c || !mouthTarget) return;
+    try { c.mouths[mouthTarget] = (await prepImage(f, 400)).src; saveChars(); renderCharEditor(); } catch (err) { toast(err.message); }
+  };
+  $('anchorStage').onclick = e => {
+    const c = curChar(), p = c.poses[CHARS.anchorPose], r = $('anchorImg').getBoundingClientRect();
+    p.mouth.x = Math.max(0, Math.min(1, (e.clientX - r.left) / r.width)); p.mouth.y = Math.max(0, Math.min(1, (e.clientY - r.top) / r.height)); placeAnchor();
+  };
+  $('anchorSize').oninput = () => { const p = curChar().poses[CHARS.anchorPose]; p.mouth.w = +$('anchorSize').value / 100; $('anchorSizeV').textContent = Math.round(p.mouth.w * 100) + '%'; placeAnchor(); };
+  $('anchorDone').onclick = () => { $('anchorBox').style.display = 'none'; saveChars(); renderCharEditor(); };
+  $('anchorClear').onclick = () => { curChar().poses[CHARS.anchorPose].mouth = null; $('anchorBox').style.display = 'none'; saveChars(); renderCharEditor(); };
+  $('chExport').onclick = () => {
+    const c = curChar(); if (!c) return;
+    const blob = new Blob([JSON.stringify({ h2vCharacter: 1, ...c })], { type: 'application/json' });
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = c.id + '.h2v-char.json'; document.body.appendChild(a); a.click(); a.remove();
+  };
+  $('chImport').onclick = () => $('chFileImport').click();
+  $('chFileImport').onchange = async e => {
+    const f = e.target.files[0]; e.target.value = ''; if (!f) return;
+    try {
+      const o = JSON.parse(await f.text()); if (!o.h2vCharacter || !Array.isArray(o.poses)) throw new Error('File không phải nhân vật của app');
+      delete o.h2vCharacter; o.mouths = o.mouths || {};
+      let id = o.id || slug(o.name), k = 2; while (CHARS.list.some(c => c.id === id)) id = (o.id || slug(o.name)) + '-' + k++;
+      o.id = id; CHARS.list.push(o); CHARS.sel = id; saveChars(); renderCharList(); renderCharEditor(); toast('Đã nhập nhân vật ' + o.name);
+    } catch (err) { toast('Không nhập được: ' + err.message, 5000); }
+  };
+}
+function charsForAI() {
+  if (!CHARS.list.length) return '';
+  const lines = CHARS.list.filter(c => c.poses.length).map(c => {
+    const sm = charSummary(c);
+    return `- "${c.id}" (${c.name})${c.desc ? ': ' + c.desc : ''} | tư thế: ${c.poses.map(p => p.name).join(', ')} | nhép miệng: ${sm.talk ? 'có' : 'không'}`;
+  });
+  if (!lines.length) return '';
+  return `\n\nNHÂN VẬT TỰ VẼ CỦA NGƯỜI DÙNG (app tự chèn ảnh, chỉ cần gọi bằng tên):
+${lines.join('\n')}
+Khi người dùng nhắc tới nhân vật của họ (theo tên hoặc mô tả), dùng API này trong <script> (KHÔNG tự vẽ lại nhân vật bằng code):
+H2V.character('ten', { x: 540, y: 1500, height: 750, poses: [[0,'tu-the-1'],[5,'tu-the-2']], start: 0, end: 20, enter: 'pop', exit: 'fade', motion: 'breathe', move: [[0,540,1500],[8,300,1500]], flip: false, talk: true, z: 5 });
+- x, y là vị trí CHÂN nhân vật (giữa-dưới, px); height là chiều cao (gợi ý 600–900 ở khung 1080×1920).
+- poses: [giây, tên tư thế], chỉ dùng tên tư thế có trong danh sách; đổi tư thế khớp nội dung từng câu thoại.
+- enter/exit: pop | left | right | bottom | fade | none. motion: breathe | bounce | none. move: di chuyển theo [giây, x, y].
+- talk: true để miệng nhép theo giọng đọc; nhiều nhân vật cùng lúc thì dùng [[từ giây, đến giây], ...] cho đúng đoạn nhân vật đó nói.
+- Gọi H2V.character một lần cho mỗi nhân vật (không gọi trong h2vSeek).`;
+}
+
 /* ---------------- AI viết video (Gemini / ChatGPT) ---------------- */
 const AI_STYLES = [
   { id: 'whiteboard', name: '✏️ Bảng trắng vẽ tay', ex: '06-', guide: `PHONG CÁCH: hoạt hình bảng trắng vẽ tay (nền trắng, nét mực đen hiện dần theo đầu bút chì, người que có biểu cảm, chữ viết tay).
@@ -1461,7 +1821,7 @@ async function aiSend() {
   const editing = AI.editOpen || AI.versions.length > 0;
   const style = AI_STYLES.find(s => s.id === AI.style);
   const ex = EXAMPLES.find(e => e.file && e.file.startsWith(style.ex));
-  let system = AI_RULES + `\n\nKÍCH THƯỚC MẶC ĐỊNH: ${S.width}×${S.height} (nếu người dùng không nói khác; video dọc dùng 1080×1920, ngang 1920×1080).`;
+  let system = AI_RULES + `\n\nKÍCH THƯỚC MẶC ĐỊNH: ${S.width}×${S.height} (nếu người dùng không nói khác; video dọc dùng 1080×1920, ngang 1920×1080).` + charsForAI();
   let user;
   if (editing) {
     const prev = AI.log.filter(m => m.role === 'user').slice(-4).map(m => '- ' + m.text).join('\n');
@@ -1577,6 +1937,7 @@ async function pickAudioCodec() {
 }
 
 async function renderInBrowser() {
+  if (usesChars()) await updateLipsync();
   if (!('VideoEncoder' in window)) { setStatus('Trình duyệt này không hỗ trợ WebCodecs. Hãy dùng Chrome, Edge hoặc Safari 17+ mới nhất, hoặc dùng "Xuất HQ".', true); return; }
   const w = even(S.width), h = even(S.height), fps = S.fps, total = totalFrames();
   const bitrate = Math.round(w * h * fps * 0.12 * S.quality);
@@ -1644,6 +2005,7 @@ async function renderInBrowser() {
 
 /* ---------------- Xuất HQ qua máy chủ local ---------------- */
 async function renderOnServer() {
+  if (usesChars()) await updateLipsync();
   stop(); beginJob();
   try {
     setStatus('Đang chuẩn bị âm thanh…');
@@ -1725,6 +2087,7 @@ function init() {
 
   if (!restore() && EXAMPLES.length) { S.code = { html: EXAMPLES[0].html, css: '', js: '' }; applyMeta(S.code.html); }
   initAi();
+  initChars();
   setTab('ai'); syncSettingsUI(); renderTracks();
 
   document.querySelectorAll('.tab').forEach(b => b.onclick = () => setTab(b.dataset.tab));
@@ -1844,6 +2207,7 @@ async function detectServer() {
     if (!r.ok) return;
     const j = await r.json();
     SERVER = true; SERVER_PROXY = !!j.proxy;
+    if (j.rhubarb) { LIP.rhubarb = true; LIP.key = ''; scheduleLipsync(); }
     $('btnRenderHQ').classList.add('pri'); $('btnRender').classList.remove('pri'); $('btnRender').textContent = 'Xuất nhanh (trình duyệt)';
     $('btnRenderHQ').textContent = 'Xuất video (chất lượng cao)';
     $('srvBadge').textContent = j.app ? 'Bản ứng dụng ✓' : 'Máy chủ local ✓';

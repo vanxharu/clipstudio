@@ -5,6 +5,11 @@ const path = require('path');
 if (!app.requestSingleInstanceLock()) { app.quit(); }
 
 process.env.H2V_APP_VERSION = app.getVersion();
+// Rhubarb Lip Sync đóng gói kèm app (nếu có)
+try {
+  const rh = path.join(process.resourcesPath || '', 'rhubarb', process.platform === 'win32' ? 'rhubarb.exe' : 'rhubarb');
+  if (app.isPackaged && require('fs').existsSync(rh)) process.env.RHUBARB_PATH = rh;
+} catch (e) {}
 let win = null, server = null;
 
 function send(state) { if (win && !win.isDestroyed()) win.webContents.send('h2v-update', state); }

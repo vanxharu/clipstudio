@@ -88,3 +88,19 @@ Quy ước vẽ trong svg (khung 1080×1180, phụ đề nằm ở vùng y > 100
 - Mỗi cảnh dài 4–6 giây, vẽ xong trước khi hết cảnh ~1 giây. Ý tưởng hình minh hoạ đơn giản, dễ hiểu, giống video giải thích trên TikTok.
 Lời thoại nằm trong khối h2v-audio, không cần ghi riêng.
 ```
+
+## Dùng nhân vật bạn tự vẽ
+
+Trong app, bấm **🧑‍🎨 Nhân vật**, tạo nhân vật rồi kéo thả các ảnh PNG nền trong suốt, mỗi ảnh một tư thế. Thêm hình miệng và bấm **👄 Đặt miệng** nếu muốn nhân vật nhép theo giọng đọc.
+
+- Tab **🤖 AI viết video** trong app đã tự biết danh sách nhân vật. Chỉ cần nhắn, ví dụ "cho Mèo Cam giới thiệu…".
+- Nếu dùng ChatGPT bên ngoài, thêm đoạn này vào prompt (thay tên và tư thế cho đúng thư viện của bạn):
+
+```text
+Có nhân vật tự vẽ "meo-cam" với các tư thế: vui, chi-tay, buon. App tự chèn ảnh; trong <script> chỉ cần gọi:
+H2V.character('meo-cam', { x: 540, y: 1500, height: 750, poses: [[0,'vui'],[5,'chi-tay']], enter: 'pop', motion: 'breathe', talk: true });
+- x, y: vị trí CHÂN nhân vật (px); height: chiều cao; poses: [giây, tư thế] khớp lời thoại.
+- enter/exit: pop | left | right | bottom | fade; motion: breathe | bounce | none; move: [[giây, x, y], ...]; flip: true để lật.
+- talk: true để miệng nhép theo giọng đọc (nhiều nhân vật thì [[từ, đến], ...]).
+Không tự vẽ lại nhân vật bằng code.
+```

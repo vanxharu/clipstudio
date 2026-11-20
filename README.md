@@ -58,6 +58,18 @@ npm start
 - **Trong trình duyệt**: tool chụp DOM qua SVG rồi mã hoá bằng WebCodecs. Cách này nhanh và không cần cài gì. Hạn chế: một số thứ có thể hiển thị khác Chrome thật, như font từ trang khác không cho tải (CORS), `backdrop-filter`, iframe con hay ảnh bị chặn CORS. Canvas và WebGL thì được chụp trực tiếp nên luôn đúng. Trên Linux, Chrome thường không có bộ mã hoá AAC nên âm thanh sẽ là Opus (vẫn trong file MP4).
 - **HQ**: tool chụp ảnh màn hình bằng Chrome thật rồi mã hoá bằng FFmpeg (H.264 + AAC). Hình giống hệt khi mở trang trên Chrome và tương thích với mọi nền tảng.
 
+## Nhân vật bạn tự vẽ (🧑‍🎨 Nhân vật)
+
+1. Bấm **🧑‍🎨 Nhân vật** → **＋ Nhân vật mới**, đặt tên và mô tả (để AI hiểu nhân vật).
+2. Kéo thả các ảnh **PNG nền trong suốt**, mỗi ảnh một tư thế (vui, buồn, chỉ tay…). Tên file thành tên tư thế. App tự cắt viền trống và thu nhỏ ảnh.
+3. **Nhép miệng:** vẽ hình miệng thành PNG riêng (có tô màu da để che miệng gốc) rồi bấm **👄 Đặt miệng** trên từng tư thế để chỉ chỗ đặt và chỉnh cỡ.
+   - Đơn giản: 3 hình (đóng, hé, mở). Miệng mở theo độ lớn giọng.
+   - Chính xác: 6–9 hình A–F (G, H, X tuỳ chọn) theo chuẩn Rhubarb Lip Sync. Bản .exe có sẵn Rhubarb nên tự nhận âm tiết. Chạy từ mã nguồn thì đặt Rhubarb vào `vendor/rhubarb/`.
+4. Bấm **▶ Thử nhân vật trong video mẫu** để xem ngay. Hoặc nhắn tab AI, ví dụ "cho Mèo Cam giới thiệu quán cà phê". AI tự dùng đúng nhân vật và tư thế.
+5. **Xuất…/Nhập…** để mang nhân vật sang máy khác (file `.h2v-char.json`).
+
+Nhân vật được lưu trong app (IndexedDB) và dùng lại được cho mọi video. Trong code, nhân vật được gọi bằng `H2V.character('ten', {...})`, xem `PROMPT-cho-AI.md`.
+
 ## Giọng đọc ngay trên web (không cần cài gì)
 
 | Dịch vụ | Miễn phí | Tiếng Việt | Cần gì |

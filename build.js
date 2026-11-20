@@ -17,6 +17,7 @@ const libs = ['src/mp4mux.js', 'src/capture.js', 'src/music.js']
   .map(f => '<script>\n' + R(f).replace(/<\/script/gi, '<\\/script') + '\n</script>').join('\n');
 app = app.replace('<!--@@LIBS@@-->', () => libs)
   .replace('/*@@SHIM@@*/""', () => safe(R('src/timeshim.js')))
+  .replace('/*@@CHAR@@*/""', () => safe(R('src/character.js')))
   .replace('/*@@EXAMPLES@@*/[]', () => safe(examples));
 
 fs.mkdirSync(path.join(__dirname, 'public'), { recursive: true });

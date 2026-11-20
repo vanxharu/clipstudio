@@ -115,6 +115,44 @@
   code { font: 12px var(--mono); background: var(--bg); padding: 1px 5px; border-radius: 4px; }
   .upd { display: flex; align-items: center; gap: 10px; font-size: 13px; padding: 4px 6px 4px 12px; border-radius: 8px;
     background: color-mix(in srgb, var(--acc) 14%, transparent); border: 1px solid color-mix(in srgb, var(--acc) 40%, transparent); }
+  .modal { position: fixed; inset: 0; background: rgba(0,0,0,.6); z-index: 20; display: grid; place-items: center; }
+  .modal-box { width: min(1100px, 94vw); height: min(760px, 90vh); background: var(--panel); border: 1px solid var(--line); border-radius: 14px; display: flex; flex-direction: column; overflow: hidden; }
+  .modal-head { display: flex; align-items: center; gap: 8px; padding: 12px 16px; border-bottom: 1px solid var(--line); }
+  .modal-head b { font-size: 15px; }
+  .ch-lipmode { font-size: 12px; color: var(--mute); margin-left: 10px; }
+  .modal-body { flex: 1; display: grid; grid-template-columns: 220px 1fr; min-height: 0; }
+  .ch-list { border-right: 1px solid var(--line); overflow-y: auto; padding: 10px; display: flex; flex-direction: column; gap: 6px; }
+  .ch-item { display: flex; gap: 8px; align-items: center; padding: 6px; border-radius: 8px; cursor: pointer; border: 1px solid transparent; }
+  .ch-item.on { border-color: var(--acc); background: color-mix(in srgb, var(--acc) 10%, transparent); }
+  .ch-item img, .ch-thumb { width: 40px; height: 40px; object-fit: contain; background: repeating-conic-gradient(#2a2d36 0 25%, #22252d 0 50%) 0 0/10px 10px; border-radius: 6px; }
+  .ch-item small { display: block; color: var(--mute); font: 11px var(--mono); }
+  .ch-edit { overflow-y: auto; padding: 14px 18px 30px; }
+  .ch-edit h4 { margin: 18px 0 8px; font-size: 13px; color: var(--mute); text-transform: uppercase; letter-spacing: .5px; display: flex; gap: 8px; align-items: center; }
+  .ch-edit .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .ch-edit textarea { width: 100%; min-height: 54px; resize: vertical; }
+  .pose-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; }
+  .pose-card { border: 1px solid var(--line); border-radius: 10px; padding: 8px; display: flex; flex-direction: column; gap: 6px; background: var(--bg); }
+  .pose-card .pimg { height: 150px; display: grid; place-items: center; background: repeating-conic-gradient(#22252d 0 25%, #1b1d23 0 50%) 0 0/14px 14px; border-radius: 6px; position: relative; overflow: hidden; }
+  .pose-card .pimg img { width: 100%; height: 100%; object-fit: contain; }
+  .pose-card .row { display: flex; gap: 4px; }
+  .pose-card .row .btn { flex: 1; padding: 3px 6px; font-size: 12px; }
+  .pose-card input { width: 100%; padding: 4px 6px; font-size: 12px; }
+  .dropzone { border: 2px dashed var(--line); border-radius: 10px; padding: 16px; text-align: center; color: var(--mute); font-size: 13px; cursor: pointer; }
+  .dropzone.over { border-color: var(--acc); color: var(--text); }
+  .mouth-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(92px, 1fr)); gap: 8px; }
+  .mslot { border: 1px dashed var(--line); border-radius: 8px; padding: 6px; text-align: center; cursor: pointer; font-size: 11px; color: var(--mute); background: var(--bg); position: relative; }
+  .mslot.has { border-style: solid; color: var(--text); }
+  .mslot .mimg { height: 46px; display: grid; place-items: center; }
+  .mslot .mimg img { height: 46px; width: 100%; object-fit: contain; }
+  .mslot b { display: block; font-size: 13px; color: var(--acc2); }
+  .mslot .x { position: absolute; top: 2px; right: 4px; color: var(--mute); }
+  .anchor-box { position: absolute; inset: 0; background: rgba(0,0,0,.65); display: grid; place-items: center; }
+  .anchor-panel { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; width: min(720px, 92vw); }
+  .anchor-stage { position: relative; height: 60vh; display: grid; place-items: center; background: repeating-conic-gradient(#22252d 0 25%, #1b1d23 0 50%) 0 0/16px 16px; cursor: crosshair; overflow: hidden; }
+  .anchor-stage #anchorImg { max-height: 100%; max-width: 100%; }
+  .anchor-stage #anchorMouth { position: absolute; pointer-events: none; transform: translate(-50%, -50%); }
+  .anchor-ctl { display: flex; gap: 10px; align-items: center; padding: 10px 14px; font-size: 13px; }
+  .anchor-ctl .sp { flex: 1; }
   .kbd { font: 11px var(--mono); border: 1px solid var(--line); padding: 0 5px; border-radius: 4px; color: var(--mute); }
 </style>
 </head>
@@ -126,6 +164,7 @@
   <div class="sp"></div>
   <div id="updBar" class="upd" style="display:none"><span id="updText"></span><button class="btn pri" id="updBtn" style="display:none">Khởi động lại để cập nhật</button></div>
   <button class="btn" id="btnCheckUpd" style="display:none" title="Kiểm tra phiên bản mới">Kiểm tra cập nhật</button>
+  <button class="btn" id="btnChars" title="Thư viện nhân vật bạn tự vẽ">🧑‍🎨 Nhân vật</button>
   <button class="btn" id="btnOpen" title="Mở file .html từ máy">Mở file…</button>
   <input type="file" id="fileOpen" accept=".html,.htm,text/html" hidden>
 </header>
@@ -287,10 +326,31 @@
 </main>
 <div class="hidden-host" id="hiddenHost"></div>
 <div class="toast" id="toast"></div>
+<div class="modal" id="charModal" style="display:none">
+  <div class="modal-box">
+    <div class="modal-head"><b>🧑‍🎨 Nhân vật của bạn</b><span class="ch-lipmode" id="chLipMode"></span><span class="sp"></span>
+      <button class="btn" id="chImport" title="Nhập nhân vật từ file .json">Nhập…</button>
+      <button class="btn" id="chExport" title="Lưu nhân vật ra file .json để dùng ở máy khác">Xuất…</button>
+      <button class="btn icon" id="chClose">✕</button></div>
+    <div class="modal-body"><div class="ch-list" id="chList"></div><div class="ch-edit" id="chEdit"></div></div>
+  </div>
+  <div class="anchor-box" id="anchorBox" style="display:none">
+    <div class="anchor-panel">
+      <div class="modal-head"><b>👄 Đặt vị trí miệng</b><span class="sp"></span><span style="font-size:12px;color:var(--mute)">Bấm vào đúng chỗ miệng trên hình</span></div>
+      <div class="anchor-stage" id="anchorStage"><img id="anchorImg"><img id="anchorMouth"></div>
+      <div class="anchor-ctl">Cỡ miệng <input type="range" id="anchorSize" min="3" max="60" step="0.5"> <span id="anchorSizeV"></span>
+        <span class="sp"></span><button class="btn" id="anchorClear">Bỏ miệng</button><button class="btn pri" id="anchorDone">Xong</button></div>
+    </div>
+  </div>
+</div>
+<input type="file" id="chFilePoses" accept="image/png,image/webp,image/gif" multiple hidden>
+<input type="file" id="chFileMouth" accept="image/png,image/webp,image/gif" hidden>
+<input type="file" id="chFileImport" accept=".json,application/json" hidden>
 
 <!--@@LIBS@@-->
 <script>
 const SHIM = /*@@SHIM@@*/"";
+const CHAR_RT = /*@@CHAR@@*/"";
 const EXAMPLES = /*@@EXAMPLES@@*/[];
 const VOICES = [
   ['vi-VN-HoaiMyNeural', 'Tiếng Việt · Hoài My (nữ)'], ['vi-VN-NamMinhNeural', 'Tiếng Việt · Nam Minh (nam)'],
@@ -330,7 +390,7 @@ function readMeta(html) {
 }
 function composeDoc(withShim = true) {
   let html = S.code.html;
-  const shim = withShim ? '<script>' + SHIM + '<\/script>' : '';
+  const shim = (withShim ? '<script>' + SHIM + '<\/script>' : '') + charInject(html + '\n' + S.code.js);
   const css = S.code.css.trim() ? '<style>' + S.code.css + '</style>' : '';
   const js = S.code.js.trim() ? '<script>' + S.code.js + '<\/script>' : '';
   if (/<html[\s>]/i.test(html)) {
@@ -439,7 +499,7 @@ function stop() { P.playing = false; $('btnPlay').textContent = '▶'; stopAudio
 
 /* ---------------- Âm thanh ---------------- */
 let mixCache = null, mixDirty = true;
-function markAudioDirty() { mixDirty = true; }
+function markAudioDirty() { mixDirty = true; if (typeof scheduleLipsync === 'function') scheduleLipsync(); }
 function ac() { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 48000 }); return audioCtx; }
 
 async function ensureMusic(tr) {
@@ -841,6 +901,306 @@ async function exportVideo() {
   await go();
 }
 
+/* ---------------- Thư viện nhân vật tự vẽ ---------------- */
+const CHARS = { list: [], sel: null, anchorPose: null };
+const MOUTHS_SIMPLE = [['closed', 'Đóng', 'lúc im lặng'], ['half', 'Hé', 'nói nhỏ'], ['open', 'Mở', 'nói to']];
+const MOUTHS_FULL = [['A', 'A', 'm, b, p (môi khép)'], ['B', 'B', 'phần lớn phụ âm'], ['C', 'C', 'e, ê (mở vừa)'], ['D', 'D', 'a (mở to)'], ['E', 'E', 'o, ơ (tròn nhẹ)'],
+  ['F', 'F', 'u, ô (chu môi)'], ['G', 'G', 'ph, v (tuỳ chọn)'], ['H', 'H', 'l (tuỳ chọn)'], ['X', 'X', 'nghỉ (tuỳ chọn)']];
+const IDB = {
+  db: null,
+  open() {
+    if (this.db) return Promise.resolve(this.db);
+    return new Promise((res, rej) => { try { const r = indexedDB.open('h2v', 1); r.onupgradeneeded = () => r.result.createObjectStore('kv'); r.onsuccess = () => res(this.db = r.result); r.onerror = () => rej(r.error); } catch (e) { rej(e); } });
+  },
+  async get(k) { const db = await this.open(); return new Promise((res, rej) => { const r = db.transaction('kv').objectStore('kv').get(k); r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); }); },
+  async set(k, v) { const db = await this.open(); return new Promise((res, rej) => { const tx = db.transaction('kv', 'readwrite'); tx.objectStore('kv').put(v, k); tx.oncomplete = res; tx.onerror = () => rej(tx.error); }); }
+};
+async function loadChars() { try { CHARS.list = (await IDB.get('chars')) || []; } catch (e) { CHARS.list = []; } }
+let charSaveT = null;
+function saveChars() { clearTimeout(charSaveT); charSaveT = setTimeout(() => IDB.set('chars', CHARS.list).catch(e => toast('Không lưu được nhân vật: ' + e.message)), 300); }
+const slug = s => (s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/đ/g, 'd').replace(/Đ/g, 'D').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'nhan-vat';
+const safeJson = o => JSON.stringify(o).replace(/</g, '\\u003c');
+
+function readAsDataURL(f) { return new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(r.result); r.onerror = rej; r.readAsDataURL(f); }); }
+function loadImg(src) { return new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = () => rej(new Error('Không đọc được ảnh')); i.src = src; }); }
+/** Cắt bỏ viền trong suốt, thu nhỏ để nhẹ, giữ nền trong suốt. */
+async function prepImage(file, maxSide = 1000) {
+  const img = await loadImg(await readAsDataURL(file));
+  const c = document.createElement('canvas'); c.width = img.naturalWidth; c.height = img.naturalHeight;
+  const x = c.getContext('2d'); x.drawImage(img, 0, 0);
+  const d = x.getImageData(0, 0, c.width, c.height).data;
+  let x0 = c.width, y0 = c.height, x1 = -1, y1 = -1, opaque = 0;
+  for (let y = 0; y < c.height; y++) for (let i = 0; i < c.width; i++) {
+    const a = d[(y * c.width + i) * 4 + 3];
+    if (a > 10) { opaque++; if (i < x0) x0 = i; if (i > x1) x1 = i; if (y < y0) y0 = y; if (y > y1) y1 = y; }
+  }
+  if (x1 < 0) throw new Error('Ảnh trong suốt hoàn toàn');
+  const warnBg = opaque > c.width * c.height * 0.97;
+  const w = x1 - x0 + 1, h = y1 - y0 + 1, k = Math.min(1, maxSide / Math.max(w, h));
+  const o = document.createElement('canvas'); o.width = Math.round(w * k); o.height = Math.round(h * k);
+  const ox = o.getContext('2d'); ox.imageSmoothingQuality = 'high'; ox.drawImage(c, x0, y0, w, h, 0, 0, o.width, o.height);
+  return { src: o.toDataURL('image/png'), w: o.width, h: o.height, warnBg };
+}
+
+function charSummary(c) {
+  const full = MOUTHS_FULL.slice(0, 6).every(([k]) => c.mouths[k]), simple = MOUTHS_SIMPLE.some(([k]) => c.mouths[k]) || MOUTHS_FULL.some(([k]) => c.mouths[k]);
+  const anchored = c.poses.filter(p => p.mouth).length;
+  return { full, talk: simple && anchored > 0, anchored };
+}
+function charInject(src) {
+  if (!/H2V\.character\s*\(/.test(src)) return '';
+  const lib = {};
+  [...src.matchAll(/H2V\.character\(\s*['"`]([^'"`]+)['"`]/g)].forEach(m => {
+    const c = CHARS.list.find(c => c.id === m[1]); if (!c || lib[c.id]) return;
+    lib[c.id] = { poses: Object.fromEntries(c.poses.map(p => [p.name, { src: p.src, w: p.w, h: p.h, mouth: p.mouth || null }])), mouths: c.mouths };
+  });
+  return '<script>window.H2V_CHARS=' + safeJson(lib) + ';window.H2V_LIPSYNC=' + safeJson(LIP.data) + ';<\/script><script>' + CHAR_RT + '<\/script>';
+}
+const usesChars = () => /H2V\.character\s*\(/.test(S.code.html + S.code.js);
+
+/* ---- Dữ liệu nhép miệng từ các đoạn giọng đọc ---- */
+const LIP = { data: null, key: '', cueCache: new Map(), timer: null, rhubarb: false, running: null };
+function scheduleLipsync() { clearTimeout(LIP.timer); LIP.timer = setTimeout(() => updateLipsync(), 500); }
+async function updateLipsync() {
+  if (LIP.running) await LIP.running.catch(() => {});
+  LIP.running = (async () => {
+    const voices = S.tracks.filter(t => t.kind === 'tts' && t.buffer && !t.muted);
+    const key = voices.map(t => t.id + ':' + t.start + ':' + t.buffer.length + ':' + t.volume).join('|') + '|' + S.duration + '|' + LIP.rhubarb;
+    if (key === LIP.key) return;
+    LIP.key = key;
+    if (!voices.length) { LIP.data = null; if (usesChars()) reloadPreview(true); return; }
+    // Mức to/nhỏ của giọng theo từng 1/60 giây
+    const fps = 60, sr = 24000, len = Math.ceil(S.duration * sr);
+    const ctx = new OfflineAudioContext(1, Math.max(1, len), sr);
+    voices.forEach(t => { const s = ctx.createBufferSource(); s.buffer = t.buffer; s.connect(ctx.destination); s.start(t.start); });
+    const buf = (await ctx.startRendering()).getChannelData(0);
+    const hop = sr / fps, n = Math.ceil(S.duration * fps), raw = new Float32Array(n);
+    for (let i = 0; i < n; i++) { let sum = 0, a = Math.floor(i * hop), b = Math.min(buf.length, Math.floor((i + 1) * hop)); for (let j = a; j < b; j++) sum += buf[j] * buf[j]; raw[i] = Math.sqrt(sum / Math.max(1, b - a)); }
+    const sorted = Array.from(raw).filter(v => v > 0.003).sort((a, b) => a - b), ref = sorted[Math.floor(sorted.length * 0.95)] || 1;
+    const level = []; let v = 0;
+    for (let i = 0; i < n; i++) { const target = Math.min(1, raw[i] / ref); v = target > v ? v + (target - v) * 0.6 : v + (target - v) * 0.35; level.push(Math.round(v * 100) / 100); }
+    const data = { fps, level, cues: null };
+    // Chính xác hơn: Rhubarb (chỉ khi chạy bản app / máy chủ local có Rhubarb)
+    if (LIP.rhubarb) {
+      try {
+        const cues = [];
+        for (const t of voices) {
+          const ck = t.buffer.length + ':' + (t.text || t.name || '');
+          let c = LIP.cueCache.get(ck);
+          if (!c) {
+            const r = await fetch('/api/lipsync', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ wav: await blobToB64(wavEncode(t.buffer)) }) });
+            if (!r.ok) throw new Error(await r.text());
+            c = (await r.json()).cues; LIP.cueCache.set(ck, c);
+          }
+          c.forEach(([a, b, val]) => { if (val !== 'X') cues.push([+(a + t.start).toFixed(3), +(b + t.start).toFixed(3), val]); });
+        }
+        cues.sort((a, b) => a[0] - b[0]);
+        data.cues = cues;
+      } catch (e) { console.warn('Rhubarb lỗi, dùng nhép miệng đơn giản:', e); }
+    }
+    LIP.data = data;
+    if (usesChars()) reloadPreview(true);
+  })();
+  return LIP.running;
+}
+
+/* ---- Màn hình thư viện ---- */
+function openChars() { $('charModal').style.display = ''; if (!CHARS.sel && CHARS.list[0]) CHARS.sel = CHARS.list[0].id; renderCharList(); renderCharEditor(); }
+function closeChars() { $('charModal').style.display = 'none'; if (usesChars()) reloadPreview(true); }
+function curChar() { return CHARS.list.find(c => c.id === CHARS.sel) || null; }
+function renderCharList() {
+  $('chLipMode').textContent = LIP.rhubarb ? '👄 Nhép miệng: chính xác (Rhubarb) ✓' : '👄 Nhép miệng: theo độ lớn giọng' + (SERVER ? '' : ' (bản app có Rhubarb chính xác hơn)');
+  $('chList').innerHTML = CHARS.list.map(c => `<div class="ch-item ${c.id === CHARS.sel ? 'on' : ''}" data-id="${c.id}">
+      ${c.poses[0] ? `<img src="${c.poses[0].src}">` : '<div class="ch-thumb"></div>'}<div><div>${escapeHtml(c.name)}</div><small>${c.id}</small></div></div>`).join('')
+    + `<button class="btn" id="chNew">＋ Nhân vật mới</button>`;
+}
+function renderCharEditor() {
+  const c = curChar(), box = $('chEdit');
+  if (!c) {
+    box.innerHTML = `<div class="ai-empty" style="margin-top:60px">Chưa có nhân vật nào.<br><br>Bấm <b>＋ Nhân vật mới</b>, rồi kéo thả các ảnh PNG nền trong suốt của nhân vật (mỗi ảnh một tư thế: vui, buồn, chỉ tay…).<br>Vẽ thêm vài hình miệng nếu muốn nhân vật nhép miệng theo giọng đọc.</div>`;
+    return;
+  }
+  const sm = charSummary(c);
+  const slot = ([k, label, hint]) => `<div class="mslot ${c.mouths[k] ? 'has' : ''}" data-mouth="${k}" title="${hint}">${c.mouths[k] ? `<span class="x" data-mdel="${k}">✕</span>` : ''}<div class="mimg">${c.mouths[k] ? `<img src="${c.mouths[k]}">` : '＋'}</div><b>${label}</b>${hint}</div>`;
+  box.innerHTML = `
+    <div class="row2">
+      <label class="f">Tên nhân vật<input class="inp" id="chName" value="${escapeHtml(c.name)}"></label>
+      <label class="f">Tên dùng trong code / khi nhắn AI<input class="inp" value="${c.id}" disabled></label>
+    </div>
+    <label class="f" style="margin-top:10px">Mô tả cho AI (ngoại hình, tính cách, cách nói chuyện)
+      <textarea class="inp" id="chDesc" placeholder="Ví dụ: Mèo cam mập, đeo khăn đỏ, vui tính, hay pha trò">${escapeHtml(c.desc || '')}</textarea></label>
+    <h4>Tư thế (${c.poses.length}) <span class="sp" style="flex:1"></span><button class="btn" id="chAddPose">＋ Thêm ảnh tư thế</button></h4>
+    <div class="pose-grid">${c.poses.map((p, i) => `<div class="pose-card">
+        <div class="pimg"><img src="${p.src}"></div>
+        <input class="inp" data-pname="${i}" value="${escapeHtml(p.name)}" title="Tên tư thế (dùng trong code)">
+        <div class="row"><button class="btn" data-anchor="${i}">${p.mouth ? '👄 Sửa miệng' : '👄 Đặt miệng'}</button><button class="btn" data-pdel="${i}" title="Xoá tư thế">✕</button></div>
+      </div>`).join('')}</div>
+    <div class="dropzone" id="chDrop" style="margin-top:10px">Kéo thả ảnh PNG nền trong suốt vào đây. Mỗi ảnh là một tư thế, tên file thành tên tư thế.</div>
+    <h4>Hình miệng (để nhép theo giọng đọc)</h4>
+    <p class="note" style="margin-top:0">Vẽ miệng thành ảnh PNG riêng, cùng nét vẽ với nhân vật, có tô màu da để che miệng cũ. Rồi bấm <b>👄 Đặt miệng</b> trên từng tư thế để chỉ chỗ đặt.
+      Cách <b>đơn giản</b> cần 3 hình. Cách <b>chính xác</b> cần ít nhất 6 hình A–F, dùng với Rhubarb trong bản app.</p>
+    <div style="font-size:12px;color:var(--mute);margin:6px 0">Đơn giản (3 hình)</div>
+    <div class="mouth-grid">${MOUTHS_SIMPLE.map(slot).join('')}</div>
+    <div style="font-size:12px;color:var(--mute);margin:12px 0 6px">Chính xác (Rhubarb, 6–9 hình)</div>
+    <div class="mouth-grid">${MOUTHS_FULL.map(slot).join('')}</div>
+    <p class="note">${sm.talk ? `✓ Nhân vật sẽ nhép miệng ở ${sm.anchored} tư thế đã đặt miệng${sm.full ? ' (đủ bộ A–F)' : ''}.` : '⚠️ Chưa nhép miệng được: cần ít nhất một hình miệng và đặt vị trí miệng trên tư thế.'}</p>
+    <div class="addbar" style="margin-top:16px">
+      <button class="btn pri" id="chTry" ${c.poses.length ? '' : 'disabled'}>▶ Thử nhân vật trong video mẫu</button>
+      <button class="btn" id="chDel">🗑 Xoá nhân vật</button>
+    </div>`;
+  const dz = $('chDrop');
+  dz.onclick = () => $('chFilePoses').click();
+  dz.ondragover = e => { e.preventDefault(); dz.classList.add('over'); };
+  dz.ondragleave = () => dz.classList.remove('over');
+  dz.ondrop = e => { e.preventDefault(); dz.classList.remove('over'); addPoses([...e.dataTransfer.files]); };
+}
+async function addPoses(files) {
+  const c = curChar(); if (!c) return;
+  let n = 0, warn = false;
+  for (const f of files) {
+    if (!/^image\//.test(f.type)) continue;
+    try {
+      const im = await prepImage(f, 1000); warn = warn || im.warnBg;
+      let name = slug(f.name.replace(/\.[^.]+$/, '')); while (c.poses.some(p => p.name === name)) name += '-2';
+      c.poses.push({ name, src: im.src, w: im.w, h: im.h, mouth: null }); n++;
+    } catch (e) { toast(f.name + ': ' + e.message); }
+  }
+  saveChars(); renderCharList(); renderCharEditor();
+  if (n) toast(`Đã thêm ${n} tư thế` + (warn ? '. ⚠️ Có ảnh không có nền trong suốt, nên xuất PNG nền trong suốt.' : ''), warn ? 6000 : 2500);
+}
+let mouthTarget = null;
+function openAnchor(i) {
+  const c = curChar(), p = c.poses[i]; CHARS.anchorPose = i;
+  if (!p.mouth) p.mouth = { x: 0.5, y: 0.3, w: 0.18 };
+  $('anchorImg').src = p.src;
+  const ms = c.mouths.open || c.mouths.D || c.mouths.C || c.mouths.half || Object.values(c.mouths)[0];
+  $('anchorMouth').src = ms || 'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 50"><ellipse cx="50" cy="25" rx="46" ry="20" fill="#c0392b" stroke="#111" stroke-width="5"/></svg>');
+  $('anchorSize').value = p.mouth.w * 100; $('anchorSizeV').textContent = Math.round(p.mouth.w * 100) + '%';
+  $('anchorBox').style.display = '';
+  requestAnimationFrame(placeAnchor); setTimeout(placeAnchor, 100);
+}
+function placeAnchor() {
+  const c = curChar(), p = c && c.poses[CHARS.anchorPose]; if (!p || !p.mouth) return;
+  const img = $('anchorImg'), st = $('anchorStage').getBoundingClientRect(), r = img.getBoundingClientRect();
+  const m = $('anchorMouth');
+  m.style.width = (p.mouth.w * r.width) + 'px';
+  m.style.left = (r.left - st.left + p.mouth.x * r.width) + 'px';
+  m.style.top = (r.top - st.top + p.mouth.y * r.height) + 'px';
+}
+function demoCode(c) {
+  const poses = c.poses.map(p => p.name), step = 2.5, dur = Math.max(8, poses.length * step + 2);
+  const tl = poses.map((n, i) => `[${(i * step).toFixed(1)}, '${n}']`).join(', ');
+  return `<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="h2v" content="width=1080,height=1920,fps=30,duration=${dur}">
+<title>Thử nhân vật ${c.name}</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@800&display=swap">
+<style>
+  html, body { margin: 0; width: 100%; height: 100%; overflow: hidden; }
+  body { background: linear-gradient(180deg, #fff7e6, #ffe0b8); font-family: 'Be Vietnam Pro', sans-serif; }
+  h1 { position: absolute; top: 220px; left: 60px; right: 60px; text-align: center; font-size: 84px; margin: 0; color: #2d2d2d; }
+  .floor { position: absolute; left: 0; right: 0; top: 1500px; bottom: 0; background: #f4c27a; }
+</style>
+</head>
+<body>
+  <h1>Xin chào, mình là ${escapeHtml(c.name)}!</h1>
+  <div class="floor"></div>
+<script>
+  H2V.character('${c.id}', { x: 540, y: 1520, height: 820, poses: [${tl}], enter: 'pop', motion: 'breathe', talk: true });
+<\/script>
+<script type="application/json" id="h2v-audio">
+{"voice":"Kore","style":"vui vẻ, thân thiện","lines":[[0.6,"Xin chào các bạn, mình là ${c.name.replace(/"/g, '')}."],[3.6,"Đây là video thử nhân vật do chính bạn vẽ."]],"music":{"preset":"upbeat","volume":0.25},"fit":true}
+<\/script>
+</body>
+</html>`;
+}
+function initChars() {
+  loadChars().then(() => { renderCharList(); });
+  $('btnChars').onclick = openChars;
+  $('chClose').onclick = closeChars;
+  $('charModal').addEventListener('click', e => { if (e.target === $('charModal')) closeChars(); });
+  $('chList').onclick = e => {
+    if (e.target.id === 'chNew') {
+      let base = 'nhan-vat', id = base, k = 2; while (CHARS.list.some(c => c.id === id)) id = base + '-' + k++;
+      CHARS.list.push({ id, name: 'Nhân vật ' + (CHARS.list.length + 1), desc: '', poses: [], mouths: {} });
+      CHARS.sel = id; saveChars(); renderCharList(); renderCharEditor(); setTimeout(() => $('chName').select(), 0); return;
+    }
+    const it = e.target.closest('.ch-item'); if (it) { CHARS.sel = it.dataset.id; renderCharList(); renderCharEditor(); }
+  };
+  $('chEdit').addEventListener('change', e => {
+    const c = curChar(); if (!c) return;
+    if (e.target.id === 'chName') {
+      const name = e.target.value.trim() || c.name, newId = slug(name);
+      c.name = name;
+      if (newId !== c.id && !CHARS.list.some(o => o.id === newId)) { const old = c.id; c.id = newId; CHARS.sel = newId; if (S.code.html.includes(`'${old}'`)) toast(`Tên trong code đổi thành "${newId}". Code cũ dùng "${old}" cần sửa lại.`, 6000); }
+      saveChars(); renderCharList(); renderCharEditor();
+    }
+    if (e.target.id === 'chDesc') { c.desc = e.target.value; saveChars(); }
+    if (e.target.dataset.pname != null) {
+      const p = c.poses[+e.target.dataset.pname], v = slug(e.target.value);
+      if (!c.poses.some(o => o !== p && o.name === v)) p.name = v; saveChars(); renderCharEditor();
+    }
+  });
+  $('chEdit').addEventListener('click', e => {
+    const c = curChar(); if (!c) return;
+    const t = e.target.closest('[data-anchor],[data-pdel],[data-mouth],[data-mdel],#chAddPose,#chTry,#chDel'); if (!t) return;
+    if (t.dataset.mdel) { e.stopPropagation(); delete c.mouths[t.dataset.mdel]; saveChars(); renderCharEditor(); return; }
+    if (t.dataset.anchor != null) return openAnchor(+t.dataset.anchor);
+    if (t.dataset.pdel != null) { c.poses.splice(+t.dataset.pdel, 1); saveChars(); renderCharList(); renderCharEditor(); return; }
+    if (t.dataset.mouth) { mouthTarget = t.dataset.mouth; $('chFileMouth').click(); return; }
+    if (t.id === 'chAddPose') return $('chFilePoses').click();
+    if (t.id === 'chTry') { closeChars(); loadCode(demoCode(c)); toast('Đã nạp video thử nhân vật'); return; }
+    if (t.id === 'chDel') { if (t.dataset.sure) { CHARS.list = CHARS.list.filter(o => o !== c); CHARS.sel = CHARS.list[0] && CHARS.list[0].id; saveChars(); renderCharList(); renderCharEditor(); } else { t.dataset.sure = 1; t.textContent = 'Bấm lần nữa để xoá'; } }
+  });
+  $('chFilePoses').onchange = e => { const fs = [...e.target.files]; e.target.value = ''; addPoses(fs); };
+  $('chFileMouth').onchange = async e => {
+    const f = e.target.files[0], c = curChar(); e.target.value = '';
+    if (!f || !c || !mouthTarget) return;
+    try { c.mouths[mouthTarget] = (await prepImage(f, 400)).src; saveChars(); renderCharEditor(); } catch (err) { toast(err.message); }
+  };
+  $('anchorStage').onclick = e => {
+    const c = curChar(), p = c.poses[CHARS.anchorPose], r = $('anchorImg').getBoundingClientRect();
+    p.mouth.x = Math.max(0, Math.min(1, (e.clientX - r.left) / r.width)); p.mouth.y = Math.max(0, Math.min(1, (e.clientY - r.top) / r.height)); placeAnchor();
+  };
+  $('anchorSize').oninput = () => { const p = curChar().poses[CHARS.anchorPose]; p.mouth.w = +$('anchorSize').value / 100; $('anchorSizeV').textContent = Math.round(p.mouth.w * 100) + '%'; placeAnchor(); };
+  $('anchorDone').onclick = () => { $('anchorBox').style.display = 'none'; saveChars(); renderCharEditor(); };
+  $('anchorClear').onclick = () => { curChar().poses[CHARS.anchorPose].mouth = null; $('anchorBox').style.display = 'none'; saveChars(); renderCharEditor(); };
+  $('chExport').onclick = () => {
+    const c = curChar(); if (!c) return;
+    const blob = new Blob([JSON.stringify({ h2vCharacter: 1, ...c })], { type: 'application/json' });
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = c.id + '.h2v-char.json'; document.body.appendChild(a); a.click(); a.remove();
+  };
+  $('chImport').onclick = () => $('chFileImport').click();
+  $('chFileImport').onchange = async e => {
+    const f = e.target.files[0]; e.target.value = ''; if (!f) return;
+    try {
+      const o = JSON.parse(await f.text()); if (!o.h2vCharacter || !Array.isArray(o.poses)) throw new Error('File không phải nhân vật của app');
+      delete o.h2vCharacter; o.mouths = o.mouths || {};
+      let id = o.id || slug(o.name), k = 2; while (CHARS.list.some(c => c.id === id)) id = (o.id || slug(o.name)) + '-' + k++;
+      o.id = id; CHARS.list.push(o); CHARS.sel = id; saveChars(); renderCharList(); renderCharEditor(); toast('Đã nhập nhân vật ' + o.name);
+    } catch (err) { toast('Không nhập được: ' + err.message, 5000); }
+  };
+}
+function charsForAI() {
+  if (!CHARS.list.length) return '';
+  const lines = CHARS.list.filter(c => c.poses.length).map(c => {
+    const sm = charSummary(c);
+    return `- "${c.id}" (${c.name})${c.desc ? ': ' + c.desc : ''} | tư thế: ${c.poses.map(p => p.name).join(', ')} | nhép miệng: ${sm.talk ? 'có' : 'không'}`;
+  });
+  if (!lines.length) return '';
+  return `\n\nNHÂN VẬT TỰ VẼ CỦA NGƯỜI DÙNG (app tự chèn ảnh, chỉ cần gọi bằng tên):
+${lines.join('\n')}
+Khi người dùng nhắc tới nhân vật của họ (theo tên hoặc mô tả), dùng API này trong <script> (KHÔNG tự vẽ lại nhân vật bằng code):
+H2V.character('ten', { x: 540, y: 1500, height: 750, poses: [[0,'tu-the-1'],[5,'tu-the-2']], start: 0, end: 20, enter: 'pop', exit: 'fade', motion: 'breathe', move: [[0,540,1500],[8,300,1500]], flip: false, talk: true, z: 5 });
+- x, y là vị trí CHÂN nhân vật (giữa-dưới, px); height là chiều cao (gợi ý 600–900 ở khung 1080×1920).
+- poses: [giây, tên tư thế], chỉ dùng tên tư thế có trong danh sách; đổi tư thế khớp nội dung từng câu thoại.
+- enter/exit: pop | left | right | bottom | fade | none. motion: breathe | bounce | none. move: di chuyển theo [giây, x, y].
+- talk: true để miệng nhép theo giọng đọc; nhiều nhân vật cùng lúc thì dùng [[từ giây, đến giây], ...] cho đúng đoạn nhân vật đó nói.
+- Gọi H2V.character một lần cho mỗi nhân vật (không gọi trong h2vSeek).`;
+}
+
 /* ---------------- AI viết video (Gemini / ChatGPT) ---------------- */
 const AI_STYLES = [
   { id: 'whiteboard', name: '✏️ Bảng trắng vẽ tay', ex: '06-', guide: `PHONG CÁCH: hoạt hình bảng trắng vẽ tay (nền trắng, nét mực đen hiện dần theo đầu bút chì, người que có biểu cảm, chữ viết tay).
@@ -988,7 +1348,7 @@ async function aiSend() {
   const editing = AI.editOpen || AI.versions.length > 0;
   const style = AI_STYLES.find(s => s.id === AI.style);
   const ex = EXAMPLES.find(e => e.file && e.file.startsWith(style.ex));
-  let system = AI_RULES + `\n\nKÍCH THƯỚC MẶC ĐỊNH: ${S.width}×${S.height} (nếu người dùng không nói khác; video dọc dùng 1080×1920, ngang 1920×1080).`;
+  let system = AI_RULES + `\n\nKÍCH THƯỚC MẶC ĐỊNH: ${S.width}×${S.height} (nếu người dùng không nói khác; video dọc dùng 1080×1920, ngang 1920×1080).` + charsForAI();
   let user;
   if (editing) {
     const prev = AI.log.filter(m => m.role === 'user').slice(-4).map(m => '- ' + m.text).join('\n');
@@ -1104,6 +1464,7 @@ async function pickAudioCodec() {
 }
 
 async function renderInBrowser() {
+  if (usesChars()) await updateLipsync();
   if (!('VideoEncoder' in window)) { setStatus('Trình duyệt này không hỗ trợ WebCodecs. Hãy dùng Chrome, Edge hoặc Safari 17+ mới nhất, hoặc dùng "Xuất HQ".', true); return; }
   const w = even(S.width), h = even(S.height), fps = S.fps, total = totalFrames();
   const bitrate = Math.round(w * h * fps * 0.12 * S.quality);
@@ -1171,6 +1532,7 @@ async function renderInBrowser() {
 
 /* ---------------- Xuất HQ qua máy chủ local ---------------- */
 async function renderOnServer() {
+  if (usesChars()) await updateLipsync();
   stop(); beginJob();
   try {
     setStatus('Đang chuẩn bị âm thanh…');
@@ -1252,6 +1614,7 @@ function init() {
 
   if (!restore() && EXAMPLES.length) { S.code = { html: EXAMPLES[0].html, css: '', js: '' }; applyMeta(S.code.html); }
   initAi();
+  initChars();
   setTab('ai'); syncSettingsUI(); renderTracks();
 
   document.querySelectorAll('.tab').forEach(b => b.onclick = () => setTab(b.dataset.tab));
@@ -1371,6 +1734,7 @@ async function detectServer() {
     if (!r.ok) return;
     const j = await r.json();
     SERVER = true; SERVER_PROXY = !!j.proxy;
+    if (j.rhubarb) { LIP.rhubarb = true; LIP.key = ''; scheduleLipsync(); }
     $('btnRenderHQ').classList.add('pri'); $('btnRender').classList.remove('pri'); $('btnRender').textContent = 'Xuất nhanh (trình duyệt)';
     $('btnRenderHQ').textContent = 'Xuất video (chất lượng cao)';
     $('srvBadge').textContent = j.app ? 'Bản ứng dụng ✓' : 'Máy chủ local ✓';
