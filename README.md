@@ -58,6 +58,21 @@ npm start
 - **Trong trình duyệt**: tool chụp DOM qua SVG rồi mã hoá bằng WebCodecs. Cách này nhanh và không cần cài gì. Hạn chế: một số thứ có thể hiển thị khác Chrome thật, như font từ trang khác không cho tải (CORS), `backdrop-filter`, iframe con hay ảnh bị chặn CORS. Canvas và WebGL thì được chụp trực tiếp nên luôn đúng. Trên Linux, Chrome thường không có bộ mã hoá AAC nên âm thanh sẽ là Opus (vẫn trong file MP4).
 - **HQ**: tool chụp ảnh màn hình bằng Chrome thật rồi mã hoá bằng FFmpeg (H.264 + AAC). Hình giống hệt khi mở trang trên Chrome và tương thích với mọi nền tảng.
 
+## 📺 YouTube Studio
+
+Bấm **📺 YouTube Studio** trên thanh trên cùng. Thanh bên trái có các mục:
+
+- **🏠 Dự án:** mỗi video là một dự án, tự lưu trong app. Có thống kê lượt chạy AI, model và thời gian AI trung bình.
+- **📺 Phân tích:** dán link YouTube để lấy thông tin video (kênh, thời lượng, lượt xem, lượt thích, ngày đăng) và **lời thoại gốc** (văn bản / có mốc thời gian / SRT; copy, xuất TXT/SRT). App thử lấy phụ đề YouTube trước, không được thì **nhờ Gemini nghe video** (chỉ video công khai, tốn lượt miễn phí). Cũng có thể tự dán hoặc tải file .txt/.srt. Bấm **Phân tích kịch bản** để AI phân tích cấu trúc, hook, cảm xúc, cách cải thiện.
+- **✍️ Viết lại:** 5 chế độ (từ link YouTube, file tải lên, không viết lại, link tham khảo, ý tưởng), mức viết lại nhẹ/vừa/hoàn toàn, giữ ý chính/cảm xúc/CTA, ngôn ngữ, thời lượng, hướng dẫn thêm. Kết quả có 3 tab: **kịch bản mới**, **so sánh thay đổi** (đỏ/xanh) và **phụ đề SRT**.
+  **🎬 Dựng video từ kịch bản:** *video đầy đủ* (đọc hết kịch bản, phụ đề chạy đúng theo giọng thật, có thể có nhân vật dẫn chuyện) hoặc *video ngắn bằng AI* (≤ 60 giây).
+- **🏷️ SEO:** tiêu đề gợi ý có điểm SEO (chọn một để dùng cho thumbnail và mô tả), bảng từ khoá chính/phụ/dài, tag YouTube và báo cáo chi tiết.
+- **🖼️ Thumbnail:** 3 ý tưởng kèm prompt vẽ ảnh, có nút **Copy + mở ChatGPT/Gemini**.
+- **📄 Mô tả:** mô tả có chương theo mốc thời gian, 10 hashtag, bình luận ghim, bài đăng cộng đồng.
+- **⚙️ Cài đặt:** AI dùng cho Studio (Gemini/ChatGPT, model, key) và thông tin kênh (email, fanpage…).
+
+Đọc dữ liệu YouTube cần **bản app (.exe) hoặc `npm start`**, vì trình duyệt chặn đọc trực tiếp. Kịch bản dài cần nhiều lượt tạo giọng: Gemini miễn phí có giới hạn số lượt mỗi ngày, nên dùng Azure (500k ký tự/tháng) hoặc edge-tts.
+
 ## 📝 Tạo prompt cho ChatGPT / Gemini
 
 Tab **📝 Tạo prompt** bên trái tạo sẵn prompt cho 4 việc:

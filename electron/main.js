@@ -50,7 +50,10 @@ async function createWindow() {
 
   // Lưu video: hỏi nơi lưu, gợi ý thư mục Videos
   win.webContents.session.on('will-download', (e, item) => {
-    item.setSaveDialogOptions({ defaultPath: path.join(app.getPath('videos'), item.getFilename()), filters: [{ name: 'Video MP4', extensions: ['mp4'] }] });
+    const name = item.getFilename(), ext = (path.extname(name).slice(1) || '').toLowerCase();
+    const kinds = { mp4: ['Video MP4', 'videos'], srt: ['Phụ đề SRT', 'documents'], txt: ['Văn bản', 'documents'], json: ['JSON', 'documents'], md: ['Markdown', 'documents'] };
+    const k = kinds[ext] || ['Tệp', 'downloads'];
+    item.setSaveDialogOptions({ defaultPath: path.join(app.getPath(k[1]), name), filters: ext ? [{ name: k[0], extensions: [ext] }] : [] });
   });
 }
 

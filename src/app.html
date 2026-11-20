@@ -182,6 +182,7 @@
   <div class="sp"></div>
   <div id="updBar" class="upd" style="display:none"><span id="updText"></span><button class="btn pri" id="updBtn" style="display:none">Khởi động lại để cập nhật</button></div>
   <button class="btn" id="btnCheckUpd" style="display:none" title="Kiểm tra phiên bản mới">Kiểm tra cập nhật</button>
+  <button class="btn" id="btnStudio" title="Phân tích YouTube, viết lại kịch bản, SEO, thumbnail, mô tả">📺 YouTube Studio</button>
   <button class="btn" id="btnChars" title="Thư viện nhân vật bạn tự vẽ">🧑‍🎨 Nhân vật</button>
   <button class="btn" id="btnOpen" title="Mở file .html từ máy">Mở file…</button>
   <input type="file" id="fileOpen" accept=".html,.htm,text/html" hidden>
@@ -444,7 +445,7 @@ function readMeta(html) {
 }
 function composeDoc(withShim = true) {
   let html = S.code.html;
-  const shim = (withShim ? '<script>' + SHIM + '<\/script>' : '') + charInject(html + '\n' + S.code.js);
+  const shim = (withShim ? '<script>' + SHIM + '<\/script>' : '') + voiceInject(html + '\n' + S.code.js) + charInject(html + '\n' + S.code.js);
   const css = S.code.css.trim() ? '<style>' + S.code.css + '</style>' : '';
   const js = S.code.js.trim() ? '<script>' + S.code.js + '<\/script>' : '';
   if (/<html[\s>]/i.test(html)) {
@@ -844,7 +845,7 @@ function normSpec(raw) {
     const preset = H2VMusic.PRESETS[music.preset] ? music.preset : 'lofi';
     music = { preset, volume: music.volume ?? 0.3, seed: music.seed ?? 7 };
   } else music = null;
-  return { lines, voice: String(raw.voice || ''), style: String(raw.style || ''), rate: +raw.rate || 0, music, fit: raw.fit !== false, padEnd: raw.padEnd ?? 1 };
+  return { lines, voice: String(raw.voice || ''), style: String(raw.style || ''), rate: +raw.rate || 0, music, fit: raw.fit !== false, padEnd: raw.padEnd ?? 1, chain: !!raw.chain, gap: raw.gap ?? 0.35 };
 }
 function readAudioSpec(html) {
   const m = html.match(/<script[^>]*\bid\s*=\s*["']h2v-audio["'][^>]*>([\s\S]*?)<\/script>/i);
@@ -920,6 +921,7 @@ async function applyAudioSpec() {
         voiceCache.set(key, tr.buffer);
       }
       tr.name = ln.text.slice(0, 40) + (ln.text.length > 40 ? '…' : '');
+      if (spec.chain && made.length) { const pv = made[made.length - 1]; tr.start = +(pv.start + pv.buffer.duration + spec.gap).toFixed(3); }
       addTrack(tr); made.push(S.tracks[S.tracks.length - 1]);
     }
     // Cảnh báo câu đè lên nhau
@@ -927,8 +929,9 @@ async function applyAudioSpec() {
     made.forEach((t, i) => { const n = made[i + 1]; if (n && t.start + t.buffer.duration > n.start + 0.05) warn.push(`câu ${i + 1} dài ${t.buffer.duration.toFixed(1)}s, đè sang câu ${i + 2}`); });
     // Kéo dài video nếu giọng đọc dài hơn
     const end = Math.max(...made.map(t => t.start + t.buffer.duration));
-    if (spec.fit && end + spec.padEnd > S.duration) { S.duration = Math.ceil((end + spec.padEnd) * 2) / 2; syncSettingsUI(); updateTime(); save(); }
+    if (spec.fit && (end + spec.padEnd > S.duration || spec.chain)) { S.duration = Math.ceil((end + spec.padEnd) * 2) / 2; syncSettingsUI(); updateTime(); save(); }
     markAudioDirty(); renderTracks();
+    if (/H2V_VOICE/.test(S.code.html + S.code.js)) reloadPreview(true);
     setAuto(warn.length ? '⚠️ ' + warn.join('; ') + '. Hãy giãn mốc thời gian hoặc rút gọn câu.' : `✓ Đã tạo ${made.length} câu giọng đọc (đến giây ${end.toFixed(1)}). Bấm ▶ để nghe thử hoặc ▶ Xuất video.`, warn.length ? 'err' : 'ok');
   } catch (e) {
     setAuto('Lỗi tạo giọng đọc: ' + netHint(e), 'err', { voiceBtn: '↻ Thử lại', needKey: /key/i.test(e.message) });
@@ -1142,6 +1145,12 @@ function charInject(src) {
     lib[c.id] = { poses: Object.fromEntries(c.poses.map(p => [p.name, { src: p.src, w: p.w, h: p.h, mouth: p.mouth || null }])), mouths: c.mouths };
   });
   return '<script>window.H2V_CHARS=' + safeJson(lib) + ';window.H2V_LIPSYNC=' + safeJson(LIP.data) + ';<\/script><script>' + CHAR_RT + '<\/script>';
+}
+function voiceInject(src) {
+  if (!/H2V_VOICE/.test(src)) return '';
+  const times = S.tracks.filter(t => t.kind === 'tts' && t.buffer && !t.muted).sort((a, b) => a.start - b.start)
+    .map(t => [+t.start.toFixed(3), +(t.start + t.buffer.duration).toFixed(3), t.text || '']);
+  return '<script>window.H2V_VOICE=' + safeJson(times) + ';<\/script>';
 }
 const usesChars = () => /H2V\.character\s*\(/.test(S.code.html + S.code.js);
 
@@ -2046,6 +2055,8 @@ function init() {
   initAi();
   initChars();
   initPP();
+  H2VStudio.init();
+  $('btnStudio').onclick = () => H2VStudio.open();
   setTab('ai'); syncSettingsUI(); renderTracks();
 
   document.querySelectorAll('.tab').forEach(b => b.onclick = () => setTab(b.dataset.tab));
