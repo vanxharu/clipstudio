@@ -399,7 +399,10 @@
       <div class="modal-head"><b>👄 Đặt vị trí miệng</b><span class="sp"></span><span style="font-size:12px;color:var(--mute)">Bấm vào đúng chỗ miệng trên hình</span></div>
       <div class="anchor-stage" id="anchorStage"><img id="anchorImg"><img id="anchorMouth"></div>
       <div class="anchor-ctl">Cỡ miệng <input type="range" id="anchorSize" min="3" max="60" step="0.5"> <span id="anchorSizeV"></span>
-        <span class="sp"></span><button class="btn" id="anchorClear">Bỏ miệng</button><button class="btn pri" id="anchorDone">Xong</button></div>
+        <button class="btn" id="anchorAuto" title="App tự tìm miệng trên hình">✨ Tự tìm</button>
+        <span class="sp"></span><button class="btn" id="anchorClear">Bỏ miệng</button>
+        <button class="btn" id="anchorPrev">‹ Trước</button><span id="anchorPos" style="font-size:12px;color:var(--mute)"></span><button class="btn" id="anchorNext">Tiếp ›</button>
+        <button class="btn pri" id="anchorDone">Xong</button></div>
     </div>
   </div>
 </div>
@@ -2530,7 +2533,8 @@ async function sheetCommit() {
     added++;
   }
   saveChars(); $('sheetBox').style.display = 'none'; renderCharList(); renderCharEditor();
-  toast(`Đã thêm ${added} ${kind === 'poses' ? 'tư thế' : 'hình miệng'}` + (kind === 'poses' ? '. Nhớ bấm 👄 Đặt miệng trên từng tư thế nếu muốn nhép miệng.' : ''), 5000);
+  if (Object.keys(c.mouths).length) await autoMouths(c, false);
+  toast(`Đã thêm ${added} ${kind === 'poses' ? 'tư thế' : 'hình miệng'}` + (Object.keys(c.mouths).length ? '. App đã tự đặt chỗ miệng, bấm ▶ Thử nhân vật để xem.' : ''), 5000);
 }
 
 function charSummary(c) {
@@ -2634,13 +2638,14 @@ function renderCharEditor() {
       </div>`).join('')}</div>
     <div class="dropzone" id="chDrop" style="margin-top:10px">Kéo thả ảnh PNG nền trong suốt vào đây. Mỗi ảnh là một tư thế, tên file thành tên tư thế.</div>
     <h4>Hình miệng (để nhép theo giọng đọc) <span class="sp" style="flex:1"></span><button class="btn" data-sheet="mouth" title="Ảnh nhiều hình miệng xếp lưới do AI vẽ">📐 Nạp ảnh lưới miệng</button></h4>
-    <p class="note" style="margin-top:0">Vẽ miệng thành ảnh PNG riêng, cùng nét vẽ với nhân vật, có tô màu da để che miệng cũ. Rồi bấm <b>👄 Đặt miệng</b> trên từng tư thế để chỉ chỗ đặt.
+    <p class="note" style="margin-top:0">Vẽ miệng thành ảnh PNG riêng, cùng nét vẽ với nhân vật, có tô màu da để che miệng cũ. App tự đặt miệng lên từng tư thế; chỗ nào lệch thì bấm <b>👄 Sửa miệng</b>.
       Cách <b>đơn giản</b> cần 3 hình. Cách <b>chính xác</b> cần ít nhất 6 hình A–F, dùng với Rhubarb trong bản app.</p>
     <div style="font-size:12px;color:var(--mute);margin:6px 0">Đơn giản (3 hình)</div>
     <div class="mouth-grid">${MOUTHS_SIMPLE.map(slot).join('')}</div>
     <div style="font-size:12px;color:var(--mute);margin:12px 0 6px">Chính xác (Rhubarb, 6–9 hình)</div>
     <div class="mouth-grid">${MOUTHS_FULL.map(slot).join('')}</div>
-    <p class="note">${sm.talk ? `✓ Nhân vật sẽ nhép miệng ở ${sm.anchored} tư thế đã đặt miệng${sm.full ? ' (đủ bộ A–F)' : ''}.` : '⚠️ Chưa nhép miệng được: cần ít nhất một hình miệng và đặt vị trí miệng trên tư thế.'}</p>
+    <p class="note">${sm.talk ? `✓ Nhân vật sẽ nhép miệng ở ${sm.anchored}/${c.poses.length} tư thế${sm.full ? ' (đủ bộ A–F)' : ''}.` : Object.keys(c.mouths).length ? '⚠️ Chưa đặt chỗ miệng trên tư thế. Bấm nút bên dưới, app tự làm.' : '⚠️ Chưa có hình miệng: bấm 📐 Nạp ảnh lưới miệng, hoặc tạo ở tab 📝 Tạo prompt.'}</p>
+    ${c.poses.length && Object.keys(c.mouths).length ? `<div class="addbar"><button class="btn pri" id="chAutoMouth">✨ Tự đặt miệng cho mọi tư thế</button><span class="note" style="margin:0">App tự tìm khuôn mặt và miệng trên từng hình. Chỗ nào lệch thì bấm 👄 Sửa miệng.</span></div>` : ''}
     <div class="addbar" style="margin-top:16px">
       <button class="btn pri" id="chTry" ${c.poses.length ? '' : 'disabled'}>▶ Thử nhân vật trong video mẫu</button>
       <button class="btn" id="chDel">🗑 Xoá nhân vật</button>
@@ -2663,12 +2668,87 @@ async function addPoses(files) {
     } catch (e) { toast(f.name + ': ' + e.message); }
   }
   saveChars(); renderCharList(); renderCharEditor();
+  if (n && Object.keys(c.mouths).length) await autoMouths(c, false);
   if (n) toast(`Đã thêm ${n} tư thế` + (warn ? '. ⚠️ Có ảnh không có nền trong suốt, nên xuất PNG nền trong suốt.' : ''), warn ? 6000 : 2500);
 }
 let mouthTarget = null;
+/* ---- Tự tìm chỗ miệng: tìm vùng da lớn nhất ở nửa trên (mặt), rồi tìm nét tối/đỏ nằm gọn trong nửa dưới mặt (miệng cũ). ---- */
+async function detectMouth(src) {
+  const img = await loadImg(src), k = Math.min(1, 420 / Math.max(img.naturalWidth, img.naturalHeight));
+  const W = Math.max(1, Math.round(img.naturalWidth * k)), H = Math.max(1, Math.round(img.naturalHeight * k));
+  const cv = document.createElement('canvas'); cv.width = W; cv.height = H;
+  const x = cv.getContext('2d', { willReadFrequently: true }); x.drawImage(img, 0, 0, W, H);
+  const d = x.getImageData(0, 0, W, H).data, N = W * H;
+  const A = i => d[i * 4 + 3];
+  const isSkin = i => { const r = d[i * 4], g = d[i * 4 + 1], b = d[i * 4 + 2]; return A(i) > 200 && r >= 170 && g >= 110 && b >= 70 && r > g && g >= b - 10 && r - b >= 20 && r - b <= 150; };
+  let top = H; for (let i = 0; i < N; i++) if (A(i) > 128) { top = Math.floor(i / W); break; }
+  let bot = 0; for (let i = N - 1; i >= 0; i--) if (A(i) > 128) { bot = Math.floor(i / W); break; }
+  const yMax = Math.min(H, Math.round(top + (bot - top) * 0.6));
+  // vùng da liên thông lớn nhất trong 60% phía trên
+  const lab = new Int32Array(N); let best = null, id = 0;
+  for (let y0 = top; y0 < yMax; y0++) for (let x0 = 0; x0 < W; x0++) {
+    const s0 = y0 * W + x0; if (lab[s0] || !isSkin(s0)) continue;
+    id++; const st = [s0]; lab[s0] = id; let n = 0, bx0 = W, bx1 = 0, by0 = H, by1 = 0;
+    while (st.length) {
+      const q = st.pop(), qx = q % W, qy = (q - qx) / W; n++;
+      if (qx < bx0) bx0 = qx; if (qx > bx1) bx1 = qx; if (qy < by0) by0 = qy; if (qy > by1) by1 = qy;
+      for (const nb of [q - 1, q + 1, q - W, q + W]) {
+        if (nb < 0 || nb >= N || lab[nb]) continue; const nx = nb % W, ny = (nb - nx) / W;
+        if (Math.abs(nx - qx) > 1 || ny >= yMax) continue;
+        if (isSkin(nb)) { lab[nb] = id; st.push(nb); }
+      }
+    }
+    if (!best || n > best.n) best = { n, id, x0: bx0, x1: bx1, y0: by0, y1: by1 };
+  }
+  if (!best || best.n < N * 0.004) return null;
+  const fw = best.x1 - best.x0 + 1, fh = best.y1 - best.y0 + 1, face = i => lab[i] === best.id;
+  // nét tối/đỏ có da bao quanh 4 phía, ở nửa dưới mặt
+  const feat = new Uint8Array(N), ya = best.y0 + Math.round(fh * 0.5), yb = best.y1;
+  const enclosed = (px, py) => {
+    let l = 0, r = 0, u = 0, dn = 0;
+    for (let t = 1; t < fw * 0.6 && !(l && r); t++) { if (!l && px - t >= 0 && face(py * W + px - t)) l = 1; if (!r && px + t < W && face(py * W + px + t)) r = 1; }
+    for (let t = 1; t < fh * 0.5 && !(u && dn); t++) { if (!u && py - t >= 0 && face((py - t) * W + px)) u = 1; if (!dn && py + t < H && face((py + t) * W + px)) dn = 1; }
+    return l && r && u && dn;
+  };
+  for (let py = ya; py <= yb; py++) for (let px = best.x0; px <= best.x1; px++) {
+    const i = py * W + px; if (A(i) < 160 || face(i) || isSkin(i)) continue;
+    const r = d[i * 4], g = d[i * 4 + 1], b = d[i * 4 + 2], lum = 0.3 * r + 0.59 * g + 0.11 * b;
+    if ((lum < 120 || (r > 140 && g < 120 && b < 120) || (r > 200 && g > 200 && b > 200)) && enclosed(px, py)) feat[i] = 1;
+  }
+  // cụm nét lớn nhất = miệng cũ
+  let mb = null; const seen = new Uint8Array(N);
+  for (let i = 0; i < N; i++) {
+    if (!feat[i] || seen[i]) continue;
+    const st = [i]; seen[i] = 1; let n = 0, a0 = W, a1 = 0, b0 = H, b1 = 0;
+    while (st.length) {
+      const q = st.pop(), qx = q % W, qy = (q - qx) / W; n++;
+      if (qx < a0) a0 = qx; if (qx > a1) a1 = qx; if (qy < b0) b0 = qy; if (qy > b1) b1 = qy;
+      for (let dy = -2; dy <= 2; dy++) for (let dx = -2; dx <= 2; dx++) { const nb = q + dy * W + dx, nx = qx + dx; if (nx < 0 || nx >= W || nb < 0 || nb >= N || seen[nb] || !feat[nb]) continue; seen[nb] = 1; st.push(nb); }
+    }
+    const cyc = (b0 + b1) / 2;
+    const score = n * (cyc > best.y0 + fh * 0.58 ? 1.5 : 1);
+    if (n >= 4 && (!mb || score > mb.score)) mb = { score, a0, a1, b0, b1 };
+  }
+  let mx, my, mw;
+  if (mb && (mb.a1 - mb.a0) < fw * 0.7) { mx = (mb.a0 + mb.a1) / 2; my = (mb.b0 + mb.b1) / 2; mw = Math.max((mb.a1 - mb.a0 + 1) * 1.5, fw * 0.2); }
+  else { mx = (best.x0 + best.x1) / 2; my = best.y0 + fh * 0.72; mw = fw * 0.28; }
+  return { x: mx / W, y: my / H, w: Math.min(0.6, mw / W) };
+}
+/** Đặt miệng cho các tư thế (chưa có, hoặc tất cả khi force). Trả về số tư thế đã đặt. */
+async function autoMouths(c, force) {
+  let n = 0;
+  for (const p of c.poses) {
+    if (p.mouth && !force) continue;
+    try { const m = await detectMouth(p.src); if (m) { p.mouth = m; n++; } } catch (e) {}
+  }
+  if (n) { saveChars(); renderCharList(); if (curChar() === c) renderCharEditor(); }
+  return n;
+}
 function openAnchor(i) {
   const c = curChar(), p = c.poses[i]; CHARS.anchorPose = i;
-  if (!p.mouth) p.mouth = { x: 0.5, y: 0.3, w: 0.18 };
+  $('anchorPos').textContent = (i + 1) + '/' + c.poses.length;
+  $('anchorPrev').disabled = i === 0; $('anchorNext').textContent = i === c.poses.length - 1 ? 'Xong ✓' : 'Tiếp ›';
+  if (!p.mouth) { p.mouth = { x: 0.5, y: 0.3, w: 0.18 }; detectMouth(p.src).then(m => { if (m && CHARS.anchorPose === i) { p.mouth = m; $('anchorSize').value = m.w * 100; $('anchorSizeV').textContent = Math.round(m.w * 100) + '%'; placeAnchor(); } }).catch(() => {}); }
   $('anchorImg').src = p.src;
   const ms = c.mouths.open || c.mouths.D || c.mouths.C || c.mouths.half || Object.values(c.mouths)[0];
   $('anchorMouth').src = ms || 'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 50"><ellipse cx="50" cy="25" rx="46" ry="20" fill="#c0392b" stroke="#111" stroke-width="5"/></svg>');
@@ -2742,7 +2822,8 @@ function initChars() {
   });
   $('chEdit').addEventListener('click', e => {
     const c = curChar(); if (!c) return;
-    const t = e.target.closest('[data-anchor],[data-pdel],[data-mouth],[data-mdel],[data-sheet],#chAddPose,#chTry,#chDel'); if (!t) return;
+    const t = e.target.closest('[data-anchor],[data-pdel],[data-mouth],[data-mdel],[data-sheet],#chAddPose,#chTry,#chDel,#chAutoMouth'); if (!t) return;
+    if (t.id === 'chAutoMouth') { autoMouths(c, true).then(n => toast(n ? `✓ Đã đặt miệng cho ${n} tư thế. Bấm ▶ Thử nhân vật để xem.` : 'Không tìm được khuôn mặt, hãy bấm 👄 Đặt miệng trên từng tư thế.', 5000)); return; }
     if (t.dataset.sheet) { SHEET.want = t.dataset.sheet; $('chFileSheet').click(); return; }
     if (t.dataset.mdel) { e.stopPropagation(); delete c.mouths[t.dataset.mdel]; saveChars(); renderCharEditor(); return; }
     if (t.dataset.anchor != null) return openAnchor(+t.dataset.anchor);
@@ -2756,7 +2837,7 @@ function initChars() {
   $('chFileMouth').onchange = async e => {
     const f = e.target.files[0], c = curChar(); e.target.value = '';
     if (!f || !c || !mouthTarget) return;
-    try { c.mouths[mouthTarget] = (await prepImage(f, 400)).src; saveChars(); renderCharEditor(); } catch (err) { toast(err.message); }
+    try { c.mouths[mouthTarget] = (await prepImage(f, 400)).src; saveChars(); renderCharEditor(); autoMouths(c, false); } catch (err) { toast(err.message); }
   };
   $('anchorStage').onclick = e => {
     const c = curChar(), p = c.poses[CHARS.anchorPose], r = $('anchorImg').getBoundingClientRect();
@@ -2764,6 +2845,13 @@ function initChars() {
   };
   $('anchorSize').oninput = () => { const p = curChar().poses[CHARS.anchorPose]; p.mouth.w = +$('anchorSize').value / 100; $('anchorSizeV').textContent = Math.round(p.mouth.w * 100) + '%'; placeAnchor(); };
   $('anchorDone').onclick = () => { $('anchorBox').style.display = 'none'; saveChars(); renderCharEditor(); };
+  $('anchorPrev').onclick = () => { saveChars(); if (CHARS.anchorPose > 0) openAnchor(CHARS.anchorPose - 1); };
+  $('anchorNext').onclick = () => { saveChars(); const c = curChar(); if (CHARS.anchorPose < c.poses.length - 1) openAnchor(CHARS.anchorPose + 1); else $('anchorDone').click(); };
+  $('anchorAuto').onclick = async () => {
+    const p = curChar().poses[CHARS.anchorPose], m = await detectMouth(p.src).catch(() => null);
+    if (!m) { toast('Không tìm thấy khuôn mặt, hãy bấm vào chỗ miệng trên hình'); return; }
+    p.mouth = m; $('anchorSize').value = m.w * 100; $('anchorSizeV').textContent = Math.round(m.w * 100) + '%'; placeAnchor();
+  };
   $('anchorClear').onclick = () => { curChar().poses[CHARS.anchorPose].mouth = null; $('anchorBox').style.display = 'none'; saveChars(); renderCharEditor(); };
   $('chFileSheet').onchange = e => { const f = e.target.files[0]; e.target.value = ''; if (f) openSheet(f).catch(err => toast(err.message)); };
   $('sheetClose').onclick = () => { $('sheetBox').style.display = 'none'; };
