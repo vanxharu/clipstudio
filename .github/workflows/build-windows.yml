@@ -1,0 +1,65 @@
+# Tự build bộ cài Windows (.exe) và phát hành để app tự cập nhật.
+#
+# Cách 1 (dễ nhất): GitHub > Actions > "Build Windows app" > Run workflow > nhập phiên bản (vd 1.0.1) > Run
+#                   -> build + tạo Release v1.0.1 -> mọi app đã cài sẽ tự tải bản mới.
+#                   Để trống ô phiên bản -> chỉ build thử, tải file .exe ở mục Artifacts (không phát hành).
+# Cách 2: đẩy tag git dạng v1.0.1  (git tag v1.0.1 && git push origin v1.0.1)
+name: Build Windows app
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Phiên bản phát hành (vd 1.0.1). Để trống = chỉ build thử, không phát hành'
+        required: false
+        default: ''
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: windows-latest
+    env:
+      RELEASE_VERSION: ${{ startsWith(github.ref, 'refs/tags/v') && github.ref_name || inputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Đặt số phiên bản
+        if: env.RELEASE_VERSION != ''
+        shell: bash
+        run: |
+          V="${RELEASE_VERSION#v}"
+          if ! [[ "$V" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then echo "::error::Phiên bản phải có dạng 1.2.3 (nhận được: $V)"; exit 1; fi
+          npm version "$V" --no-git-tag-version --allow-same-version
+          echo "Phát hành phiên bản $V"
+
+      - name: Cài thư viện
+        run: npm install --no-audit --no-fund
+
+      - name: Ghép web app
+        run: node build.js
+
+      - name: Build & phát hành
+        if: env.RELEASE_VERSION != ''
+        run: npx electron-builder --win --publish always
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build thử (không phát hành)
+        if: env.RELEASE_VERSION == ''
+        run: npx electron-builder --win --publish never
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: HTML-Video-Studio-Windows
+          path: |
+            dist/*.exe
+            dist/latest.yml
+          if-no-files-found: error

@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="h2v" content="width=1920,height=1080,fps=30,duration=8">
+<title>Biểu đồ động</title>
+<style>
+  html, body { margin: 0; width: 100%; height: 100%; overflow: hidden; }
+  body { font-family: system-ui, 'Segoe UI', sans-serif; background: #0f172a; color: #e2e8f0; padding: 90px 120px; box-sizing: border-box; }
+  h1 { font-size: 64px; margin: 0 0 8px; }
+  .sub { font-size: 30px; color: #94a3b8; margin-bottom: 60px; }
+  .row { display: grid; grid-template-columns: 260px 1fr 180px; align-items: center; gap: 24px; height: 110px; }
+  .name { font-size: 36px; text-align: right; }
+  .track { height: 70px; }
+  .fill { height: 100%; border-radius: 0 14px 14px 0; width: 0; }
+  .val { font-size: 40px; font-weight: 700; font-variant-numeric: tabular-nums; }
+</style>
+</head>
+<body>
+  <h1>Doanh thu theo quý</h1>
+  <div class="sub">Đơn vị: tỷ đồng · dữ liệu minh hoạ</div>
+  <div id="chart"></div>
+<script>
+  const data = [
+    { name: 'Quý 1', v: 42, c: '#38bdf8' },
+    { name: 'Quý 2', v: 67, c: '#a78bfa' },
+    { name: 'Quý 3', v: 55, c: '#f472b6' },
+    { name: 'Quý 4', v: 91, c: '#facc15' },
+  ];
+  const max = 100;
+  const chart = document.getElementById('chart');
+  const rows = data.map(d => {
+    const r = document.createElement('div'); r.className = 'row';
+    r.innerHTML = `<div class="name">${d.name}</div><div class="track"><div class="fill" style="background:${d.c}"></div></div><div class="val">0</div>`;
+    chart.appendChild(r); return { d, fill: r.querySelector('.fill'), val: r.querySelector('.val') };
+  });
+  const easeOut = t => 1 - Math.pow(1 - Math.min(Math.max(t, 0), 1), 4);
+  // Cách khuyên dùng: viết hàm vẽ theo thời gian t (giây). Tool gọi window.h2vSeek(t) cho mỗi khung hình.
+  window.h2vSeek = function (t) {
+    rows.forEach((r, i) => {
+      const p = easeOut((t - 0.6 - i * 0.5) / 1.6);
+      r.fill.style.width = (r.d.v / max * 100 * p) + '%';
+      r.val.textContent = (r.d.v * p).toFixed(0);
+    });
+  };
+  window.h2vSeek(0);
+</script>
+</body>
+</html>

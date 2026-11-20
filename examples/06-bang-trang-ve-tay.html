@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="h2v" content="width=1080,height=1920,fps=30,duration=26">
+<title>Hoạt hình bảng trắng vẽ tay (9:16)</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@700;800&family=Patrick+Hand&display=swap">
+<style>
+  html, body { margin: 0; width: 100%; height: 100%; overflow: hidden; background: #0b0b0c; }
+  body { font-family: 'Be Vietnam Pro', system-ui, sans-serif; color: #fff; }
+  .band { position: absolute; left: 0; right: 0; text-align: center; font-weight: 800; line-height: 1.25; }
+  #hook { top: 150px; font-size: 62px; }
+  #cta { top: 1590px; font-size: 56px; }
+  #board { position: absolute; left: 0; top: 330px; width: 1080px; height: 1180px; background: #fbfbf8; display: block; }
+  #sub { position: absolute; left: 60px; right: 60px; top: 1375px; text-align: center; font: 50px/1.25 'Patrick Hand', 'Comic Sans MS', cursive; color: #111; }
+  .d { fill: none; stroke: #141414; stroke-width: 7; stroke-linecap: round; stroke-linejoin: round; }
+  .d.thin { stroke-width: 5; }
+  .d.red { stroke: #e63946; }
+  .f { fill: #141414; }
+  .w { font-family: 'Patrick Hand', 'Comic Sans MS', cursive; fill: #141414; text-anchor: middle; }
+</style>
+</head>
+<body>
+  <div class="band" id="hook">Biến code thành video<br>Không cần biết dựng phim</div>
+  <svg id="board" viewBox="0 0 1080 1180" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <filter id="rough" x="-5%" y="-5%" width="110%" height="110%">
+        <feTurbulence type="fractalNoise" baseFrequency="0.035" numOctaves="2" seed="4"/>
+        <feDisplacementMap in="SourceGraphic" scale="3.5"/>
+      </filter>
+    </defs>
+    <g id="scenes" filter="url(#rough)"></g>
+    <g id="pen" style="display:none">
+      <path d="M0,0 L16,-6 L128,-118 L110,-136 L-2,-24 Z" fill="#f4c542" stroke="#141414" stroke-width="4" stroke-linejoin="round"/>
+      <path d="M0,0 L16,-6 L-2,-24 Z" fill="#f2d3a7" stroke="#141414" stroke-width="3" stroke-linejoin="round"/>
+      <path d="M0,0 L5,-2 L-1,-7 Z" fill="#141414"/>
+      <path d="M110,-136 L128,-118 L140,-130 L122,-148 Z" fill="#f08a9b" stroke="#141414" stroke-width="4" stroke-linejoin="round"/>
+    </g>
+  </svg>
+  <div id="sub"></div>
+  <div class="band" id="cta">Lưu lại để dùng nha 👇<br><span style="font-weight:700;font-size:44px;opacity:.75">Theo dõi để xem thêm mẹo</span></div>
+
+<script>
+/* ===== LỜI THOẠI (dán vào ô Giọng đọc TTS, đặt "Bắt đầu" theo mốc) =====
+  [0.3s]  Muốn làm video mà không biết dựng phim?
+  [5.4s]  Chỉ cần viết vài dòng HTML, CSS và JS.
+  [10.5s] Tool sẽ chụp từng khung hình, rồi ghép lại thành video.
+  [16.4s] Thêm nhạc nền, giọng đọc, bấm xuất là xong.
+  [21.4s] Hoàn toàn miễn phí. Lưu lại để dùng nha!
+  Nhạc nền gợi ý: Lo-fi chill, âm lượng ~0.3
+========================================================================== */
+const SUBS = [
+  [0.3, 5.0, 'Muốn làm video mà không biết dựng phim?'],
+  [5.4, 10.1, 'Chỉ cần viết vài dòng HTML, CSS và JS.'],
+  [10.5, 16.0, 'Tool sẽ chụp từng khung hình, rồi ghép lại thành video.'],
+  [16.4, 21.0, 'Thêm nhạc nền, giọng đọc, bấm xuất là xong.'],
+  [21.4, 26, 'Hoàn toàn miễn phí. Lưu lại để dùng nha!']
+];
+
+/* ---------- Nhân vật người que ---------- */
+const MOUTH = {
+  happy: '<path class="d" d="M -26,20 Q 0,46 26,20"/>',
+  big: '<path class="d" d="M -32,14 Q 0,64 32,14 Q 0,26 -32,14"/>',
+  worried: '<path class="d" d="M -22,34 Q -11,24 0,32 Q 11,40 22,30"/>'
+};
+const BROW = {
+  happy: '', big: '',
+  worried: '<path class="d thin" d="M -36,-26 L -14,-36"/><path class="d thin" d="M 36,-26 L 14,-36"/>'
+};
+const ARMS = {
+  down: 'M 0,100 L -52,190|M 0,100 L 52,190',
+  point: 'M 0,100 L -50,188|M 0,100 L 72,64 L 118,52',
+  scratch: 'M 0,100 L -50,188|M 0,100 L 66,58 L 52,-34',
+  up: 'M 0,100 L -56,184|M 0,100 L 62,36 L 84,-34',
+  wave: 'M 0,100 L -66,30 L -84,-40|M 0,100 L 62,36 L 84,-34'
+};
+function guy(x, y, mood = 'happy', arms = 'down', s = 1) {
+  const a = ARMS[arms].split('|');
+  const end = p => p.trim().split(' ').slice(-1)[0].split(',').map(Number);
+  const hands = a.map(p => { const [hx, hy] = end(p); return `<circle class="d" cx="${hx}" cy="${hy}" r="11"/>`; }).join('');
+  return `<g transform="translate(${x},${y}) scale(${s})">
+    <path class="d" d="M -2,-62 C 36,-64 64,-34 62,2 C 60,38 32,62 -2,62 C -38,62 -64,34 -62,-2 C -60,-38 -34,-60 6,-61"/>
+    ${BROW[mood]}
+    <ellipse class="f" cx="-22" cy="-6" rx="9" ry="13"/><ellipse class="f" cx="22" cy="-6" rx="9" ry="13"/>
+    ${MOUTH[mood]}
+    <path class="d" d="M 0,62 C 3,120 -3,170 0,232"/>
+    <path class="d" d="${a[0]}"/><path class="d" d="${a[1]}"/>${hands}
+    <path class="d" d="M 0,232 L -42,340 L -66,342"/><path class="d" d="M 0,232 L 42,340 L 66,342"/>
+  </g>`;
+}
+const star = (x, y, r = 22) => `<path class="d thin" d="M ${x},${y - r} Q ${x + 4},${y - 4} ${x + r},${y} Q ${x + 4},${y + 4} ${x},${y + r} Q ${x - 4},${y + 4} ${x - r},${y} Q ${x - 4},${y - 4} ${x},${y - r}"/>`;
+const text = (x, y, s, size = 60, extra = '') => `<text class="w" x="${x}" y="${y}" font-size="${size}" ${extra}>${s}</text>`;
+
+/* ---------- Các cảnh ---------- */
+const SCENES = [
+  { start: 0, end: 5.2, draw: [0.15, 3.8], svg: `
+      <path class="d" d="M 90,760 L 990,760"/>
+      ${guy(260, 420, 'worried', 'scratch')}
+      <g class="wig" data-cx="390" data-cy="300">
+        <path class="d" d="M 352,250 C 350,186 446,184 446,246 C 446,296 398,298 398,346"/>
+        <circle class="f" cx="398" cy="384" r="10"/>
+      </g>
+      <path class="d" d="M 470,560 L 960,560"/><path class="d" d="M 500,560 L 500,760"/><path class="d" d="M 930,560 L 930,760"/>
+      <circle class="d" cx="620" cy="500" r="56"/><circle class="d thin" cx="620" cy="500" r="12"/>
+      <circle class="d thin" cx="620" cy="466" r="10"/><circle class="d thin" cx="592" cy="518" r="10"/><circle class="d thin" cx="648" cy="518" r="10"/>
+      <circle class="d" cx="760" cy="500" r="56"/><circle class="d thin" cx="760" cy="500" r="12"/>
+      <circle class="d thin" cx="760" cy="466" r="10"/><circle class="d thin" cx="732" cy="518" r="10"/><circle class="d thin" cx="788" cy="518" r="10"/>
+      <path class="d thin" d="M 800,540 C 860,600 780,640 860,680 C 930,712 840,740 900,756"/>
+      ${text(720, 880, 'Không biết làm…', 64)}` },
+
+  { start: 5.2, end: 10.3, draw: [5.35, 9.0], svg: `
+      <path class="d" d="M 90,760 L 990,760"/>
+      ${guy(220, 420, 'happy', 'point')}
+      <path class="d" d="M 470,320 L 910,320 L 910,600 L 470,600 Z"/>
+      <path class="d" d="M 430,600 L 950,600 L 990,650 L 390,650 Z"/>
+      <path class="d" d="M 400,650 L 400,760"/><path class="d" d="M 980,650 L 980,760"/>
+      <path class="d red" d="M 600,410 L 548,460 L 600,510"/>
+      <path class="d red" d="M 712,392 L 670,528"/>
+      <path class="d red" d="M 782,410 L 834,460 L 782,510"/>
+      ${star(950, 270)}${star(420, 260, 16)}
+      ${text(690, 880, 'HTML · CSS · JS', 72)}` },
+
+  { start: 10.3, end: 16.2, draw: [10.45, 14.6], svg: `
+      ${text(540, 250, 'Chụp từng khung hình', 66)}
+      <path class="d" d="M 90,300 L 990,300 L 990,520 L 90,520 Z"/>
+      <path class="d thin" d="M 130,316 h20 v18 h-20 z M 330,316 h20 v18 h-20 z M 530,316 h20 v18 h-20 z M 730,316 h20 v18 h-20 z M 930,316 h20 v18 h-20 z"/>
+      <path class="d thin" d="M 130,486 h20 v18 h-20 z M 330,486 h20 v18 h-20 z M 530,486 h20 v18 h-20 z M 730,486 h20 v18 h-20 z M 930,486 h20 v18 h-20 z"/>
+      <path class="d" d="M 140,350 L 370,350 L 370,470 L 140,470 Z"/>
+      <circle class="d thin" cx="255" cy="410" r="28"/><path class="d thin" d="M 255,362 v-6 M 255,458 v6 M 207,410 h-6 M 303,410 h6 M 222,377 l-5,-5 M 288,443 l5,5 M 288,377 l5,-5 M 222,443 l-5,5"/>
+      <path class="d" d="M 425,350 L 655,350 L 655,470 L 425,470 Z"/>
+      ${star(540, 410, 40)}
+      <path class="d" d="M 710,350 L 940,350 L 940,470 L 710,470 Z"/>
+      <path class="d red" d="M 825,450 C 760,410 780,365 825,392 C 870,365 890,410 825,450"/>
+      <path class="d" d="M 540,540 C 530,610 600,620 600,690"/><path class="d" d="M 574,664 L 600,694 L 626,664"/>
+      <path class="d" d="M 520,720 L 640,720 L 690,770 L 690,960 L 520,960 Z"/><path class="d thin" d="M 640,720 L 640,770 L 690,770"/>
+      ${text(605, 880, 'MP4', 60, 'font-weight="700"')}
+      ${guy(860, 700, 'big', 'up', 0.62)}` },
+
+  { start: 16.2, end: 21.2, draw: [16.35, 19.8], svg: `
+      <path class="d" d="M 90,760 L 520,760"/>
+      ${guy(270, 420, 'big', 'wave')}
+      <path class="d" d="M 640,290 L 640,170 L 740,146 L 740,266"/><path class="d" d="M 640,190 L 740,166"/>
+      <ellipse class="f" cx="622" cy="292" rx="22" ry="16" transform="rotate(-20 622 292)"/>
+      <ellipse class="f" cx="722" cy="268" rx="22" ry="16" transform="rotate(-20 722 268)"/>
+      ${text(860, 250, 'Nhạc nền', 56)}
+      <path class="d" d="M 640,410 C 640,370 700,370 700,410 L 700,490 C 700,530 640,530 640,490 Z"/>
+      <path class="d thin" d="M 640,440 h60 M 640,465 h60"/>
+      <path class="d" d="M 618,470 C 618,560 722,560 722,470"/><path class="d" d="M 670,546 L 670,600 M 630,600 L 710,600"/>
+      ${text(860, 480, 'Giọng đọc', 56)}
+      <path class="d" d="M 560,700 C 560,676 576,664 600,664 L 940,664 C 964,664 980,676 980,700 L 980,770 C 980,794 964,806 940,806 L 600,806 C 576,806 560,794 560,770 Z"/>
+      ${text(770, 755, 'Xuất video ▶', 60, 'font-weight="700"')}
+      <path class="d thin" d="M 900,790 L 900,880 L 922,860 L 940,898 L 956,890 L 938,852 L 966,850 Z"/>` },
+
+  { start: 21.2, end: 26.01, draw: [21.35, 24.2], svg: `
+      ${text(600, 400, 'MIỄN PHÍ!', 128, 'font-weight="700"')}
+      <path class="d red" d="M 300,440 C 460,470 700,420 900,450"/>
+      <path class="d red thin" d="M 230,330 C 240,240 520,226 770,236 C 960,244 1010,300 990,384 C 968,476 720,494 520,490 C 320,486 206,444 226,356"/>
+      ${guy(230, 640, 'big', 'up')}
+      ${star(880, 220)}${star(980, 560, 18)}${star(420, 600, 16)}
+      ${text(680, 720, 'Lưu lại để dùng nha!', 62)}
+      <path class="d" d="M 560,760 C 640,790 760,780 820,756"/>` }
+];
+
+/* ---------- Bộ máy vẽ ---------- */
+const NS = 'http://www.w3.org/2000/svg';
+const root = document.getElementById('scenes'), defs = document.querySelector('defs');
+const pen = document.getElementById('pen'), sub = document.getElementById('sub');
+const clamp = v => Math.max(0, Math.min(1, v));
+const ease = v => v < 0.5 ? 2 * v * v : 1 - Math.pow(-2 * v + 2, 2) / 2;
+let clipN = 0;
+SCENES.forEach(s => {
+  const g = document.createElementNS(NS, 'g'); g.innerHTML = s.svg; root.appendChild(g); s.g = g;
+  s.items = [...g.querySelectorAll('.d, .f, .w')].map(el => {
+    if (el.classList.contains('d')) { const L = el.getTotalLength(); el.style.strokeDasharray = L + ' ' + (L + 10); return { el, type: 'd', L, wgt: Math.max(40, L) }; }
+    if (el.classList.contains('f')) return { el, type: 'f', wgt: 60 };
+    const cp = document.createElementNS(NS, 'clipPath'); cp.id = 'c' + clipN++;
+    const r = document.createElementNS(NS, 'rect'); r.setAttribute('width', 0); r.setAttribute('height', 0);
+    cp.appendChild(r); defs.appendChild(cp); el.setAttribute('clip-path', `url(#${cp.id})`);
+    return { el, type: 'w', clip: r, wgt: el.textContent.length * 38 };
+  });
+  const total = s.items.reduce((n, i) => n + i.wgt, 0), span = s.draw[1] - s.draw[0];
+  let acc = 0;
+  s.items.forEach(i => { i.t0 = s.draw[0] + acc / total * span; i.dur = i.wgt / total * span; acc += i.wgt; });
+});
+function toRoot(el, x, y) { const m = el.getCTM(); return { x: m.a * x + m.c * y + m.e, y: m.b * x + m.d * y + m.f }; }
+
+window.h2vSeek = function (t) {
+  let tip = null;
+  for (const s of SCENES) {
+    const on = t >= s.start && t < s.end;
+    s.g.style.display = on ? '' : 'none';
+    if (!on) continue;
+    s.g.style.opacity = clamp((s.end - t) / 0.35);
+    for (const i of s.items) {
+      const p = clamp((t - i.t0) / i.dur), e = i.type === 'd' ? ease(p) : p;
+      if (i.type === 'd') {
+        i.el.style.strokeDashoffset = i.L * (1 - e);
+        if (p > 0 && p < 1) { const q = i.el.getPointAtLength(i.L * e); tip = toRoot(i.el, q.x, q.y); }
+      } else if (i.type === 'f') {
+        i.el.style.opacity = p;
+      } else {
+        const b = i.el.getBBox();
+        i.clip.setAttribute('x', b.x - 12); i.clip.setAttribute('y', b.y - 30);
+        i.clip.setAttribute('height', b.height + 60); i.clip.setAttribute('width', (b.width + 24) * p);
+        if (p > 0 && p < 1) tip = toRoot(i.el, b.x + b.width * p, b.y + b.height * 0.75);
+      }
+    }
+    s.g.querySelectorAll('.wig').forEach(w => w.setAttribute('transform', `rotate(${Math.sin(t * 5) * 6} ${w.dataset.cx} ${w.dataset.cy})`));
+  }
+  pen.style.display = tip ? '' : 'none';
+  if (tip) pen.setAttribute('transform', `translate(${tip.x},${tip.y})`);
+  const line = SUBS.find(([a, b]) => t >= a && t < b);
+  sub.textContent = line ? line[2] : '';
+  sub.style.opacity = line ? clamp(Math.min((t - line[0]) / 0.2, (line[1] - t) / 0.2)) : 0;
+  const k = clamp(t / 0.5);
+  document.getElementById('hook').style.transform = `scale(${0.9 + 0.1 * k})`;
+  document.getElementById('hook').style.opacity = k;
+};
+window.h2vSeek(0);
+// Mở file trực tiếp trên trình duyệt (không qua tool) thì tự phát lặp lại
+if (!window.__h2v) { const t0 = performance.now(); const loop = n => { window.h2vSeek(((n - t0) / 1000) % 26); requestAnimationFrame(loop); }; requestAnimationFrame(loop); }
+</script>
+</body>
+</html>
