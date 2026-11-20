@@ -1585,15 +1585,19 @@ const LANGS = [
 const VOICES = LANGS.flatMap(([c, n, f, m]) => [[`${c}-${f}Neural`, `${n} · ${f} (nữ)`], [`${c}-${m}Neural`, `${n} · ${m} (nam)`]]);
 /** Đoán ngôn ngữ từ chữ viết. */
 function detectLang(text) {
-  const t = String(text || '');
-  if (/[ăâđêôơưạảấầẩẫậắằẳẵặẹẻẽếềểễệỉịọỏốồổỗộớờởỡợụủứừửữựỳỵỷỹ]/i.test(t)) return 'vi-VN';
-  if (/[぀-ヿ]/.test(t)) return 'ja-JP';
-  if (/[가-힯]/.test(t)) return 'ko-KR';
-  if (/[一-鿿]/.test(t)) return 'zh-CN';
-  if (/[฀-๿]/.test(t)) return 'th-TH';
-  if (/[Ѐ-ӿ]/.test(t)) return 'ru-RU';
-  if (/[ऀ-ॿ]/.test(t)) return 'hi-IN';
-  if (/[؀-ۿ]/.test(t)) return 'ar-SA';
+  const t = String(text || '').normalize('NFC');
+  // Đếm ký tự theo hệ chữ, hệ nào nhiều nhất thì chọn (vài tên riêng tiếng Nhật trong câu tiếng Việt không làm sai)
+  const n = re => (t.match(re) || []).length;
+  const scripts = [
+    ['vi-VN', n(/[ăâđêôơưạảấầẩẫậắằẳẵặẹẻẽếềểễệỉịọỏốồổỗộớờởỡợụủứừửữựỳỵỷỹáàãéèíìóòõúùýĂÂĐÊÔƠƯÁÀẢÃẠÉÈẺẼẸÍÌỈĨỊÓÒỎÕỌÚÙỦŨỤÝỲỶỸỴ]/g) * 3],
+    ['ja-JP', n(/[\u3040-\u30ff]/g) * 2], ['ko-KR', n(/[\uac00-\ud7af]/g) * 2], ['zh-CN', n(/[\u4e00-\u9fff]/g)],
+    ['th-TH', n(/[\u0e00-\u0e7f]/g)], ['ru-RU', n(/[\u0400-\u04ff]/g)], ['hi-IN', n(/[\u0900-\u097f]/g)], ['ar-SA', n(/[\u0600-\u06ff]/g)]
+  ].sort((a, b) => b[1] - a[1]);
+  if (scripts[0][1] >= 3) {
+    // Chữ Hán có kèm kana thì là tiếng Nhật
+    if (scripts[0][0] === 'zh-CN' && n(/[\u3040-\u30ff]/g) > 0) return 'ja-JP';
+    return scripts[0][0];
+  }
   const w = ' ' + t.toLowerCase().replace(/[^a-zà-ÿğışçöü\s]/g, ' ') + ' ', score = (re) => (w.match(re) || []).length;
   const c = { 'en-US': score(/ (the|and|you|is|to|of|this|that|with) /g), 'fr-FR': score(/ (le|la|les|et|vous|est|des|une|pour) /g), 'es-ES': score(/ (el|los|las|y|que|es|una|para|con) /g),
     'de-DE': score(/ (der|die|das|und|ist|nicht|ein|mit|sie) /g), 'pt-BR': score(/ (o|os|as|você|não|uma|para|com|é) /g), 'it-IT': score(/ (il|gli|che|è|una|per|non|sono) /g),
@@ -2099,10 +2103,17 @@ function readAudioSpec(html) {
       try { raw = Function('"use strict";return (' + txt + ')')(); }
       catch (e2) { return { error: 'Khối h2v-audio viết sai định dạng: ' + e.message }; }
     }
-    return normSpec(raw || {});
+    const sp = normSpec(raw || {}); const hl = html.match(/<html[^>]*\blang\s*=\s*["']([a-zA-Z-]+)/i); if (hl) sp.htmlLang = hl[1]; return sp;
   }
   const timed = parseScript(html).filter(l => l.start != null);
   return timed.length ? normSpec({ lines: timed.map(l => [l.start, l.text]) }) : null;
+}
+/** Ngôn ngữ lời thoại: đoán theo chữ; chữ Latin không rõ thì tin thuộc tính <html lang>. */
+function langFromText(spec) {
+  const txt = (spec.lines || []).map(x => x.text).join(' '), det = detectLang(txt);
+  const hl = spec.htmlLang && LANGS.find(l => l[0].slice(0, 2) === spec.htmlLang.toLowerCase().slice(0, 2));
+  const strong = det === 'vi-VN' || /[^\u0000-\u024f]/.test(txt);
+  return hl && !strong ? hl[0] : det;
 }
 const GEMINI_MALE = /^(puck|charon|fenrir|orus|enceladus|iapetus|umbriel|algieba|algenib|rasalgethi|alnilam|schedar|achird|zubenelgenubi|sadachbia|sadaltager)$/i;
 function resolveVoice(spec) {
@@ -2112,7 +2123,7 @@ function resolveVoice(spec) {
   const male = /^(nam|male|man|boy)\b/.test(v) || (g && GEMINI_MALE.test(g[0])) || (a && VOICES.some(x => x[0] === a[0] && /\(nam\)/.test(x[1])));
   // Ngôn ngữ: "lang" trong khối h2v-audio, hoặc theo mã giọng Azure, hoặc đoán từ lời thoại
   const lang = (spec.lang && LANGS.find(l => l[0].toLowerCase() === spec.lang.toLowerCase() || l[0].slice(0, 2) === spec.lang.toLowerCase().slice(0, 2))) ||
-    (a && LANGS.find(l => a[0].startsWith(l[0]))) || LANGS.find(l => l[0] === detectLang((spec.lines || []).map(x => x.text).join(' '))) || LANGS[0];
+    (a && LANGS.find(l => a[0].startsWith(l[0]))) || LANGS.find(l => l[0] === langFromText(spec)) || LANGS[0];
   const voice = a && a[0].startsWith(lang[0]) ? a[0] : `${lang[0]}-${male ? lang[3] : lang[2]}Neural`;
   return { gvoice: g ? g[0] : (male ? 'Charon' : 'Kore'), voice, lang: lang[0], gender: male ? 'male' : 'female' };
 }
@@ -2162,7 +2173,8 @@ async function applyAudioSpec() {
     const skip = new Set();
     for (;;) {
       const P = ttsChain().find(p => !skip.has(p));
-      if (!P) throw new Error(ttsNotReady() || 'Mọi dịch vụ giọng đọc đều đã hết lượt. Chọn Piper (bản app) hoặc nhập key Azure.');
+      if (!P) throw new Error((switched ? switched.replace(/Đọc lại cả video bằng[^.]*\. $/, '') : '') + 'Không còn dịch vụ giọng đọc nào dùng được cho ' + ((LANGS.find(l => l[0] === vv.lang) || [, vv.lang])[1]) + '. ' +
+        (ttsExhausted('gemini') ? 'Gemini hết lượt đến khoảng 14–15h. ' : '') + 'Hãy nhập key Azure (500k ký tự/tháng miễn phí) hoặc cài giọng ngôn ngữ này cho Windows.');
       S.tracks = S.tracks.filter(t => !(t.auto && t.kind === 'tts')); made = [];
       try {
         for (let i = 0; i < spec.lines.length; i++) {
