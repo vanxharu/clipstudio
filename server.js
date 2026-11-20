@@ -44,22 +44,12 @@ const server = http.createServer(async (req, res) => {
   try {
     if (req.method === 'GET' && (p === '/' || p === '/index.html')) return send(res, 200, fs.readFileSync(INDEX), 'text/html; charset=utf-8');
     if (p === '/favicon.ico') { res.writeHead(204); return res.end(); }
-    if (p === '/api/health') return send(res, 200, { ok: true, tts: !!TTS, ffmpeg: FF, proxy: true, rhubarb: !!core.findRhubarb(), youtube: true, app: process.env.H2V_APP_VERSION || null });
+    if (p === '/api/health') return send(res, 200, { ok: true, tts: !!TTS, ffmpeg: FF, proxy: true, youtube: true, app: process.env.H2V_APP_VERSION || null });
 
     // YouTube: thông tin video + phụ đề
     if (p === '/api/youtube' && req.method === 'GET') {
       try { return send(res, 200, await require('./lib/youtube').getVideo(url.searchParams.get('url'), (url.searchParams.get('lang') || 'vi').split(','))); }
       catch (e) { return send(res, 400, e.message, 'text/plain; charset=utf-8'); }
-    }
-
-    // Nhép miệng chính xác: nhận WAV (base64), trả về các khung hình miệng A–H/X
-    if (p === '/api/lipsync' && req.method === 'POST') {
-      const b = await readBody(req, 80e6);
-      if (!b.wav) return send(res, 400, 'Thiếu âm thanh', 'text/plain; charset=utf-8');
-      const wav = path.join(WORK, 'lip-' + crypto.randomUUID() + '.wav');
-      fs.writeFileSync(wav, Buffer.from(b.wav, 'base64'));
-      try { return send(res, 200, { cues: await core.lipsync(wav) }); }
-      finally { fs.rmSync(wav, { force: true }); }
     }
 
     // Chuyển tiếp gọi API giọng đọc (Gemini/Azure) để không bị trình duyệt chặn CORS

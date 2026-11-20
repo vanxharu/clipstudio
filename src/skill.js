@@ -1,43 +1,27 @@
 /* 🧩 Bộ skill cho ChatGPT (Project, bản miễn phí) và Gemini (Gem): hướng dẫn chính + 5 file kiến thức.
-   Dùng các biến của app: AI_RULES, AI_STYLES, EXAMPLES, CHARS, charSummary. */
+   Dùng các biến của app: AI_RULES, AI_STYLES, EXAMPLES. */
 var H2VSkill = (function () {
   'use strict';
 
   function mainInstructions() {
     return [
-      'Bạn là "Video Studio": chuyên viết code VIDEO bằng một file HTML/CSS/JS cho app HTML Video Studio. Người dùng dán code bạn viết vào app, app tự tạo giọng đọc, nhạc nền, nhép miệng nhân vật và xuất MP4.',
+      'Bạn là "Video Studio": chuyên viết code VIDEO bằng một file HTML/CSS/JS cho app HTML Video Studio. Người dùng dán code bạn viết vào app, app tự tạo giọng đọc, nhạc nền và xuất MP4.',
       '',
       'LUÔN ĐỌC CÁC FILE KIẾN THỨC trước khi viết:',
-      '- 1-quy-tac-va-phong-cach.md: quy tắc kỹ thuật đầy đủ, 5 phong cách, cách làm video dài, danh sách nhân vật tự vẽ của người dùng.',
+      '- 1-quy-tac-va-phong-cach.md: quy tắc kỹ thuật đầy đủ, 5 phong cách, cách làm video dài.',
       '- 2-mau-bang-trang.md, 3-mau-chu-dong.md, 4-mau-3d.md, 5-mau-bieu-do.md: file mẫu chạy đúng chuẩn. Viết theo đúng cấu trúc của mẫu cùng phong cách.',
       '',
       'CÁCH LÀM VIỆC',
       '1. Người dùng mô tả video (chủ đề, phong cách, độ dài, khung). Thiếu thông tin thì TỰ CHỌN hợp lý, không hỏi lại: khung dọc 1080×1920, 30–60 giây, phong cách hợp nội dung, giọng nữ Kore, nhạc lofi.',
       '2. Viết lời thoại tiếng Việt tự nhiên, chia cảnh khớp lời thoại, hình minh hoạ đúng nội dung từng câu.',
       '3. Khi người dùng yêu cầu sửa: sửa trên file gần nhất, giữ nguyên phần không được yêu cầu đổi, trả lại TOÀN BỘ file.',
-      '4. Khi người dùng nhắc tới nhân vật của họ: dùng H2V.character(...) theo file 1, chỉ dùng đúng tên nhân vật và tên tư thế có trong danh sách.',
+      '4. Nhân vật, con vật, đồ vật: tự vẽ bằng SVG/CSS/Canvas ngay trong file (không dùng ảnh ngoài).',
       '5. Video dài hơn 60 giây: bắt buộc làm theo mục "Video dài" trong file 1 ("chain": true, cảnh bám theo window.H2V_VOICE) để hình luôn khớp giọng đọc.',
       '',
       AI_RULES.replace(/^Bạn là[^\n]*\n\n/, ''),
       '',
       'TỰ KIỂM TRA TRƯỚC KHI TRẢ LỜI: có thẻ meta h2v; duration > câu thoại cuối + 1s; khối h2v-audio là JSON hợp lệ; không dùng Math.random() không seed, không click/hover, không fetch; code đầy đủ từ <!DOCTYPE html> đến </html>.'
     ].join('\n');
-  }
-
-  function charsSection() {
-    var list = (typeof CHARS !== 'undefined' ? CHARS.list : []).filter(function (c) { return c.poses.length; });
-    if (!list.length) return '## Nhân vật tự vẽ của người dùng\n\nChưa có nhân vật nào. Không dùng H2V.character khi danh sách này trống; vẽ minh hoạ bằng SVG/CSS.\n';
-    return '## Nhân vật tự vẽ của người dùng\n\nApp tự chèn ảnh, chỉ cần gọi đúng tên. KHÔNG tự vẽ lại nhân vật bằng code.\n\n' +
-      list.map(function (c) {
-        var sm = charSummary(c);
-        return '- **' + c.id + '** (' + c.name + ')' + (c.desc ? ': ' + c.desc : '') + '\n  - Tư thế: ' + c.poses.map(function (p) { return p.name; }).join(', ') + '\n  - Nhép miệng: ' + (sm.talk ? 'có' : 'không');
-      }).join('\n') +
-      '\n\nCách gọi (trong <script>, gọi một lần cho mỗi nhân vật, không gọi trong h2vSeek):\n\n```js\n' +
-      "H2V.character('ten', { x: 540, y: 1500, height: 750, poses: [[0,'tu-the-1'],[5,'tu-the-2']], start: 0, end: 20, enter: 'pop', exit: 'fade', motion: 'breathe', move: [[0,540,1500],[8,300,1500]], flip: false, talk: true, z: 5 });\n```\n\n" +
-      '- x, y: vị trí CHÂN nhân vật (giữa-dưới, px); height: chiều cao (600–900 ở khung 1080×1920).\n' +
-      '- poses: [giây, tên tư thế], đổi tư thế khớp nội dung câu thoại.\n' +
-      '- enter/exit: pop | left | right | bottom | fade | none. motion: breathe | bounce | none. move: [giây, x, y].\n' +
-      '- talk: true để nhép miệng theo giọng đọc; nhiều nhân vật thì dùng [[từ giây, đến giây], ...] cho đoạn nhân vật đó nói.\n';
   }
 
   function rulesFile() {
@@ -68,7 +52,7 @@ var H2VSkill = (function () {
     ].concat(AI_STYLES.map(function (s) {
       var file = { whiteboard: '2-mau-bang-trang.md', motion: '3-mau-chu-dong.md', '3d': '4-mau-3d.md', chart: '5-mau-bieu-do.md' }[s.id];
       return '### ' + s.name + '\n\n' + (s.guide ? s.guide : 'Tự chọn phong cách đẹp, hiện đại, hợp nội dung.') + (file ? '\n\nFile mẫu: ' + file : '') + '\n';
-    })).concat(['', charsSection()]).join('\n');
+    })).join('\n');
   }
 
   function exampleFile(prefix, title) {

@@ -187,7 +187,6 @@
   <div id="updBar" class="upd" style="display:none"><span id="updText"></span><button class="btn pri" id="updBtn" style="display:none">Khởi động lại để cập nhật</button></div>
   <button class="btn" id="btnCheckUpd" style="display:none" title="Kiểm tra phiên bản mới">Kiểm tra cập nhật</button>
   <button class="btn" id="btnStudio" title="Phân tích YouTube, viết lại kịch bản, SEO, thumbnail, mô tả">📺 YouTube Studio</button>
-  <button class="btn" id="btnChars" title="Thư viện nhân vật bạn tự vẽ">🧑‍🎨 Nhân vật</button>
   <button class="btn" id="btnOpen" title="Mở file .html từ máy">Mở file…</button>
   <input type="file" id="fileOpen" accept=".html,.htm,text/html" hidden>
 </header>
@@ -207,57 +206,21 @@
 <main>
   <section class="editor">
     <div class="tabs">
-      <button class="tab ai-tab" data-tab="prompt">📝 Tạo prompt</button>
-      <button class="tab on" data-tab="html">HTML</button>
-      <button class="tab" data-tab="css">CSS</button>
-      <button class="tab" data-tab="js">JS</button>
-      <div class="sp"></div>
-      <select id="exampleSel" class="inp" title="Chọn mẫu">
-        <option value="">— Mẫu có sẵn —</option>
-      </select>
+      <button class="tab on" data-tab="html">📄 Code video (HTML)</button>
+      <button class="tab ai-tab" data-tab="prompt">🧩 Bộ skill GPT/Gem</button>
     </div>
     <textarea class="code" id="code" spellcheck="false" autocomplete="off" autocapitalize="off"></textarea>
     <div class="aipanel pp" id="promptPanel" style="display:none">
-      <div class="ai-styles" id="ppTypes"></div>
-      <div class="pp-body">
+            <div class="pp-body">
         <div class="pp-form" id="ppForm"></div>
         <div class="pp-out">
-          <div class="pp-out-head"><b>Prompt</b><span class="sp"></span><span class="pp-count" id="ppCount"></span></div>
+          <div class="pp-out-head"><b>Hướng dẫn chính (dán vào Instructions)</b><span class="sp"></span><span class="pp-count" id="ppCount"></span></div>
           <textarea id="ppText" class="inp" spellcheck="false"></textarea>
           <div class="addbar" style="margin-top:0">
             <button class="btn pri" id="ppGpt">📋 Copy + mở ChatGPT</button>
-            <button class="btn pri" id="ppGem">📋 Copy + mở Gemini</button>
+            <button class="btn pri" id="ppGem">📋 Copy + mở Gemini Gem</button>
             <button class="btn" id="ppCopy">📋 Copy</button>
           </div>
-          <div class="pp-tip" id="ppTip"></div>
-        </div>
-      </div>
-    </div>
-    <div class="aipanel" id="aiPanel" style="display:none">
-      <div class="ai-cfg">
-        <select id="aiProvider" class="inp">
-          <option value="chatgpt-web" data-web="1">🌐 ChatGPT trong app (không cần key)</option>
-          <option value="gemini-web" data-web="1">🌐 Gemini trong app (không cần key)</option>
-          <option value="gemini">Gemini API (key miễn phí)</option>
-          <option value="openai">ChatGPT API (OpenAI key)</option>
-        </select>
-        <input id="aiModel" class="inp" list="aiModels" placeholder="model" title="Tên model. Bấm ↻ để tải danh sách model của key">
-        <datalist id="aiModels"></datalist>
-        <button class="btn icon" id="aiReloadModels" title="Tải danh sách model">↻</button>
-        <input id="aiKey" class="inp" type="password" placeholder="API key" autocomplete="off">
-        <a id="aiKeyLink" href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">Lấy key</a>
-        <button class="btn" id="aiWebShow" style="display:none" title="Mở khung ChatGPT/Gemini để đăng nhập hoặc xem trực tiếp">🌐 Mở khung / đăng nhập</button>
-        <label class="chip" id="aiWebKeepL" style="display:none" title="Giữ khung mở để xem AI làm việc"><input type="checkbox" id="aiWebKeep" style="margin:0 4px 0 0">Giữ khung</label>
-      </div>
-      <div class="ai-styles" id="aiStyles"></div>
-      <div class="ai-log" id="aiLog"></div>
-      <div class="ai-input">
-        <textarea id="aiPrompt" class="inp" rows="3" placeholder="Mô tả video bạn muốn, ví dụ: Video dọc 20 giây giới thiệu quán cà phê Mộc, giọng nữ ấm áp, 4 cảnh…  (Ctrl+Enter để gửi)"></textarea>
-        <div class="ai-actions">
-          <span class="ai-hint" id="aiHint"></span>
-          <button class="btn" id="aiNew" title="Bắt đầu video mới, không dựa trên code hiện tại">＋ Video mới</button>
-          <button class="btn" id="aiStop" style="display:none">■ Dừng</button>
-          <button class="btn pri" id="aiSend">Gửi ➤</button>
         </div>
       </div>
     </div>
@@ -305,12 +268,11 @@
       <div class="addbar">
         <button class="btn" id="addFile">＋ File audio</button>
         <button class="btn" id="addMusic">＋ Nhạc nền tự tạo</button>
-        <button class="btn" id="addTts">＋ Giọng đọc (TTS)</button>
         <button class="btn" id="fitAudio" title="Đặt thời lượng video bằng độ dài âm thanh">Khớp thời lượng</button>
         <input type="file" id="fileAudio" accept="audio/*,.mp3,.wav,.m4a,.ogg" hidden multiple>
       </div>
       <details class="ttsbox" id="ttsBox">
-        <summary>🎙 Cài đặt giọng đọc & tạo từ lời thoại</summary>
+        <summary>🎙 Cài đặt giọng đọc</summary>
         <div class="grid" style="margin-top:10px">
           <label class="f">Dịch vụ giọng đọc<select id="ttsProvider">
             <option value="gemini">Google Gemini (miễn phí)</option>
@@ -337,14 +299,6 @@
           <p class="note">Dùng giọng đọc có sẵn trong Windows, miễn phí, chạy offline, không cần key (chỉ bản app .exe). Chưa có giọng tiếng Việt thì vào <b>Cài đặt Windows › Thời gian &amp; ngôn ngữ › Giọng nói › Thêm giọng nói › Tiếng Việt</b>, rồi mở lại app. Giọng Windows nghe máy hơn Gemini/Azure; muốn giọng tự nhiên hãy dùng Gemini (key miễn phí). <span id="localTtsState"></span></p>
         </div>
         <p class="note">🔒 Key chỉ lưu trong trình duyệt của bạn và gửi thẳng tới Google/Microsoft. Đừng chia sẻ trang khi đã nhập key.</p>
-        <label class="f" style="margin-top:10px">Lời thoại theo mốc thời gian, mỗi dòng một câu, ví dụ: <code>[0.5s] Xin chào các bạn</code>
-          <textarea id="script" class="inp" rows="5" style="resize:vertical;font:13px/1.5 var(--mono)" placeholder="[0.3s] Muốn làm video mà không biết dựng phim?&#10;[5.4s] Chỉ cần viết vài dòng HTML, CSS và JS."></textarea></label>
-        <div class="addbar">
-          <button class="btn" id="btnScriptFromCode" title="Tìm các dòng [x s] … trong code">Lấy lời thoại từ code</button>
-          <button class="btn pri" id="btnScript">Tạo giọng đọc cho tất cả</button>
-          <label style="font-size:12px;color:var(--mute);display:flex;gap:6px;align-items:center"><input type="checkbox" id="scriptReplace" checked> Thay các đoạn giọng đọc cũ</label>
-        </div>
-        <div class="status" id="scriptStatus"></div>
       </details>
       <p class="note" id="audioNote">Nhạc nền tự tạo là âm thanh tổng hợp mới hoàn toàn nên không vướng bản quyền. Muốn dùng nhạc có sẵn thì tải về từ
         <a href="https://pixabay.com/music/" target="_blank" rel="noopener">Pixabay Music</a> hoặc
@@ -354,8 +308,7 @@
     <div class="card">
       <h3>Xuất video</h3>
       <div class="exp">
-        <button class="btn pri" id="btnRender">Xuất MP4 (trong trình duyệt)</button>
-        <button class="btn" id="btnRenderHQ" disabled title="Cần chạy máy chủ local: npm start">Xuất HQ (Chrome + FFmpeg)</button>
+        <button class="btn pri" id="btnRender">▶ Xuất video MP4</button>
         <button class="btn" id="btnCancel" style="display:none">Huỷ</button>
       </div>
       <div class="progress" id="prog"><i></i></div>
@@ -368,60 +321,40 @@
   </section>
 </main>
 <div class="hidden-host" id="hiddenHost"></div>
+<datalist id="aiModels"></datalist>
 <div class="toast" id="toast"></div>
-<div class="modal" id="charModal" style="display:none">
-  <div class="modal-box">
-    <div class="modal-head"><b>🧑‍🎨 Nhân vật của bạn</b><span class="ch-lipmode" id="chLipMode"></span><span class="sp"></span>
-      <button class="btn" id="chImport" title="Nhập nhân vật từ file .json">Nhập…</button>
-      <button class="btn" id="chExport" title="Lưu nhân vật ra file .json để dùng ở máy khác">Xuất…</button>
-      <button class="btn icon" id="chClose">✕</button></div>
-    <div class="modal-body"><div class="ch-list" id="chList"></div><div class="ch-edit" id="chEdit"></div></div>
-  </div>
-  <div class="anchor-box" id="sheetBox" style="display:none">
-    <div class="anchor-panel" style="width:min(1040px,95vw)">
-      <div class="modal-head"><b>📐 Nạp ảnh lưới từ AI</b><span class="sp"></span><button class="btn icon" id="sheetClose">✕</button></div>
-      <div class="sheet-body">
-        <div class="sheet-view"><canvas id="sheetCanvas"></canvas></div>
-        <div class="sheet-ctl">
-          <label class="f">Ảnh này là<select id="sheetKind" class="inp">
-            <option value="poses">Các tư thế</option><option value="mouth-simple">Hình miệng (đơn giản: đóng, hé, mở)</option><option value="mouth-full">Hình miệng (Rhubarb: A–H, X)</option></select></label>
-          <div class="row2"><label class="f">Số cột<input id="sheetCols" type="number" min="1" max="10" class="inp"></label><label class="f">Số hàng<input id="sheetRows" type="number" min="1" max="10" class="inp"></label></div>
-          <label class="chk"><input type="checkbox" id="sheetBg" checked> Tự xoá nền một màu</label>
-          <label class="f">Tên theo thứ tự (trái → phải, trên → dưới), mỗi dòng một tên<textarea id="sheetNames" rows="7" class="inp"></textarea></label>
-          <div class="note" id="sheetInfo"></div>
-          <button class="btn pri" id="sheetGo">✂️ Cắt & thêm vào nhân vật</button>
-        </div>
-      </div>
-    </div>
-  </div>
-  <div class="anchor-box" id="anchorBox" style="display:none">
-    <div class="anchor-panel">
-      <div class="modal-head"><b>👄 Đặt vị trí miệng</b><span class="sp"></span><span style="font-size:12px;color:var(--mute)">Bấm vào đúng chỗ miệng trên hình</span></div>
-      <div class="anchor-stage" id="anchorStage"><img id="anchorImg"><img id="anchorMouth"></div>
-      <div class="anchor-ctl">Cỡ miệng <input type="range" id="anchorSize" min="3" max="60" step="0.5"> <span id="anchorSizeV"></span>
-        <button class="btn" id="anchorAuto" title="App tự tìm miệng trên hình">✨ Tự tìm</button>
-        <span class="sp"></span><button class="btn" id="anchorClear">Bỏ miệng</button>
-        <button class="btn" id="anchorPrev">‹ Trước</button><span id="anchorPos" style="font-size:12px;color:var(--mute)"></span><button class="btn" id="anchorNext">Tiếp ›</button>
-        <button class="btn pri" id="anchorDone">Xong</button></div>
-    </div>
-  </div>
-</div>
-<input type="file" id="chFilePoses" accept="image/png,image/webp,image/gif" multiple hidden>
-<input type="file" id="chFileMouth" accept="image/png,image/webp,image/gif" hidden>
-<input type="file" id="chFileSheet" accept="image/*" hidden>
-<input type="file" id="chFileImport" accept=".json,application/json" hidden>
 
 <!--@@LIBS@@-->
 <script>
 const SHIM = /*@@SHIM@@*/"";
-const CHAR_RT = /*@@CHAR@@*/"";
 const EXAMPLES = /*@@EXAMPLES@@*/[];
-const VOICES = [
-  ['vi-VN-HoaiMyNeural', 'Tiếng Việt · Hoài My (nữ)'], ['vi-VN-NamMinhNeural', 'Tiếng Việt · Nam Minh (nam)'],
-  ['en-US-JennyNeural', 'English · Jenny (F)'], ['en-US-GuyNeural', 'English · Guy (M)'], ['en-US-AriaNeural', 'English · Aria (F)'],
-  ['en-GB-SoniaNeural', 'English UK · Sonia (F)'], ['ja-JP-NanamiNeural', '日本語 · Nanami'], ['ko-KR-SunHiNeural', '한국어 · SunHi'],
-  ['zh-CN-XiaoxiaoNeural', '中文 · Xiaoxiao'], ['fr-FR-DeniseNeural', 'Français · Denise']
+// Giọng Azure/Windows theo ngôn ngữ: [mã, tên ngôn ngữ, giọng nữ, giọng nam]
+const LANGS = [
+  ['vi-VN', 'Tiếng Việt', 'HoaiMy', 'NamMinh'], ['en-US', 'English (US)', 'Jenny', 'Guy'], ['en-GB', 'English (UK)', 'Sonia', 'Ryan'],
+  ['ja-JP', '日本語', 'Nanami', 'Keita'], ['ko-KR', '한국어', 'SunHi', 'InJoon'], ['zh-CN', '中文 (普通话)', 'Xiaoxiao', 'Yunxi'], ['zh-TW', '中文 (台灣)', 'HsiaoChen', 'YunJhe'],
+  ['fr-FR', 'Français', 'Denise', 'Henri'], ['de-DE', 'Deutsch', 'Katja', 'Conrad'], ['es-ES', 'Español (España)', 'Elvira', 'Alvaro'], ['es-MX', 'Español (México)', 'Dalia', 'Jorge'],
+  ['pt-BR', 'Português (Brasil)', 'Francisca', 'Antonio'], ['it-IT', 'Italiano', 'Elsa', 'Diego'], ['ru-RU', 'Русский', 'Svetlana', 'Dmitry'], ['th-TH', 'ไทย', 'Premwadee', 'Niwat'],
+  ['id-ID', 'Bahasa Indonesia', 'Gadis', 'Ardi'], ['hi-IN', 'हिन्दी', 'Swara', 'Madhur'], ['ar-SA', 'العربية', 'Zariyah', 'Hamed'], ['tr-TR', 'Türkçe', 'Emel', 'Ahmet'], ['nl-NL', 'Nederlands', 'Colette', 'Maarten']
 ];
+const VOICES = LANGS.flatMap(([c, n, f, m]) => [[`${c}-${f}Neural`, `${n} · ${f} (nữ)`], [`${c}-${m}Neural`, `${n} · ${m} (nam)`]]);
+/** Đoán ngôn ngữ từ chữ viết. */
+function detectLang(text) {
+  const t = String(text || '');
+  if (/[ăâđêôơưạảấầẩẫậắằẳẵặẹẻẽếềểễệỉịọỏốồổỗộớờởỡợụủứừửữựỳỵỷỹ]/i.test(t)) return 'vi-VN';
+  if (/[぀-ヿ]/.test(t)) return 'ja-JP';
+  if (/[가-힯]/.test(t)) return 'ko-KR';
+  if (/[一-鿿]/.test(t)) return 'zh-CN';
+  if (/[฀-๿]/.test(t)) return 'th-TH';
+  if (/[Ѐ-ӿ]/.test(t)) return 'ru-RU';
+  if (/[ऀ-ॿ]/.test(t)) return 'hi-IN';
+  if (/[؀-ۿ]/.test(t)) return 'ar-SA';
+  const w = ' ' + t.toLowerCase().replace(/[^a-zà-ÿğışçöü\s]/g, ' ') + ' ', score = (re) => (w.match(re) || []).length;
+  const c = { 'en-US': score(/ (the|and|you|is|to|of|this|that|with) /g), 'fr-FR': score(/ (le|la|les|et|vous|est|des|une|pour) /g), 'es-ES': score(/ (el|los|las|y|que|es|una|para|con) /g),
+    'de-DE': score(/ (der|die|das|und|ist|nicht|ein|mit|sie) /g), 'pt-BR': score(/ (o|os|as|você|não|uma|para|com|é) /g), 'it-IT': score(/ (il|gli|che|è|una|per|non|sono) /g),
+    'id-ID': score(/ (dan|yang|ini|itu|untuk|dengan|tidak|anda) /g), 'tr-TR': score(/ (ve|bir|bu|için|çok|ile|değil) /g), 'nl-NL': score(/ (de|het|een|en|niet|van|ik|je) /g) };
+  const best = Object.entries(c).sort((a, b) => b[1] - a[1])[0];
+  return best && best[1] > 0 ? best[0] : (/[a-z]/i.test(t) ? 'en-US' : 'vi-VN');
+}
 const SIZES = [
   ['16:9 · 1080p', 1920, 1080], ['9:16 · TikTok/Reels', 1080, 1920], ['1:1 · Vuông', 1080, 1080],
   ['4:5 · Instagram', 1080, 1350], ['16:9 · 720p', 1280, 720], ['4K', 3840, 2160]
@@ -454,7 +387,7 @@ function readMeta(html) {
 }
 function composeDoc(withShim = true) {
   let html = S.code.html;
-  const shim = (withShim ? '<script>' + SHIM + '<\/script>' : '') + voiceInject(html + '\n' + S.code.js) + charInject(html + '\n' + S.code.js);
+  const shim = (withShim ? '<script>' + SHIM + '<\/script>' : '') + voiceInject(html + '\n' + S.code.js);
   const css = S.code.css.trim() ? '<style>' + S.code.css + '</style>' : '';
   const js = S.code.js.trim() ? '<script>' + S.code.js + '<\/script>' : '';
   if (/<html[\s>]/i.test(html)) {
@@ -563,7 +496,7 @@ function stop() { P.playing = false; $('btnPlay').textContent = '▶'; stopAudio
 
 /* ---------------- Âm thanh ---------------- */
 let mixCache = null, mixDirty = true;
-function markAudioDirty() { mixDirty = true; if (typeof scheduleLipsync === 'function') scheduleLipsync(); }
+function markAudioDirty() { mixDirty = true; }
 function ac() { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 48000 }); return audioCtx; }
 
 async function ensureMusic(tr) {
@@ -757,7 +690,7 @@ async function synthesize(tr, onWait) {
   // Gemini
   const speed = (tr.rate || 0) >= 20 ? 'nhanh' : (tr.rate || 0) <= -20 ? 'chậm rãi' : '';
   const style = [tr.style && tr.style.trim(), speed && 'tốc độ ' + speed].filter(Boolean).join(', ');
-  const prompt = style ? `Đọc đoạn sau với giọng ${style}: ${text}` : text;
+  const prompt = style ? (detectLang(text) === 'vi-VN' ? `Đọc đoạn sau với giọng ${style}: ${text}` : `Read the following in its original language, in a ${style} tone: ${text}`) : text;
   const body = JSON.stringify({
     contents: [{ parts: [{ text: prompt }] }],
     generationConfig: { responseModalities: ['AUDIO'], speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: tr.gvoice || 'Kore' } } } }
@@ -809,34 +742,6 @@ function parseScript(src) {
   if (timed.length) return timed;
   return lines.map(t => ({ start: null, text: t }));
 }
-async function runScript() {
-  const items = parseScript($('script').value);
-  if (!items.length) { toast('Chưa có lời thoại'); return; }
-  const nr = ttsNotReady(); if (nr) { toast(nr, 5000); return; }
-  const st = $('scriptStatus'); st.classList.remove('err');
-  $('btnScript').disabled = true;
-  if ($('scriptReplace').checked) S.tracks = S.tracks.filter(t => t.kind !== 'tts');
-  const base = { kind: 'tts', voice: S.lastVoice || VOICES[0][0], gvoice: S.lastGVoice || 'Kore', rate: 0, style: '' };
-  let cursor = 0.5, ok = 0;
-  try {
-    for (let i = 0; i < items.length; i++) {
-      const it = items[i];
-      st.textContent = `Đang tạo ${i + 1}/${items.length}: "${it.text.slice(0, 50)}"…`;
-      addTrack(Object.assign({}, base, { text: it.text, name: it.text.slice(0, 40), start: it.start ?? cursor }));
-      const tr = S.tracks[S.tracks.length - 1];
-      tr.buffer = await synthesize(tr, s => { st.textContent = `Đạt giới hạn miễn phí, chờ ${s}s rồi tiếp tục (${i + 1}/${items.length})…`; });
-      tr.name = tr.text.slice(0, 40) + (tr.text.length > 40 ? '…' : '');
-      cursor = tr.start + tr.buffer.duration + 0.35; ok++;
-      markAudioDirty(); renderTracks();
-      const prevEnd = tr.start + tr.buffer.duration, next = items[i + 1];
-      if (next && next.start != null && next.start < prevEnd) st.textContent = `⚠️ Câu ${i + 1} dài ${tr.buffer.duration.toFixed(1)}s, chồng lên câu sau. Hãy dời mốc thời gian hoặc rút gọn câu.`;
-    }
-    const end = Math.max(...S.tracks.filter(t => t.kind === 'tts' && t.buffer).map(t => t.start + t.buffer.duration));
-    st.textContent = `✓ Đã tạo ${ok} đoạn giọng đọc, kết thúc ở giây ${end.toFixed(1)}.` + (end > S.duration ? ` Video đang dài ${S.duration}s: bấm "Khớp thời lượng" để không bị cắt.` : '');
-  } catch (e) {
-    st.textContent = `Dừng ở câu ${ok + 1}: ${netHint(e)}`; st.classList.add('err');
-  } finally { $('btnScript').disabled = false; }
-}
 
 /* ---------------- Tự nhận kịch bản trong code ----------------
    Code có thể khai báo âm thanh bằng một thẻ script type="application/json" id="h2v-audio" chứa:
@@ -858,7 +763,7 @@ function normSpec(raw) {
     const preset = H2VMusic.PRESETS[music.preset] ? music.preset : 'lofi';
     music = { preset, volume: music.volume ?? 0.3, seed: music.seed ?? 7 };
   } else music = null;
-  return { lines, voice: String(raw.voice || ''), style: String(raw.style || ''), rate: +raw.rate || 0, music, fit: raw.fit !== false, padEnd: raw.padEnd ?? 1, chain: !!raw.chain, gap: raw.gap ?? 0.35 };
+  return { lines, lang: String(raw.lang || raw.language || ''), voice: String(raw.voice || ''), style: String(raw.style || ''), rate: +raw.rate || 0, music, fit: raw.fit !== false, padEnd: raw.padEnd ?? 1, chain: !!raw.chain, gap: raw.gap ?? 0.35 };
 }
 function readAudioSpec(html) {
   const m = html.match(/<script[^>]*\bid\s*=\s*["']h2v-audio["'][^>]*>([\s\S]*?)<\/script>/i);
@@ -875,12 +780,17 @@ function readAudioSpec(html) {
   const timed = parseScript(html).filter(l => l.start != null);
   return timed.length ? normSpec({ lines: timed.map(l => [l.start, l.text]) }) : null;
 }
+const GEMINI_MALE = /^(puck|charon|fenrir|orus|enceladus|iapetus|umbriel|algieba|algenib|rasalgethi|alnilam|schedar|achird|zubenelgenubi|sadachbia|sadaltager)$/i;
 function resolveVoice(spec) {
   const v = spec.voice.trim().toLowerCase();
   const g = GEMINI_VOICES.find(x => x[0].toLowerCase() === v);
-  const a = VOICES.find(x => x[0].toLowerCase() === v);
-  const male = /^(nam|male|man|boy)\b/.test(v);
-  return { gvoice: g ? g[0] : (male ? 'Charon' : 'Kore'), voice: a ? a[0] : (male ? 'vi-VN-NamMinhNeural' : 'vi-VN-HoaiMyNeural') };
+  const a = VOICES.find(x => x[0].toLowerCase() === v) || (/^[a-z]{2}-[a-z]{2}-\w+neural$/i.test(spec.voice.trim()) ? [spec.voice.trim()] : null);
+  const male = /^(nam|male|man|boy)\b/.test(v) || (g && GEMINI_MALE.test(g[0])) || (a && VOICES.some(x => x[0] === a[0] && /\(nam\)/.test(x[1])));
+  // Ngôn ngữ: "lang" trong khối h2v-audio, hoặc theo mã giọng Azure, hoặc đoán từ lời thoại
+  const lang = (spec.lang && LANGS.find(l => l[0].toLowerCase() === spec.lang.toLowerCase() || l[0].slice(0, 2) === spec.lang.toLowerCase().slice(0, 2))) ||
+    (a && LANGS.find(l => a[0].startsWith(l[0]))) || LANGS.find(l => l[0] === detectLang((spec.lines || []).map(x => x.text).join(' '))) || LANGS[0];
+  const voice = a && a[0].startsWith(lang[0]) ? a[0] : `${lang[0]}-${male ? lang[3] : lang[2]}Neural`;
+  return { gvoice: g ? g[0] : (male ? 'Charon' : 'Kore'), voice, lang: lang[0] };
 }
 function voiceLabel(spec) {
   const r = resolveVoice(spec);
@@ -971,11 +881,7 @@ async function exportVideo() {
   await go();
 }
 
-/* ---------------- Thư viện nhân vật tự vẽ ---------------- */
-const CHARS = { list: [], sel: null, anchorPose: null };
-const MOUTHS_SIMPLE = [['closed', 'Đóng', 'lúc im lặng'], ['half', 'Hé', 'nói nhỏ'], ['open', 'Mở', 'nói to']];
-const MOUTHS_FULL = [['A', 'A', 'm, b, p (môi khép)'], ['B', 'B', 'phần lớn phụ âm'], ['C', 'C', 'e, ê (mở vừa)'], ['D', 'D', 'a (mở to)'], ['E', 'E', 'o, ơ (tròn nhẹ)'],
-  ['F', 'F', 'u, ô (chu môi)'], ['G', 'G', 'ph, v (tuỳ chọn)'], ['H', 'H', 'l (tuỳ chọn)'], ['X', 'X', 'nghỉ (tuỳ chọn)']];
+/* ---------------- Tiện ích ---------------- */
 const IDB = {
   db: null,
   open() {
@@ -985,674 +891,18 @@ const IDB = {
   async get(k) { const db = await this.open(); return new Promise((res, rej) => { const r = db.transaction('kv').objectStore('kv').get(k); r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); }); },
   async set(k, v) { const db = await this.open(); return new Promise((res, rej) => { const tx = db.transaction('kv', 'readwrite'); tx.objectStore('kv').put(v, k); tx.oncomplete = res; tx.onerror = () => rej(tx.error); }); }
 };
-async function loadChars() { try { CHARS.list = (await IDB.get('chars')) || []; } catch (e) { CHARS.list = []; } }
-let charSaveT = null;
-function saveChars() { clearTimeout(charSaveT); charSaveT = setTimeout(() => IDB.set('chars', CHARS.list).catch(e => toast('Không lưu được nhân vật: ' + e.message)), 300); }
 const slug = s => (s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/đ/g, 'd').replace(/Đ/g, 'D').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'nhan-vat';
 const safeJson = o => JSON.stringify(o).replace(/</g, '\\u003c');
-
-function readAsDataURL(f) { return new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(r.result); r.onerror = rej; r.readAsDataURL(f); }); }
-function loadImg(src) { return new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = () => rej(new Error('Không đọc được ảnh')); i.src = src; }); }
-/** Cắt bỏ viền trong suốt, thu nhỏ để nhẹ, giữ nền trong suốt. */
-async function prepImage(file, maxSide = 1000) {
-  const img = await loadImg(await readAsDataURL(file));
-  const c = document.createElement('canvas'); c.width = img.naturalWidth; c.height = img.naturalHeight;
-  const x = c.getContext('2d'); x.drawImage(img, 0, 0);
-  const bgr = removeBackground(c);
-  const d = x.getImageData(0, 0, c.width, c.height).data;
-  let x0 = c.width, y0 = c.height, x1 = -1, y1 = -1, opaque = 0;
-  for (let y = 0; y < c.height; y++) for (let i = 0; i < c.width; i++) {
-    const a = d[(y * c.width + i) * 4 + 3];
-    if (a > 10) { opaque++; if (i < x0) x0 = i; if (i > x1) x1 = i; if (y < y0) y0 = y; if (y > y1) y1 = y; }
-  }
-  if (x1 < 0) throw new Error('Ảnh trong suốt hoàn toàn');
-  const warnBg = !bgr.removed && opaque > c.width * c.height * 0.97;
-  const w = x1 - x0 + 1, h = y1 - y0 + 1, k = Math.min(1, maxSide / Math.max(w, h));
-  const o = document.createElement('canvas'); o.width = Math.round(w * k); o.height = Math.round(h * k);
-  const ox = o.getContext('2d'); ox.imageSmoothingQuality = 'high'; ox.drawImage(c, x0, y0, w, h, 0, 0, o.width, o.height);
-  return { src: o.toDataURL('image/png'), w: o.width, h: o.height, warnBg };
-}
-
-/** Xoá nền một màu: loang từ mép ảnh vào trong (không đụng phần trắng bên trong nhân vật), làm mềm và khử ám màu ở viền. */
-function removeBackground(cv) {
-  const w = cv.width, h = cv.height, x = cv.getContext('2d'), id = x.getImageData(0, 0, w, h), d = id.data;
-  const border = [], st = Math.max(1, Math.floor(Math.min(w, h) / 160));
-  for (let i = 0; i < w; i += st) border.push(i, (h - 1) * w + i);
-  for (let j = 0; j < h; j += st) border.push(j * w, j * w + w - 1);
-  let clear = 0; const samples = [];
-  border.forEach(p => { if (d[p * 4 + 3] < 30) clear++; else samples.push([d[p * 4], d[p * 4 + 1], d[p * 4 + 2]]); });
-  if (clear > border.length * 0.5 || !samples.length) return { removed: false, reason: 'đã trong suốt' };
-  const med = k => samples.map(s => s[k]).sort((a, b) => a - b)[samples.length >> 1];
-  const bg = [med(0), med(1), med(2)];
-  const dist = (r, g, b) => Math.sqrt((r - bg[0]) ** 2 + (g - bg[1]) ** 2 + (b - bg[2]) ** 2);
-  const isWhite = bg[0] > 220 && bg[1] > 220 && bg[2] > 220;
-  const greenish = bg[1] > bg[0] + 40 && bg[1] > bg[2] + 40, magentaish = bg[0] > bg[1] + 40 && bg[2] > bg[1] + 40;
-  const tol = isWhite ? 40 : 75;
-  if (samples.filter(s => dist(s[0], s[1], s[2]) < tol).length < samples.length * 0.6) return { removed: false, reason: 'nền không đồng màu' };
-  const mark = new Uint8Array(w * h), q = new Int32Array(w * h); let qh = 0, qt = 0;
-  const visit = p => { if (mark[p]) return; const o = p * 4; if (dist(d[o], d[o + 1], d[o + 2]) < tol) { mark[p] = 1; q[qt++] = p; } else mark[p] = 2; };
-  for (let i = 0; i < w; i++) { visit(i); visit((h - 1) * w + i); }
-  for (let j = 0; j < h; j++) { visit(j * w); visit(j * w + w - 1); }
-  while (qh < qt) { const p = q[qh++], px = p % w; if (px > 0) visit(p - 1); if (px < w - 1) visit(p + 1); if (p >= w) visit(p - w); if (p < w * (h - 1)) visit(p + w); }
-  let removed = 0;
-  const keyed = greenish || magentaish; // nền xanh lá / hồng tím: nhân vật không dùng màu này nên xoá cả vùng nền bị kẹt bên trong (giữa tay và người…)
-  for (let p = 0; p < w * h; p++) {
-    const o = p * 4;
-    if (mark[p] === 1 || (keyed && mark[p] === 0 && dist(d[o], d[o + 1], d[o + 2]) < tol * 0.8)) { d[o + 3] = 0; removed++; continue; }
-    if (keyed && mark[p] === 0) { // viền của vùng nền bị kẹt: mờ dần + khử ám màu
-      const dd = dist(d[o], d[o + 1], d[o + 2]);
-      if (dd < tol * 1.6) d[o + 3] = Math.round(d[o + 3] * Math.max(0, Math.min(1, (dd - tol * 0.8) / (tol * 0.8))));
-      if (greenish && d[o + 1] > Math.max(d[o], d[o + 2])) d[o + 1] = Math.max(d[o], d[o + 2]);
-    }
-    if (mark[p] === 2) { // pixel viền: mờ dần theo độ giống màu nền + khử ám màu
-      const dd = dist(d[o], d[o + 1], d[o + 2]);
-      d[o + 3] = Math.round(d[o + 3] * Math.max(0, Math.min(1, (dd - tol * 0.5) / (tol * 1.5))));
-      if (greenish) d[o + 1] = Math.min(d[o + 1], Math.max(d[o], d[o + 2]));
-      if (magentaish) { const m = Math.max(d[o + 1], Math.min(d[o], d[o + 2]) * 0.9); d[o] = Math.min(d[o], m + 30); d[o + 2] = Math.min(d[o + 2], m + 30); }
-    }
-  }
-  x.putImageData(id, 0, 0);
-  return { removed: removed > 0, bg };
-}
-
-/* ---- Nạp ảnh lưới (nhiều tư thế / nhiều hình miệng trong một ảnh) ---- */
-const SHEET = { want: 'poses', src: null, work: null };
-function alphaBox(ctx, x0, y0, w, h) {
-  const d = ctx.getImageData(x0, y0, w, h).data; let a = w, b = h, c = -1, e = -1;
-  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) if (d[(y * w + x) * 4 + 3] > 24) { if (x < a) a = x; if (x > c) c = x; if (y < b) b = y; if (y > e) e = y; }
-  return c < 0 ? null : { x: a, y: b, w: c - a + 1, h: e - b + 1 };
-}
-async function openSheet(file) {
-  const img = await loadImg(await readAsDataURL(file));
-  const k = Math.min(1, 3000 / Math.max(img.naturalWidth, img.naturalHeight));
-  const c = document.createElement('canvas'); c.width = Math.round(img.naturalWidth * k); c.height = Math.round(img.naturalHeight * k);
-  c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
-  SHEET.src = c;
-  const ls = PP.lastSheet;
-  let kind = SHEET.want === 'mouth' ? (ls && ls.kind.startsWith('mouth') ? ls.kind : 'mouth-simple') : 'poses';
-  const useLast = ls && ((kind === 'poses') === (ls.kind === 'poses'));
-  if (useLast) kind = ls.kind;
-  $('sheetKind').value = kind;
-  const names = useLast ? ls.names : kind === 'mouth-full' ? MOUTHS_FULL.map(m => m[0]) : kind === 'mouth-simple' ? MOUTHS_SIMPLE.map(m => m[0]) : [];
-  const g = useLast ? ls : gridFor(Math.max(1, names.length || 6));
-  $('sheetCols').value = g.cols; $('sheetRows').value = g.rows;
-  $('sheetNames').value = names.join('\n');
-  $('sheetBg').checked = true;
-  $('sheetBox').style.display = '';
-  processSheet();
-}
-function processSheet() {
-  if (!SHEET.src) return;
-  const c = document.createElement('canvas'); c.width = SHEET.src.width; c.height = SHEET.src.height;
-  c.getContext('2d').drawImage(SHEET.src, 0, 0);
-  const r = $('sheetBg').checked ? removeBackground(c) : { removed: false };
-  SHEET.work = c; SHEET.bgInfo = r;
-  drawSheetPreview();
-}
-function sheetCells() {
-  const cols = Math.max(1, +$('sheetCols').value || 1), rows = Math.max(1, +$('sheetRows').value || 1), W = SHEET.work.width, H = SHEET.work.height;
-  const names = $('sheetNames').value.split('\n').map(s => s.trim()).filter(Boolean);
-  const cells = [];
-  for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) {
-    const i = r * cols + c, x0 = Math.round(c * W / cols), y0 = Math.round(r * H / rows);
-    cells.push({ i, name: names[i] || '', x: x0, y: y0, w: Math.round((c + 1) * W / cols) - x0, h: Math.round((r + 1) * H / rows) - y0 });
-  }
-  return { cells, names, cols, rows };
-}
-function drawSheetPreview() {
-  const cv = $('sheetCanvas'), W = SHEET.work.width, H = SHEET.work.height, k = Math.min(1, 1400 / Math.max(W, H));
-  cv.width = Math.round(W * k); cv.height = Math.round(H * k);
-  const x = cv.getContext('2d'); x.clearRect(0, 0, cv.width, cv.height); x.drawImage(SHEET.work, 0, 0, cv.width, cv.height);
-  const { cells, names } = sheetCells(), wx = SHEET.work.getContext('2d');
-  let found = 0;
-  x.lineWidth = 2; x.font = `600 ${Math.max(12, cv.width / 50)}px system-ui`;
-  cells.forEach(c => {
-    const bb = alphaBox(wx, c.x, c.y, c.w, c.h); if (bb) found++;
-    x.strokeStyle = 'rgba(255,122,69,.9)'; x.setLineDash([8, 6]); x.strokeRect(c.x * k, c.y * k, c.w * k, c.h * k); x.setLineDash([]);
-    if (bb) { x.strokeStyle = 'rgba(62,207,142,.9)'; x.strokeRect((c.x + bb.x) * k, (c.y + bb.y) * k, bb.w * k, bb.h * k); }
-    x.fillStyle = 'rgba(0,0,0,.65)'; const label = (c.i + 1) + (c.name ? ' · ' + c.name : ''), tw = x.measureText(label).width;
-    x.fillRect(c.x * k + 4, c.y * k + 4, tw + 12, Math.max(12, cv.width / 50) + 10); x.fillStyle = '#fff'; x.fillText(label, c.x * k + 10, c.y * k + Math.max(12, cv.width / 50) + 8);
-  });
-  const bi = SHEET.bgInfo;
-  $('sheetInfo').innerHTML = (bi.removed ? '✓ Đã xoá nền.' : $('sheetBg').checked ? '⚠️ Không tự xoá được nền (' + (bi.reason || '') + '). Nên yêu cầu AI vẽ nền một màu.' : 'Không xoá nền.')
-    + `<br>Tìm thấy hình ở ${found}/${cells.length} ô. ${names.length !== found ? '⚠️ Số tên (' + names.length + ') khác số hình, kiểm tra lại số cột/hàng hoặc danh sách tên.' : '✓ Khớp số tên.'}`;
-}
-async function sheetCommit() {
-  const c = curChar(); if (!c) return;
-  const kind = $('sheetKind').value, { cells } = sheetCells(), wx = SHEET.work.getContext('2d');
-  const items = cells.map(cell => ({ cell, bb: alphaBox(wx, cell.x, cell.y, cell.w, cell.h) })).filter(o => o.bb && o.cell.name);
-  if (!items.length) { toast('Không có ô nào vừa có hình vừa có tên'); return; }
-  // Dùng chung khung dọc cho mọi tư thế (để nhân vật không to nhỏ khi đổi tư thế); miệng dùng chung cả khung ngang
-  const top = Math.min(...items.map(o => o.bb.y)), bottom = Math.max(...items.map(o => o.bb.y + o.bb.h));
-  const left = Math.min(...items.map(o => o.bb.x)), right = Math.max(...items.map(o => o.bb.x + o.bb.w));
-  const pad = 4, maxSide = kind === 'poses' ? 1000 : 400;
-  let added = 0;
-  for (const { cell, bb } of items) {
-    const sx = kind === 'poses' ? bb.x : left, sw = kind === 'poses' ? bb.w : right - left;
-    const sy = top, sh = bottom - top;
-    const x0 = Math.max(0, cell.x + sx - pad), y0 = Math.max(0, cell.y + sy - pad), w0 = Math.min(cell.w - sx + pad, sw + pad * 2), h0 = Math.min(cell.h - sy + pad, sh + pad * 2);
-    const k = Math.min(1, maxSide / Math.max(w0, h0));
-    const o = document.createElement('canvas'); o.width = Math.max(1, Math.round(w0 * k)); o.height = Math.max(1, Math.round(h0 * k));
-    const ox = o.getContext('2d'); ox.imageSmoothingQuality = 'high'; ox.drawImage(SHEET.work, x0, y0, w0, h0, 0, 0, o.width, o.height);
-    const src = o.toDataURL('image/png');
-    if (kind === 'poses') {
-      let name = slug(cell.name); while (c.poses.some(p => p.name === name)) name += '-2';
-      c.poses.push({ name, src, w: o.width, h: o.height, mouth: null });
-    } else c.mouths[cell.name.toUpperCase() === cell.name && cell.name.length === 1 ? cell.name : cell.name.toLowerCase()] = src;
-    added++;
-  }
-  saveChars(); $('sheetBox').style.display = 'none'; renderCharList(); renderCharEditor();
-  if (Object.keys(c.mouths).length) await autoMouths(c, false);
-  toast(`Đã thêm ${added} ${kind === 'poses' ? 'tư thế' : 'hình miệng'}` + (Object.keys(c.mouths).length ? '. App đã tự đặt chỗ miệng, bấm ▶ Thử nhân vật để xem.' : ''), 5000);
-}
-
-function charSummary(c) {
-  const full = MOUTHS_FULL.slice(0, 6).every(([k]) => c.mouths[k]), simple = MOUTHS_SIMPLE.some(([k]) => c.mouths[k]) || MOUTHS_FULL.some(([k]) => c.mouths[k]);
-  const anchored = c.poses.filter(p => p.mouth).length;
-  return { full, talk: simple && anchored > 0, anchored };
-}
-function charInject(src) {
-  if (!/H2V\.character\s*\(/.test(src)) return '';
-  const lib = {};
-  [...src.matchAll(/H2V\.character\(\s*['"`]([^'"`]+)['"`]/g)].forEach(m => {
-    const c = CHARS.list.find(c => c.id === m[1]); if (!c || lib[c.id]) return;
-    lib[c.id] = { poses: Object.fromEntries(c.poses.map(p => [p.name, { src: p.src, w: p.w, h: p.h, mouth: p.mouth || null }])), mouths: c.mouths };
-  });
-  return '<script>window.H2V_CHARS=' + safeJson(lib) + ';window.H2V_LIPSYNC=' + safeJson(LIP.data) + ';<\/script><script>' + CHAR_RT + '<\/script>';
-}
 function voiceInject(src) {
   if (!/H2V_VOICE/.test(src)) return '';
   const times = S.tracks.filter(t => t.kind === 'tts' && t.buffer && !t.muted).sort((a, b) => a.start - b.start)
     .map(t => [+t.start.toFixed(3), +(t.start + t.buffer.duration).toFixed(3), t.text || '']);
   return '<script>window.H2V_VOICE=' + safeJson(times) + ';<\/script>';
 }
-const usesChars = () => /H2V\.character\s*\(/.test(S.code.html + S.code.js);
-
-/* ---- Dữ liệu nhép miệng từ các đoạn giọng đọc ---- */
-const LIP = { data: null, key: '', cueCache: new Map(), timer: null, rhubarb: false, running: null };
-function scheduleLipsync() { clearTimeout(LIP.timer); LIP.timer = setTimeout(() => updateLipsync(), 500); }
-async function updateLipsync() {
-  if (LIP.running) await LIP.running.catch(() => {});
-  LIP.running = (async () => {
-    const voices = S.tracks.filter(t => t.kind === 'tts' && t.buffer && !t.muted);
-    const key = voices.map(t => t.id + ':' + t.start + ':' + t.buffer.length + ':' + t.volume).join('|') + '|' + S.duration + '|' + LIP.rhubarb;
-    if (key === LIP.key) return;
-    LIP.key = key;
-    if (!voices.length) { LIP.data = null; if (usesChars()) reloadPreview(true); return; }
-    // Mức to/nhỏ của giọng theo từng 1/60 giây
-    const fps = 60, sr = 24000, len = Math.ceil(S.duration * sr);
-    const ctx = new OfflineAudioContext(1, Math.max(1, len), sr);
-    voices.forEach(t => { const s = ctx.createBufferSource(); s.buffer = t.buffer; s.connect(ctx.destination); s.start(t.start); });
-    const buf = (await ctx.startRendering()).getChannelData(0);
-    const hop = sr / fps, n = Math.ceil(S.duration * fps), raw = new Float32Array(n);
-    for (let i = 0; i < n; i++) { let sum = 0, a = Math.floor(i * hop), b = Math.min(buf.length, Math.floor((i + 1) * hop)); for (let j = a; j < b; j++) sum += buf[j] * buf[j]; raw[i] = Math.sqrt(sum / Math.max(1, b - a)); }
-    const sorted = Array.from(raw).filter(v => v > 0.003).sort((a, b) => a - b), ref = sorted[Math.floor(sorted.length * 0.95)] || 1;
-    const level = []; let v = 0;
-    for (let i = 0; i < n; i++) { const target = Math.min(1, raw[i] / ref); v = target > v ? v + (target - v) * 0.6 : v + (target - v) * 0.35; level.push(Math.round(v * 100) / 100); }
-    const data = { fps, level, cues: null };
-    // Chính xác hơn: Rhubarb (chỉ khi chạy bản app / máy chủ local có Rhubarb)
-    if (LIP.rhubarb) {
-      try {
-        const cues = [];
-        for (const t of voices) {
-          const ck = t.buffer.length + ':' + (t.text || t.name || '');
-          let c = LIP.cueCache.get(ck);
-          if (!c) {
-            const r = await fetch('/api/lipsync', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ wav: await blobToB64(wavEncode(t.buffer)) }) });
-            if (!r.ok) throw new Error(await r.text());
-            c = (await r.json()).cues; LIP.cueCache.set(ck, c);
-          }
-          c.forEach(([a, b, val]) => { if (val !== 'X') cues.push([+(a + t.start).toFixed(3), +(b + t.start).toFixed(3), val]); });
-        }
-        cues.sort((a, b) => a[0] - b[0]);
-        data.cues = cues;
-      } catch (e) { console.warn('Rhubarb lỗi, dùng nhép miệng đơn giản:', e); }
-    }
-    LIP.data = data;
-    if (usesChars()) reloadPreview(true);
-  })();
-  return LIP.running;
-}
-
-/* ---- Màn hình thư viện ---- */
-function openChars() { $('charModal').style.display = ''; if (!CHARS.sel && CHARS.list[0]) CHARS.sel = CHARS.list[0].id; renderCharList(); renderCharEditor(); }
-function closeChars() { $('charModal').style.display = 'none'; if (usesChars()) reloadPreview(true); }
-function curChar() { return CHARS.list.find(c => c.id === CHARS.sel) || null; }
-function renderCharList() {
-  $('chLipMode').textContent = LIP.rhubarb ? '👄 Nhép miệng: chính xác (Rhubarb) ✓' : '👄 Nhép miệng: theo độ lớn giọng' + (SERVER ? '' : ' (bản app có Rhubarb chính xác hơn)');
-  $('chList').innerHTML = CHARS.list.map(c => `<div class="ch-item ${c.id === CHARS.sel ? 'on' : ''}" data-id="${c.id}">
-      ${c.poses[0] ? `<img src="${c.poses[0].src}">` : '<div class="ch-thumb"></div>'}<div><div>${escapeHtml(c.name)}</div><small>${c.id}</small></div></div>`).join('')
-    + `<button class="btn" id="chNew">＋ Nhân vật mới</button>`;
-}
-function renderCharEditor() {
-  const c = curChar(), box = $('chEdit');
-  if (!c) {
-    box.innerHTML = `<div class="ai-empty" style="margin-top:60px">Chưa có nhân vật nào.<br><br>Bấm <b>＋ Nhân vật mới</b>, rồi kéo thả các ảnh PNG nền trong suốt của nhân vật (mỗi ảnh một tư thế: vui, buồn, chỉ tay…).<br>Vẽ thêm vài hình miệng nếu muốn nhân vật nhép miệng theo giọng đọc.</div>`;
-    return;
-  }
-  const sm = charSummary(c);
-  const slot = ([k, label, hint]) => `<div class="mslot ${c.mouths[k] ? 'has' : ''}" data-mouth="${k}" title="${hint}">${c.mouths[k] ? `<span class="x" data-mdel="${k}">✕</span>` : ''}<div class="mimg">${c.mouths[k] ? `<img src="${c.mouths[k]}">` : '＋'}</div><b>${label}</b>${hint}</div>`;
-  box.innerHTML = `
-    <div class="row2">
-      <label class="f">Tên nhân vật<input class="inp" id="chName" value="${escapeHtml(c.name)}"></label>
-      <label class="f">Tên dùng trong code / khi nhắn AI<input class="inp" value="${c.id}" disabled></label>
-    </div>
-    <label class="f" style="margin-top:10px">Mô tả cho AI (ngoại hình, tính cách, cách nói chuyện)
-      <textarea class="inp" id="chDesc" placeholder="Ví dụ: Mèo cam mập, đeo khăn đỏ, vui tính, hay pha trò">${escapeHtml(c.desc || '')}</textarea></label>
-    <h4>Tư thế (${c.poses.length}) <span class="sp" style="flex:1"></span><button class="btn" data-sheet="poses" title="Ảnh nhiều tư thế xếp lưới do ChatGPT/Gemini vẽ">📐 Nạp ảnh lưới</button><button class="btn" id="chAddPose">＋ Thêm ảnh tư thế</button></h4>
-    <div class="pose-grid">${c.poses.map((p, i) => `<div class="pose-card">
-        <div class="pimg"><img src="${p.src}"></div>
-        <input class="inp" data-pname="${i}" value="${escapeHtml(p.name)}" title="Tên tư thế (dùng trong code)">
-        <div class="row"><button class="btn" data-anchor="${i}">${p.mouth ? '👄 Sửa miệng' : '👄 Đặt miệng'}</button><button class="btn" data-pdel="${i}" title="Xoá tư thế">✕</button></div>
-      </div>`).join('')}</div>
-    <div class="dropzone" id="chDrop" style="margin-top:10px">Kéo thả ảnh PNG nền trong suốt vào đây. Mỗi ảnh là một tư thế, tên file thành tên tư thế.</div>
-    <h4>Hình miệng (để nhép theo giọng đọc) <span class="sp" style="flex:1"></span><button class="btn" data-sheet="mouth" title="Ảnh nhiều hình miệng xếp lưới do AI vẽ">📐 Nạp ảnh lưới miệng</button></h4>
-    <p class="note" style="margin-top:0">Vẽ miệng thành ảnh PNG riêng, cùng nét vẽ với nhân vật, có tô màu da để che miệng cũ. App tự đặt miệng lên từng tư thế; chỗ nào lệch thì bấm <b>👄 Sửa miệng</b>.
-      Cách <b>đơn giản</b> cần 3 hình. Cách <b>chính xác</b> cần ít nhất 6 hình A–F, dùng với Rhubarb trong bản app.</p>
-    <div style="font-size:12px;color:var(--mute);margin:6px 0">Đơn giản (3 hình)</div>
-    <div class="mouth-grid">${MOUTHS_SIMPLE.map(slot).join('')}</div>
-    <div style="font-size:12px;color:var(--mute);margin:12px 0 6px">Chính xác (Rhubarb, 6–9 hình)</div>
-    <div class="mouth-grid">${MOUTHS_FULL.map(slot).join('')}</div>
-    <p class="note">${sm.talk ? `✓ Nhân vật sẽ nhép miệng ở ${sm.anchored}/${c.poses.length} tư thế${sm.full ? ' (đủ bộ A–F)' : ''}.` : Object.keys(c.mouths).length ? '⚠️ Chưa đặt chỗ miệng trên tư thế. Bấm nút bên dưới, app tự làm.' : '⚠️ Chưa có hình miệng: bấm 📐 Nạp ảnh lưới miệng, hoặc tạo ở tab 📝 Tạo prompt.'}</p>
-    ${c.poses.length && Object.keys(c.mouths).length ? `<div class="addbar"><button class="btn pri" id="chAutoMouth">✨ Tự đặt miệng cho mọi tư thế</button><span class="note" style="margin:0">App tự tìm khuôn mặt và miệng trên từng hình. Chỗ nào lệch thì bấm 👄 Sửa miệng.</span></div>` : ''}
-    <div class="addbar" style="margin-top:16px">
-      <button class="btn pri" id="chTry" ${c.poses.length ? '' : 'disabled'}>▶ Thử nhân vật trong video mẫu</button>
-      <button class="btn" id="chDel">🗑 Xoá nhân vật</button>
-    </div>`;
-  const dz = $('chDrop');
-  dz.onclick = () => $('chFilePoses').click();
-  dz.ondragover = e => { e.preventDefault(); dz.classList.add('over'); };
-  dz.ondragleave = () => dz.classList.remove('over');
-  dz.ondrop = e => { e.preventDefault(); dz.classList.remove('over'); addPoses([...e.dataTransfer.files]); };
-}
-async function addPoses(files) {
-  const c = curChar(); if (!c) return;
-  let n = 0, warn = false;
-  for (const f of files) {
-    if (!/^image\//.test(f.type)) continue;
-    try {
-      const im = await prepImage(f, 1000); warn = warn || im.warnBg;
-      let name = slug(f.name.replace(/\.[^.]+$/, '')); while (c.poses.some(p => p.name === name)) name += '-2';
-      c.poses.push({ name, src: im.src, w: im.w, h: im.h, mouth: null }); n++;
-    } catch (e) { toast(f.name + ': ' + e.message); }
-  }
-  saveChars(); renderCharList(); renderCharEditor();
-  if (n && Object.keys(c.mouths).length) await autoMouths(c, false);
-  if (n) toast(`Đã thêm ${n} tư thế` + (warn ? '. ⚠️ Có ảnh không có nền trong suốt, nên xuất PNG nền trong suốt.' : ''), warn ? 6000 : 2500);
-}
-let mouthTarget = null;
-/* ---- Tự tìm chỗ miệng: tìm vùng da lớn nhất ở nửa trên (mặt), rồi tìm nét tối/đỏ nằm gọn trong nửa dưới mặt (miệng cũ). ---- */
-async function detectMouth(src) {
-  const img = await loadImg(src), k = Math.min(1, 420 / Math.max(img.naturalWidth, img.naturalHeight));
-  const W = Math.max(1, Math.round(img.naturalWidth * k)), H = Math.max(1, Math.round(img.naturalHeight * k));
-  const cv = document.createElement('canvas'); cv.width = W; cv.height = H;
-  const x = cv.getContext('2d', { willReadFrequently: true }); x.drawImage(img, 0, 0, W, H);
-  const d = x.getImageData(0, 0, W, H).data, N = W * H;
-  const A = i => d[i * 4 + 3];
-  const isSkin = i => { const r = d[i * 4], g = d[i * 4 + 1], b = d[i * 4 + 2]; return A(i) > 200 && r >= 170 && g >= 110 && b >= 70 && r > g && g >= b - 10 && r - b >= 20 && r - b <= 150; };
-  let top = H; for (let i = 0; i < N; i++) if (A(i) > 128) { top = Math.floor(i / W); break; }
-  let bot = 0; for (let i = N - 1; i >= 0; i--) if (A(i) > 128) { bot = Math.floor(i / W); break; }
-  const yMax = Math.min(H, Math.round(top + (bot - top) * 0.6));
-  // vùng da liên thông lớn nhất trong 60% phía trên
-  const lab = new Int32Array(N); let best = null, id = 0;
-  for (let y0 = top; y0 < yMax; y0++) for (let x0 = 0; x0 < W; x0++) {
-    const s0 = y0 * W + x0; if (lab[s0] || !isSkin(s0)) continue;
-    id++; const st = [s0]; lab[s0] = id; let n = 0, bx0 = W, bx1 = 0, by0 = H, by1 = 0;
-    while (st.length) {
-      const q = st.pop(), qx = q % W, qy = (q - qx) / W; n++;
-      if (qx < bx0) bx0 = qx; if (qx > bx1) bx1 = qx; if (qy < by0) by0 = qy; if (qy > by1) by1 = qy;
-      for (const nb of [q - 1, q + 1, q - W, q + W]) {
-        if (nb < 0 || nb >= N || lab[nb]) continue; const nx = nb % W, ny = (nb - nx) / W;
-        if (Math.abs(nx - qx) > 1 || ny >= yMax) continue;
-        if (isSkin(nb)) { lab[nb] = id; st.push(nb); }
-      }
-    }
-    if (!best || n > best.n) best = { n, id, x0: bx0, x1: bx1, y0: by0, y1: by1 };
-  }
-  if (!best || best.n < N * 0.004) return null;
-  const fw = best.x1 - best.x0 + 1, fh = best.y1 - best.y0 + 1, face = i => lab[i] === best.id;
-  // nét tối/đỏ có da bao quanh 4 phía, ở nửa dưới mặt
-  const feat = new Uint8Array(N), ya = best.y0 + Math.round(fh * 0.5), yb = best.y1;
-  const enclosed = (px, py) => {
-    let l = 0, r = 0, u = 0, dn = 0;
-    for (let t = 1; t < fw * 0.6 && !(l && r); t++) { if (!l && px - t >= 0 && face(py * W + px - t)) l = 1; if (!r && px + t < W && face(py * W + px + t)) r = 1; }
-    for (let t = 1; t < fh * 0.5 && !(u && dn); t++) { if (!u && py - t >= 0 && face((py - t) * W + px)) u = 1; if (!dn && py + t < H && face((py + t) * W + px)) dn = 1; }
-    return l && r && u && dn;
-  };
-  for (let py = ya; py <= yb; py++) for (let px = best.x0; px <= best.x1; px++) {
-    const i = py * W + px; if (A(i) < 160 || face(i) || isSkin(i)) continue;
-    const r = d[i * 4], g = d[i * 4 + 1], b = d[i * 4 + 2], lum = 0.3 * r + 0.59 * g + 0.11 * b;
-    if ((lum < 120 || (r > 140 && g < 120 && b < 120) || (r > 200 && g > 200 && b > 200)) && enclosed(px, py)) feat[i] = 1;
-  }
-  // cụm nét lớn nhất = miệng cũ
-  let mb = null; const seen = new Uint8Array(N);
-  for (let i = 0; i < N; i++) {
-    if (!feat[i] || seen[i]) continue;
-    const st = [i]; seen[i] = 1; let n = 0, a0 = W, a1 = 0, b0 = H, b1 = 0;
-    while (st.length) {
-      const q = st.pop(), qx = q % W, qy = (q - qx) / W; n++;
-      if (qx < a0) a0 = qx; if (qx > a1) a1 = qx; if (qy < b0) b0 = qy; if (qy > b1) b1 = qy;
-      for (let dy = -2; dy <= 2; dy++) for (let dx = -2; dx <= 2; dx++) { const nb = q + dy * W + dx, nx = qx + dx; if (nx < 0 || nx >= W || nb < 0 || nb >= N || seen[nb] || !feat[nb]) continue; seen[nb] = 1; st.push(nb); }
-    }
-    const cyc = (b0 + b1) / 2;
-    const score = n * (cyc > best.y0 + fh * 0.58 ? 1.5 : 1);
-    if (n >= 4 && (!mb || score > mb.score)) mb = { score, a0, a1, b0, b1 };
-  }
-  let mx, my, mw;
-  if (mb && (mb.a1 - mb.a0) < fw * 0.7) { mx = (mb.a0 + mb.a1) / 2; my = (mb.b0 + mb.b1) / 2; mw = Math.max((mb.a1 - mb.a0 + 1) * 1.5, fw * 0.2); }
-  else { mx = (best.x0 + best.x1) / 2; my = best.y0 + fh * 0.72; mw = fw * 0.28; }
-  return { x: mx / W, y: my / H, w: Math.min(0.6, mw / W) };
-}
-/** Đặt miệng cho các tư thế (chưa có, hoặc tất cả khi force). Trả về số tư thế đã đặt. */
-async function autoMouths(c, force) {
-  let n = 0;
-  for (const p of c.poses) {
-    if (p.mouth && !force) continue;
-    try { const m = await detectMouth(p.src); if (m) { p.mouth = m; n++; } } catch (e) {}
-  }
-  if (n) { saveChars(); renderCharList(); if (curChar() === c) renderCharEditor(); }
-  return n;
-}
-function openAnchor(i) {
-  const c = curChar(), p = c.poses[i]; CHARS.anchorPose = i;
-  $('anchorPos').textContent = (i + 1) + '/' + c.poses.length;
-  $('anchorPrev').disabled = i === 0; $('anchorNext').textContent = i === c.poses.length - 1 ? 'Xong ✓' : 'Tiếp ›';
-  if (!p.mouth) { p.mouth = { x: 0.5, y: 0.3, w: 0.18 }; detectMouth(p.src).then(m => { if (m && CHARS.anchorPose === i) { p.mouth = m; $('anchorSize').value = m.w * 100; $('anchorSizeV').textContent = Math.round(m.w * 100) + '%'; placeAnchor(); } }).catch(() => {}); }
-  $('anchorImg').src = p.src;
-  const ms = c.mouths.open || c.mouths.D || c.mouths.C || c.mouths.half || Object.values(c.mouths)[0];
-  $('anchorMouth').src = ms || 'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 50"><ellipse cx="50" cy="25" rx="46" ry="20" fill="#c0392b" stroke="#111" stroke-width="5"/></svg>');
-  $('anchorSize').value = p.mouth.w * 100; $('anchorSizeV').textContent = Math.round(p.mouth.w * 100) + '%';
-  $('anchorBox').style.display = '';
-  requestAnimationFrame(placeAnchor); setTimeout(placeAnchor, 100);
-}
-function placeAnchor() {
-  const c = curChar(), p = c && c.poses[CHARS.anchorPose]; if (!p || !p.mouth) return;
-  const img = $('anchorImg'), st = $('anchorStage').getBoundingClientRect(), r = img.getBoundingClientRect();
-  const m = $('anchorMouth');
-  m.style.width = (p.mouth.w * r.width) + 'px';
-  m.style.left = (r.left - st.left + p.mouth.x * r.width) + 'px';
-  m.style.top = (r.top - st.top + p.mouth.y * r.height) + 'px';
-}
-function demoCode(c) {
-  const poses = c.poses.map(p => p.name), step = 2.5, dur = Math.max(8, poses.length * step + 2);
-  const tl = poses.map((n, i) => `[${(i * step).toFixed(1)}, '${n}']`).join(', ');
-  return `<!DOCTYPE html>
-<html lang="vi">
-<head>
-<meta charset="utf-8">
-<meta name="h2v" content="width=1080,height=1920,fps=30,duration=${dur}">
-<title>Thử nhân vật ${c.name}</title>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@800&display=swap">
-<style>
-  html, body { margin: 0; width: 100%; height: 100%; overflow: hidden; }
-  body { background: linear-gradient(180deg, #fff7e6, #ffe0b8); font-family: 'Be Vietnam Pro', sans-serif; }
-  h1 { position: absolute; top: 220px; left: 60px; right: 60px; text-align: center; font-size: 84px; margin: 0; color: #2d2d2d; }
-  .floor { position: absolute; left: 0; right: 0; top: 1500px; bottom: 0; background: #f4c27a; }
-</style>
-</head>
-<body>
-  <h1>Xin chào, mình là ${escapeHtml(c.name)}!</h1>
-  <div class="floor"></div>
-<script>
-  H2V.character('${c.id}', { x: 540, y: 1520, height: 820, poses: [${tl}], enter: 'pop', motion: 'breathe', talk: true });
-<\/script>
-<script type="application/json" id="h2v-audio">
-{"voice":"Kore","style":"vui vẻ, thân thiện","lines":[[0.6,"Xin chào các bạn, mình là ${c.name.replace(/"/g, '')}."],[3.6,"Đây là video thử nhân vật do chính bạn vẽ."]],"music":{"preset":"upbeat","volume":0.25},"fit":true}
-<\/script>
-</body>
-</html>`;
-}
-function initChars() {
-  loadChars().then(() => { renderCharList(); });
-  $('btnChars').onclick = openChars;
-  $('chClose').onclick = closeChars;
-  $('charModal').addEventListener('click', e => { if (e.target === $('charModal')) closeChars(); });
-  $('chList').onclick = e => {
-    if (e.target.id === 'chNew') {
-      let base = 'nhan-vat', id = base, k = 2; while (CHARS.list.some(c => c.id === id)) id = base + '-' + k++;
-      CHARS.list.push({ id, name: 'Nhân vật ' + (CHARS.list.length + 1), desc: '', poses: [], mouths: {} });
-      CHARS.sel = id; saveChars(); renderCharList(); renderCharEditor(); setTimeout(() => $('chName').select(), 0); return;
-    }
-    const it = e.target.closest('.ch-item'); if (it) { CHARS.sel = it.dataset.id; renderCharList(); renderCharEditor(); }
-  };
-  $('chEdit').addEventListener('change', e => {
-    const c = curChar(); if (!c) return;
-    if (e.target.id === 'chName') {
-      const name = e.target.value.trim() || c.name, newId = slug(name);
-      c.name = name;
-      if (newId !== c.id && !CHARS.list.some(o => o.id === newId)) { const old = c.id; c.id = newId; CHARS.sel = newId; if (S.code.html.includes(`'${old}'`)) toast(`Tên trong code đổi thành "${newId}". Code cũ dùng "${old}" cần sửa lại.`, 6000); }
-      saveChars(); renderCharList(); renderCharEditor();
-    }
-    if (e.target.id === 'chDesc') { c.desc = e.target.value; saveChars(); }
-    if (e.target.dataset.pname != null) {
-      const p = c.poses[+e.target.dataset.pname], v = slug(e.target.value);
-      if (!c.poses.some(o => o !== p && o.name === v)) p.name = v; saveChars(); renderCharEditor();
-    }
-  });
-  $('chEdit').addEventListener('click', e => {
-    const c = curChar(); if (!c) return;
-    const t = e.target.closest('[data-anchor],[data-pdel],[data-mouth],[data-mdel],[data-sheet],#chAddPose,#chTry,#chDel,#chAutoMouth'); if (!t) return;
-    if (t.id === 'chAutoMouth') { autoMouths(c, true).then(n => toast(n ? `✓ Đã đặt miệng cho ${n} tư thế. Bấm ▶ Thử nhân vật để xem.` : 'Không tìm được khuôn mặt, hãy bấm 👄 Đặt miệng trên từng tư thế.', 5000)); return; }
-    if (t.dataset.sheet) { SHEET.want = t.dataset.sheet; $('chFileSheet').click(); return; }
-    if (t.dataset.mdel) { e.stopPropagation(); delete c.mouths[t.dataset.mdel]; saveChars(); renderCharEditor(); return; }
-    if (t.dataset.anchor != null) return openAnchor(+t.dataset.anchor);
-    if (t.dataset.pdel != null) { c.poses.splice(+t.dataset.pdel, 1); saveChars(); renderCharList(); renderCharEditor(); return; }
-    if (t.dataset.mouth) { mouthTarget = t.dataset.mouth; $('chFileMouth').click(); return; }
-    if (t.id === 'chAddPose') return $('chFilePoses').click();
-    if (t.id === 'chTry') { closeChars(); loadCode(demoCode(c)); toast('Đã nạp video thử nhân vật'); return; }
-    if (t.id === 'chDel') { if (t.dataset.sure) { CHARS.list = CHARS.list.filter(o => o !== c); CHARS.sel = CHARS.list[0] && CHARS.list[0].id; saveChars(); renderCharList(); renderCharEditor(); } else { t.dataset.sure = 1; t.textContent = 'Bấm lần nữa để xoá'; } }
-  });
-  $('chFilePoses').onchange = e => { const fs = [...e.target.files]; e.target.value = ''; addPoses(fs); };
-  $('chFileMouth').onchange = async e => {
-    const f = e.target.files[0], c = curChar(); e.target.value = '';
-    if (!f || !c || !mouthTarget) return;
-    try { c.mouths[mouthTarget] = (await prepImage(f, 400)).src; saveChars(); renderCharEditor(); autoMouths(c, false); } catch (err) { toast(err.message); }
-  };
-  $('anchorStage').onclick = e => {
-    const c = curChar(), p = c.poses[CHARS.anchorPose], r = $('anchorImg').getBoundingClientRect();
-    p.mouth.x = Math.max(0, Math.min(1, (e.clientX - r.left) / r.width)); p.mouth.y = Math.max(0, Math.min(1, (e.clientY - r.top) / r.height)); placeAnchor();
-  };
-  $('anchorSize').oninput = () => { const p = curChar().poses[CHARS.anchorPose]; p.mouth.w = +$('anchorSize').value / 100; $('anchorSizeV').textContent = Math.round(p.mouth.w * 100) + '%'; placeAnchor(); };
-  $('anchorDone').onclick = () => { $('anchorBox').style.display = 'none'; saveChars(); renderCharEditor(); };
-  $('anchorPrev').onclick = () => { saveChars(); if (CHARS.anchorPose > 0) openAnchor(CHARS.anchorPose - 1); };
-  $('anchorNext').onclick = () => { saveChars(); const c = curChar(); if (CHARS.anchorPose < c.poses.length - 1) openAnchor(CHARS.anchorPose + 1); else $('anchorDone').click(); };
-  $('anchorAuto').onclick = async () => {
-    const p = curChar().poses[CHARS.anchorPose], m = await detectMouth(p.src).catch(() => null);
-    if (!m) { toast('Không tìm thấy khuôn mặt, hãy bấm vào chỗ miệng trên hình'); return; }
-    p.mouth = m; $('anchorSize').value = m.w * 100; $('anchorSizeV').textContent = Math.round(m.w * 100) + '%'; placeAnchor();
-  };
-  $('anchorClear').onclick = () => { curChar().poses[CHARS.anchorPose].mouth = null; $('anchorBox').style.display = 'none'; saveChars(); renderCharEditor(); };
-  $('chFileSheet').onchange = e => { const f = e.target.files[0]; e.target.value = ''; if (f) openSheet(f).catch(err => toast(err.message)); };
-  $('sheetClose').onclick = () => { $('sheetBox').style.display = 'none'; };
-  $('sheetBg').onchange = processSheet;
-  ['sheetCols', 'sheetRows', 'sheetNames'].forEach(id => $(id).addEventListener('input', () => SHEET.work && drawSheetPreview()));
-  $('sheetKind').onchange = () => {
-    const k = $('sheetKind').value, ls = PP.lastSheet;
-    const names = ls && ls.kind === k ? ls.names : k === 'mouth-full' ? MOUTHS_FULL.map(m => m[0]) : k === 'mouth-simple' ? MOUTHS_SIMPLE.map(m => m[0]) : $('sheetNames').value.split('\n');
-    const g = ls && ls.kind === k ? ls : gridFor(names.filter(Boolean).length || 1);
-    $('sheetNames').value = names.join('\n'); $('sheetCols').value = g.cols; $('sheetRows').value = g.rows; drawSheetPreview();
-  };
-  $('sheetGo').onclick = sheetCommit;
-  $('chExport').onclick = () => {
-    const c = curChar(); if (!c) return;
-    const blob = new Blob([JSON.stringify({ h2vCharacter: 1, ...c })], { type: 'application/json' });
-    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = c.id + '.h2v-char.json'; document.body.appendChild(a); a.click(); a.remove();
-  };
-  $('chImport').onclick = () => $('chFileImport').click();
-  $('chFileImport').onchange = async e => {
-    const f = e.target.files[0]; e.target.value = ''; if (!f) return;
-    try {
-      const o = JSON.parse(await f.text()); if (!o.h2vCharacter || !Array.isArray(o.poses)) throw new Error('File không phải nhân vật của app');
-      delete o.h2vCharacter; o.mouths = o.mouths || {};
-      let id = o.id || slug(o.name), k = 2; while (CHARS.list.some(c => c.id === id)) id = (o.id || slug(o.name)) + '-' + k++;
-      o.id = id; CHARS.list.push(o); CHARS.sel = id; saveChars(); renderCharList(); renderCharEditor(); toast('Đã nhập nhân vật ' + o.name);
-    } catch (err) { toast('Không nhập được: ' + err.message, 5000); }
-  };
-}
-function charsForAI() {
-  if (!CHARS.list.length) return '';
-  const lines = CHARS.list.filter(c => c.poses.length).map(c => {
-    const sm = charSummary(c);
-    return `- "${c.id}" (${c.name})${c.desc ? ': ' + c.desc : ''} | tư thế: ${c.poses.map(p => p.name).join(', ')} | nhép miệng: ${sm.talk ? 'có' : 'không'}`;
-  });
-  if (!lines.length) return '';
-  return `\n\nNHÂN VẬT TỰ VẼ CỦA NGƯỜI DÙNG (app tự chèn ảnh, chỉ cần gọi bằng tên):
-${lines.join('\n')}
-Khi người dùng nhắc tới nhân vật của họ (theo tên hoặc mô tả), dùng API này trong <script> (KHÔNG tự vẽ lại nhân vật bằng code):
-H2V.character('ten', { x: 540, y: 1500, height: 750, poses: [[0,'tu-the-1'],[5,'tu-the-2']], start: 0, end: 20, enter: 'pop', exit: 'fade', motion: 'breathe', move: [[0,540,1500],[8,300,1500]], flip: false, talk: true, z: 5 });
-- x, y là vị trí CHÂN nhân vật (giữa-dưới, px); height là chiều cao (gợi ý 600–900 ở khung 1080×1920).
-- poses: [giây, tên tư thế], chỉ dùng tên tư thế có trong danh sách; đổi tư thế khớp nội dung từng câu thoại.
-- enter/exit: pop | left | right | bottom | fade | none. motion: breathe | bounce | none. move: di chuyển theo [giây, x, y].
-- talk: true để miệng nhép theo giọng đọc; nhiều nhân vật cùng lúc thì dùng [[từ giây, đến giây], ...] cho đúng đoạn nhân vật đó nói.
-- Gọi H2V.character một lần cho mỗi nhân vật (không gọi trong h2vSeek).`;
-}
-
-/* ---------------- Tab Tạo prompt (cho ChatGPT / Gemini bản web) ---------------- */
-const PP_TYPES = [['skill', '🧩 Bộ skill GPT/Gem'], ['char', '🎨 Vẽ nhân vật'], ['mouth', '👄 Vẽ hình miệng'], ['script', '📜 Kịch bản'], ['code', '🎬 Code video']];
-const POSE_PRESETS = [
-  ['chao', 'Vẫy tay chào', 'standing, smiling, waving one hand hello'],
-  ['chi-tay', 'Chỉ tay sang phải', 'standing, pointing to the right side with one arm fully extended, presenting something'],
-  ['giai-thich', 'Giải thích, hai tay mở', 'explaining something, both palms open in front of the body'],
-  ['vui', 'Vui, giơ hai tay', 'very happy, both arms raised in celebration'],
-  ['suy-nghi', 'Suy nghĩ', 'thinking, one hand on the chin, looking up'],
-  ['ngac-nhien', 'Ngạc nhiên', 'surprised, hands on cheeks, eyes wide open'],
-  ['buon', 'Buồn', 'sad, shoulders dropped, looking down'],
-  ['like', 'Giơ ngón cái', 'giving a big thumbs up'],
-  ['di-bo', 'Đi bộ', 'walking to the right, mid-stride, side view'],
-  ['chay', 'Chạy', 'running to the right, dynamic pose, side view'],
-  ['ngoi', 'Ngồi', 'sitting on the ground, relaxed'],
-  ['cam-on', 'Cúi chào cảm ơn', 'bowing politely to say thank you']
-];
-const ART_STYLES = [
-  ['flat', 'Hoạt hình 2D phẳng', 'flat 2D cartoon illustration, clean bold dark outlines, simple cel shading, vibrant colors'],
-  ['whiteboard', 'Nét bút bảng trắng', 'hand-drawn black ink doodle line art, whiteboard animation style, minimal flat color accents'],
-  ['chibi', 'Chibi dễ thương', 'cute chibi style, big head and small body, soft colors, clean outlines'],
-  ['storybook', 'Truyện tranh thiếu nhi', "children's storybook illustration, soft colored-pencil look, warm palette, clean silhouette"],
-  ['3d', 'Hoạt hình 3D', 'stylized 3D cartoon character render, soft studio lighting, smooth materials']
-];
-const BG_COLORS = [['green', 'Xanh lá (khuyên dùng)', 'pure bright green #00FF00', 'green'], ['white', 'Trắng', 'pure white #FFFFFF', 'white'], ['magenta', 'Hồng tím', 'pure magenta #FF00FF', 'magenta']];
-const MOUTH_SIMPLE_EN = [['closed', 'closed mouth, a gentle relaxed line'], ['half', 'slightly open mouth, talking softly'], ['open', "wide open mouth, talking loudly, saying 'ah'"]];
-const MOUTH_FULL_EN = [['A', 'closed mouth, lips pressed together (M, B, P sounds)'], ['B', 'slightly open mouth with clenched teeth visible (K, S, T sounds)'],
-  ['C', "open mouth, medium opening (E sound as in 'men')"], ['D', "mouth wide open (A sound as in 'father')"], ['E', "slightly rounded open mouth (O sound as in 'off')"],
-  ['F', 'puckered lips with a small round opening (OO / W sound)'], ['G', 'upper teeth resting on the lower lip (F, V sounds)'],
-  ['H', 'open mouth with the tongue raised behind the upper teeth (L sound)'], ['X', 'relaxed closed mouth at rest, neutral']];
-const PP = {
-  type: 'skill',
-  char: { name: '', desc: '', style: 'flat', customStyle: '', poses: ['chao', 'chi-tay', 'giai-thich', 'vui', 'suy-nghi', 'ngac-nhien'], extra: '', bg: 'green', noMouth: true, ref: false },
-  mouth: { charId: '', desc: '', style: 'flat', set: 'simple', bg: 'green', ref: true },
-  script: { topic: '', audience: 'người xem TikTok phổ thông', duration: 30, tone: 'gần gũi, dễ hiểu', fmt: '9:16', charId: '' },
-  code: { idea: '', style: 'whiteboard', fmt: '9:16', duration: 25, voice: 'Kore', music: 'lofi', charId: '', script: '', template: true },
-  lastSheet: null
-};
-function loadPP() { try { const o = JSON.parse(localStorage.getItem('h2v-pp') || '{}'); ['char', 'mouth', 'script', 'code'].forEach(k => Object.assign(PP[k], o[k] || {})); if (o.type) PP.type = o.type; if (o.lastSheet) PP.lastSheet = o.lastSheet; } catch (e) {} }
-function savePP() { try { localStorage.setItem('h2v-pp', JSON.stringify(PP)); } catch (e) {} }
-const gridFor = n => { const cols = n <= 3 ? n : n <= 4 ? 2 : n <= 6 ? 3 : n <= 8 ? 4 : n <= 9 ? 3 : 4; return { cols, rows: Math.ceil(n / cols) }; };
-const charOpts = (sel, none = 'Không dùng') => `<option value="">${none}</option>` + CHARS.list.map(c => `<option value="${c.id}" ${c.id === sel ? 'selected' : ''}>${escapeHtml(c.name)} (${c.id})</option>`).join('');
-const optList = (arr, sel) => arr.map(a => `<option value="${a[0]}" ${a[0] === sel ? 'selected' : ''}>${a[1]}</option>`).join('');
-
-function ppPoseList() {
-  const list = PP.char.poses.map(id => POSE_PRESETS.find(p => p[0] === id)).filter(Boolean).map(p => ({ name: p[0], en: p[2] }));
-  PP.char.extra.split('\n').map(l => l.trim()).filter(Boolean).forEach(l => {
-    const m = l.match(/^([^:：]+)[:：]\s*(.+)$/); const label = m ? m[1].trim() : l;
-    list.push({ name: slug(label), en: m ? m[2].trim() : l });
-  });
-  return list;
-}
-function buildCharPrompt() {
-  const c = PP.char, poses = ppPoseList(), g = gridFor(poses.length), bg = BG_COLORS.find(b => b[0] === c.bg);
-  const style = c.style === 'custom' ? c.customStyle : ART_STYLES.find(s => s[0] === c.style)[2];
-  PP.lastSheet = { kind: 'poses', cols: g.cols, rows: g.rows, names: poses.map(p => p.name), bg: c.bg };
-  return `Create a CHARACTER POSE SHEET image for a 2D animated video.
-${c.ref ? '\nREFERENCE: Use the character in the attached image as the exact design. Keep the same face, proportions, outfit, colors and line style. Do not redesign it.\n' : ''}
-Character${c.name ? ' "' + c.name + '"' : ''}: ${c.desc || '(describe the character here)'}
-Art style: ${style}.
-
-Layout: ONE image containing a grid of ${g.cols} column${g.cols > 1 ? 's' : ''} × ${g.rows} row${g.rows > 1 ? 's' : ''}. Draw the SAME character once in each cell, in this exact order (left to right, top to bottom):
-${poses.map((p, i) => `${i + 1}. ${p.en}`).join('\n')}
-
-Rules for every cell:
-- Full body visible from head to feet, same size and same proportions in every cell, feet near the bottom of the cell.
-- Each pose centered in its cell with a generous empty margin; nothing touches or crosses the cell borders; poses never overlap.
-- Facing the viewer (3/4 view allowed${poses.some(p => /side view/.test(p.en)) ? ', side view where stated' : ''}).
-${c.noMouth ? '- Draw the face WITHOUT a mouth (the mouth is added later for lip-sync animation). Keep eyes and eyebrows.\n' : ''}- Background: perfectly flat solid ${bg[2]} everywhere, edge to edge. No gradient, no floor, no shadows, no texture, no grid lines, no borders, no text, no numbers, no labels.
-- Do not use ${bg[3]} anywhere on the character.
-- Clean crisp edges, consistent line weight.${g.cols > g.rows ? '\n- Wide landscape image.' : g.rows > g.cols ? '\n- Tall portrait image.' : ''}`;
-}
-function buildMouthPrompt() {
-  const m = PP.mouth, set = m.set === 'full' ? MOUTH_FULL_EN : MOUTH_SIMPLE_EN, g = gridFor(set.length), bg = BG_COLORS.find(b => b[0] === m.bg);
-  const ch = CHARS.list.find(c => c.id === m.charId);
-  const desc = m.desc || (ch && ch.desc) || '';
-  const style = ART_STYLES.find(s => s[0] === m.style)[2];
-  PP.lastSheet = { kind: m.set === 'full' ? 'mouth-full' : 'mouth-simple', cols: g.cols, rows: g.rows, names: set.map(s => s[0]), bg: m.bg, charId: m.charId };
-  return `Create a MOUTH SHAPE SHEET image for lip-sync animation of a 2D cartoon character.
-${m.ref ? '\nREFERENCE: Match the attached character image exactly: same line weight, outline color, lip color and skin color.\n' : ''}
-Character: ${desc || '(describe the character here)'}
-Art style: ${style}.
-
-Layout: ONE image, a grid of ${g.cols} × ${g.rows} cells, one mouth per cell, in this exact order (left to right, top to bottom):
-${set.map((s, i) => `${i + 1}. ${s[1]}`).join('\n')}
-
-Rules:
-- Front view, every mouth the same size and the same scale, centered in its cell with empty margin around.
-- Each mouth sits on a small soft oval patch of the character's SKIN color, about 1.6× wider than the mouth, so it can be placed over the character's face. No eyes, nose or other features.
-- Background: perfectly flat solid ${bg[2]} everywhere. No gradient, no shadow, no grid lines, no borders, no text, no letters, no labels.
-- Do not use ${bg[3]} anywhere in the mouths.`;
-}
-function buildScriptPrompt() {
-  const s = PP.script, ch = CHARS.list.find(c => c.id === s.charId);
-  return `Bạn là biên kịch video ngắn (TikTok/Reels/Shorts) chuyên nghiệp. Viết kịch bản tiếng Việt cho video sau:
-
-Chủ đề / nội dung: ${s.topic || '(điền chủ đề)'}
-Người xem: ${s.audience}
-Thời lượng: khoảng ${s.duration} giây · Khung hình ${s.fmt}
-Giọng văn: ${s.tone}
-${ch ? `Nhân vật dẫn chuyện: "${ch.name}"${ch.desc ? ' (' + ch.desc + ')' : ''}. Tư thế có sẵn: ${ch.poses.map(p => p.name).join(', ')}.\n` : ''}
-Yêu cầu:
-1. Câu mở đầu (hook) giữ chân người xem trong 3 giây đầu.
-2. Chia ${Math.max(3, Math.round(s.duration / 5))}–${Math.max(4, Math.round(s.duration / 4))} cảnh, mỗi cảnh 3–7 giây. Lời thoại ngắn, tự nhiên, khoảng 2,5 từ/giây, các câu không chồng nhau.
-3. Trình bày bảng: | Giây bắt đầu | Lời thoại | Hình ảnh trên màn hình |${ch ? ' Tư thế nhân vật |' : ''}
-4. Cuối cùng, đưa đúng một khối code JSON lời thoại để dán vào app (giây bắt đầu, câu):
-\`\`\`json
-[[0.5, "Câu thoại 1"], [4.2, "Câu thoại 2"]]
-\`\`\`
-5. Gợi ý nhạc nền phù hợp: lofi | ambient | upbeat | cinematic | corporate.`;
-}
-function buildCodePrompt() {
-  const c = PP.code, st = AI_STYLES.find(s => s.id === c.style) || AI_STYLES[4];
-  const size = { '9:16': '1080×1920', '16:9': '1920×1080', '1:1': '1080×1080' }[c.fmt];
-  const ex = EXAMPLES.find(e => e.file && e.file.startsWith(st.ex));
-  const ch = CHARS.list.find(x => x.id === c.charId);
-  let chText = '';
-  if (ch) { const keep = CHARS.list; CHARS.list = [ch]; chText = charsForAI(); CHARS.list = keep; }
-  return `${AI_RULES}
-
-KÍCH THƯỚC: ${size}.
-${st.guide || 'PHONG CÁCH: tự chọn phong cách đẹp, hiện đại, phù hợp nội dung.'}${chText}
-${c.template && ex ? `\nFILE MẪU THAM KHẢO (đúng chuẩn của app${st.id === 'whiteboard' ? ', DÙNG LÀM KHUNG' : ''}):\n\`\`\`html\n${ex.html}\n\`\`\`\n` : ''}
-YÊU CẦU VIDEO:
-${c.idea || '(mô tả video bạn muốn)'}
-- Thời lượng khoảng ${c.duration} giây, khung ${c.fmt}.
-- Giọng đọc: "${c.voice}". Nhạc nền: ${c.music === 'none' ? 'không' : '"' + c.music + '"'}.${ch ? `\n- Dùng nhân vật "${ch.id}" làm người dẫn chuyện, đổi tư thế khớp lời thoại, talk: true.` : ''}${c.script.trim() ? `\n- DÙNG ĐÚNG lời thoại sau (giữ nguyên câu và mốc thời gian, đưa vào "lines" của khối h2v-audio, dựng cảnh khớp từng câu):\n${c.script.trim()}` : ''}`;
-}
-const PP_TIPS = {
-  skill: `Ô trên là <b>hướng dẫn chính</b> (dán vào Instructions). Sau khi cài, dùng loại <b>🎬 Code video</b> hoặc nhắn thẳng yêu cầu cho Gem/Project.`,
-  char: `<b>Cách dùng:</b>
-1. Bấm <b>Copy + mở ChatGPT</b> (hoặc Gemini), rồi dán prompt (Ctrl+V). Nếu đã có hình tự vẽ, đính kèm ảnh vào khung chat và tick "Đính kèm hình…".
-2. Chưa ưng thì nhắn AI vẽ lại. Ưng rồi thì tải ảnh về.
-3. Trong app: <b>🧑‍🎨 Nhân vật</b> → chọn nhân vật → <b>📐 Nạp ảnh lưới</b>. App tự xoá nền, cắt và đặt tên tư thế theo đúng thứ tự trong prompt.`,
-  mouth: `<b>Cách dùng:</b> đính kèm ảnh nhân vật vào ChatGPT/Gemini để miệng khớp nét, dán prompt rồi tải ảnh về.
-Trong app: <b>🧑‍🎨 Nhân vật</b> → <b>📐 Nạp ảnh lưới</b>. App tự xoá nền, cắt và gán vào đúng ô miệng. Sau đó bấm <b>👄 Đặt miệng</b> trên từng tư thế.`,
-  script: `<b>Cách dùng:</b> dán vào ChatGPT/Gemini để có kịch bản và khối JSON lời thoại.
-Chép khối JSON đó vào ô "Lời thoại có sẵn" ở loại <b>🎬 Code video</b> để AI dựng video khớp đúng lời thoại.`,
-  code: `<b>Cách dùng:</b> dán vào ChatGPT/Gemini (hoặc nhắn thẳng ý tưởng cho Gem/Project đã cài bộ skill). Copy toàn bộ code AI trả về rồi bấm <b>📋 Dán code</b>.
-App tự nhận lời thoại, giọng đọc, nhạc và nhân vật.`
-};
-function renderPP() {
-  $('ppTypes').innerHTML = PP_TYPES.map(([k, n]) => `<button class="chip ${k === PP.type ? 'on' : ''}" data-pp="${k}">${n}</button>`).join('');
-  const f = $('ppForm'), t = PP.type;
-  if (t === 'skill') {
-    const fs = H2VSkill.files(), nCh = CHARS.list.filter(c => c.poses.length).length;
-    f.innerHTML = `<div class="f full skill-guide">
+/* ---------------- Bộ skill cho Gemini Gem / ChatGPT Project ---------------- */
+function renderSkill() {
+  const fs = H2VSkill.files();
+  $('ppForm').innerHTML = `<div class="f full skill-guide">
       <b>Cài một lần, sau đó chỉ cần nhắn "làm video về…" là AI trả code đúng chuẩn app.</b>
       <div class="skill-cols">
         <div><b>Gemini (miễn phí) → Gem</b><ol>
@@ -1668,90 +918,22 @@ function renderPP() {
       </div>
       <div class="addbar" style="margin-top:8px"><button class="btn pri" data-skdl="all">⬇ Tải 5 file kiến thức (.zip)</button>
         ${fs.filter(x => !x.main).map(x => `<button class="btn" data-skdl="${x.name}" title="${(x.text.length / 1000).toFixed(1)}k ký tự">${x.name}</button>`).join('')}</div>
-      <div class="note">Nhân vật trong file 1: ${nCh ? nCh + ' nhân vật (' + CHARS.list.filter(c => c.poses.length).map(c => c.id).join(', ') + ')' : 'chưa có'}. Khi thêm/sửa nhân vật, tải lại <b>1-quy-tac-va-phong-cach.md</b> và thay file cũ trong Gem/Project.
-      AI trả code xong: copy cả khối code → bấm <b>📋 Dán code</b> ở trên cùng app → app tự tạo giọng, nhạc, xem trước → <b>Xuất video</b>.</div></div>`;
-  } else if (t === 'char') {
-    const c = PP.char;
-    f.innerHTML = `
-      <label class="f">Tên nhân vật<input class="inp" data-k="name" value="${escapeHtml(c.name)}" placeholder="Mèo Cam"></label>
-      <label class="f">Phong cách vẽ<select class="inp" data-k="style">${optList(ART_STYLES, c.style)}<option value="custom" ${c.style === 'custom' ? 'selected' : ''}>Tự mô tả…</option></select></label>
-      ${c.style === 'custom' ? `<label class="f full">Mô tả phong cách<input class="inp" data-k="customStyle" value="${escapeHtml(c.customStyle)}"></label>` : ''}
-      <label class="f full">Mô tả ngoại hình (càng cụ thể càng giống nhau giữa các tư thế)<textarea class="inp" data-k="desc" placeholder="Mèo cam mập, mắt to tròn, đeo khăn quàng đỏ, áo xanh dương, tai nhọn, đuôi dài sọc…">${escapeHtml(c.desc)}</textarea></label>
-      <div class="f full">Tư thế cần vẽ (${ppPoseList().length})<div class="chips">${POSE_PRESETS.map(p => `<button class="chip ${c.poses.includes(p[0]) ? 'on' : ''}" data-pose="${p[0]}">${p[1]}</button>`).join('')}</div></div>
-      <label class="f full">Tư thế khác (mỗi dòng "tên: mô tả")<textarea class="inp" data-k="extra" placeholder="cam-mic: cầm micro nói chuyện&#10;uong-ca-phe: cầm tách cà phê">${escapeHtml(c.extra)}</textarea></label>
-      <label class="f">Màu nền để app tách<select class="inp" data-k="bg">${optList(BG_COLORS, c.bg)}</select></label>
-      <div class="f"><label class="chk"><input type="checkbox" data-k="noMouth" ${c.noMouth ? 'checked' : ''}> Vẽ mặt không có miệng (để ghép miệng nhép)</label>
-        <label class="chk"><input type="checkbox" data-k="ref" ${c.ref ? 'checked' : ''}> Tôi sẽ đính kèm hình tự vẽ để AI vẽ theo</label></div>`;
-  } else if (t === 'mouth') {
-    const m = PP.mouth;
-    f.innerHTML = `
-      <label class="f">Nhân vật trong thư viện<select class="inp" data-k="charId">${charOpts(m.charId, 'Chưa chọn')}</select></label>
-      <label class="f">Bộ miệng<select class="inp" data-k="set"><option value="simple" ${m.set === 'simple' ? 'selected' : ''}>Đơn giản: 3 hình</option><option value="full" ${m.set === 'full' ? 'selected' : ''}>Chính xác (Rhubarb): 9 hình A–H, X</option></select></label>
-      <label class="f full">Mô tả nhân vật (để trống thì lấy mô tả trong thư viện)<textarea class="inp" data-k="desc">${escapeHtml(m.desc)}</textarea></label>
-      <label class="f">Phong cách vẽ<select class="inp" data-k="style">${optList(ART_STYLES, m.style)}</select></label>
-      <label class="f">Màu nền để app tách<select class="inp" data-k="bg">${optList(BG_COLORS, m.bg)}</select></label>
-      <label class="chk full"><input type="checkbox" data-k="ref" ${m.ref ? 'checked' : ''}> Tôi sẽ đính kèm ảnh nhân vật (khuyên dùng)</label>`;
-  } else if (t === 'script') {
-    const s = PP.script;
-    f.innerHTML = `
-      <label class="f full">Chủ đề / nội dung<textarea class="inp" data-k="topic" placeholder="Giới thiệu quán cà phê Mộc ở Đà Lạt: không gian gỗ, cà phê muối, view đồi thông">${escapeHtml(s.topic)}</textarea></label>
-      <label class="f">Người xem<input class="inp" data-k="audience" value="${escapeHtml(s.audience)}"></label>
-      <label class="f">Giọng văn<input class="inp" data-k="tone" value="${escapeHtml(s.tone)}" list="ppTones"><datalist id="ppTones"><option value="hài hước, bắt trend"><option value="truyền cảm hứng"><option value="giáo dục, dễ hiểu"><option value="kể chuyện bí ẩn"><option value="gần gũi, dễ hiểu"></datalist></label>
-      <label class="f">Thời lượng (giây)<input class="inp" type="number" min="5" max="300" data-k="duration" value="${s.duration}"></label>
-      <label class="f">Khung hình<select class="inp" data-k="fmt">${optList([['9:16', '9:16 dọc'], ['16:9', '16:9 ngang'], ['1:1', '1:1 vuông']], s.fmt)}</select></label>
-      <label class="f full">Nhân vật dẫn chuyện<select class="inp" data-k="charId">${charOpts(s.charId)}</select></label>`;
-  } else {
-    const c = PP.code;
-    f.innerHTML = `
-      <label class="f full">Ý tưởng video<textarea class="inp" data-k="idea" placeholder="Video giới thiệu quán cà phê Mộc, 4 cảnh, kết bằng lời mời ghé quán">${escapeHtml(c.idea)}</textarea></label>
-      <label class="f">Phong cách<select class="inp" data-k="style">${AI_STYLES.map(s => `<option value="${s.id}" ${s.id === c.style ? 'selected' : ''}>${s.name}</option>`).join('')}</select></label>
-      <label class="f">Khung hình<select class="inp" data-k="fmt">${optList([['9:16', '9:16 dọc'], ['16:9', '16:9 ngang'], ['1:1', '1:1 vuông']], c.fmt)}</select></label>
-      <label class="f">Thời lượng (giây)<input class="inp" type="number" min="5" max="300" data-k="duration" value="${c.duration}"></label>
-      <label class="f">Giọng đọc<select class="inp" data-k="voice">${optList(GEMINI_VOICES.slice(0, 8), c.voice)}</select></label>
-      <label class="f">Nhạc nền<select class="inp" data-k="music">${optList(Object.entries(H2VMusic.PRESETS).map(([k, p]) => [k, p.name]).concat([['none', 'Không nhạc']]), c.music)}</select></label>
-      <label class="f">Nhân vật của bạn<select class="inp" data-k="charId">${charOpts(c.charId)}</select></label>
-      <label class="f full">Lời thoại có sẵn (tuỳ chọn, ví dụ khối JSON từ bước Kịch bản)<textarea class="inp" data-k="script" placeholder='[[0.5, "Câu 1"], [4.2, "Câu 2"]]'>${escapeHtml(c.script)}</textarea></label>
-      <label class="chk full"><input type="checkbox" data-k="template" ${c.template ? 'checked' : ''}> Kèm file mẫu của phong cách (AI làm đúng chuẩn hơn, prompt dài hơn)</label>`;
-  }
-  $('ppGem').textContent = t === 'skill' ? '📋 Copy + mở Gemini Gem' : '📋 Copy + mở Gemini';
-  $('ppGpt').textContent = t === 'skill' ? '📋 Copy + mở ChatGPT' : '📋 Copy + mở ChatGPT';
-  $('ppTip').innerHTML = PP_TIPS[t];
-  regenPP();
-}
-function regenPP() {
-  const t = PP.type;
-  const txt = t === 'skill' ? H2VSkill.mainInstructions() : t === 'char' ? buildCharPrompt() : t === 'mouth' ? buildMouthPrompt() : t === 'script' ? buildScriptPrompt() : buildCodePrompt();
-  $('ppText').value = txt; $('ppCount').textContent = txt.length.toLocaleString('vi-VN') + ' ký tự'; savePP();
+      <div class="note">AI trả code xong: copy cả khối code → bấm <b>📋 Dán code</b> ở trên cùng app → app tự tạo giọng đọc, nhạc nền, xem trước → <b>Xuất video</b>.</div></div>`;
+  const txt = H2VSkill.mainInstructions();
+  $('ppText').value = txt; $('ppCount').textContent = txt.length.toLocaleString('vi-VN') + ' ký tự';
 }
 async function ppCopy(url) {
   const txt = $('ppText').value;
   try { await navigator.clipboard.writeText(txt); }
   catch (e) { $('ppText').select(); document.execCommand('copy'); }
-  if (url) { window.open(url, '_blank', 'noopener'); toast('Đã copy prompt. Dán vào khung chat bằng Ctrl+V.', 4000); }
-  else toast('Đã copy prompt');
+  if (url) { window.open(url, '_blank', 'noopener'); toast('Đã copy hướng dẫn chính. Dán vào ô Instructions bằng Ctrl+V.', 4000); }
+  else toast('Đã copy');
 }
-function initPP() {
-  loadPP();
-  $('ppTypes').onclick = e => { const b = e.target.closest('[data-pp]'); if (b) { PP.type = b.dataset.pp; renderPP(); } };
-  const onField = e => {
-    const k = e.target.dataset.k; if (!k) return;
-    const o = PP[PP.type];
-    o[k] = e.target.type === 'checkbox' ? e.target.checked : e.target.type === 'number' ? +e.target.value : e.target.value;
-    if (k === 'style' || k === 'charId' || k === 'set') renderPP(); else regenPP();
-  };
-  $('ppForm').addEventListener('input', onField);
-  $('ppForm').addEventListener('change', e => { if (e.target.tagName === 'SELECT') onField(e); });
-  $('ppForm').addEventListener('click', e => {
-    const b = e.target.closest('[data-pose]'); if (!b) return;
-    const id = b.dataset.pose, arr = PP.char.poses;
-    PP.char.poses = arr.includes(id) ? arr.filter(x => x !== id) : POSE_PRESETS.map(p => p[0]).filter(x => x === id || arr.includes(x));
-    renderPP();
-  });
-  $('ppText').addEventListener('input', () => { $('ppCount').textContent = $('ppText').value.length.toLocaleString('vi-VN') + ' ký tự'; });
+function initSkill() {
   $('ppGpt').onclick = () => ppCopy('https://chatgpt.com/');
-  $('ppGem').onclick = () => ppCopy(PP.type === 'skill' ? 'https://gemini.google.com/gems/create' : 'https://gemini.google.com/app');
-  $('ppForm').addEventListener('click', e => { const b = e.target.closest('[data-skdl]'); if (!b) return; if (b.dataset.skdl === 'all') H2VSkill.downloadAll(); else H2VSkill.downloadOne(b.dataset.skdl); });
+  $('ppGem').onclick = () => ppCopy('https://gemini.google.com/gems/create');
   $('ppCopy').onclick = () => ppCopy(null);
+  $('ppForm').addEventListener('click', e => { const b = e.target.closest('[data-skdl]'); if (!b) return; if (b.dataset.skdl === 'all') H2VSkill.downloadAll(); else H2VSkill.downloadOne(b.dataset.skdl); });
 }
 
 /* ---------------- AI viết video (Gemini / ChatGPT) ---------------- */
@@ -1784,8 +966,9 @@ QUY TẮC BẮT BUỘC
 <script type="application/json" id="h2v-audio">
 {"voice":"Kore","style":"thân thiện, rõ ràng","lines":[[0.5,"Câu thoại 1."],[4.8,"Câu thoại 2."]],"music":{"preset":"lofi","volume":0.3},"fit":true}
 <\/script>
- - lines: [giây bắt đầu, câu thoại tiếng Việt], khớp từng cảnh; ~2.5 từ/giây; các câu KHÔNG chồng lên nhau, cách nhau ≥0.3s. Không cần lời thoại thì "lines":[].
- - voice: nữ Kore | Aoede | Zephyr | Leda; nam Puck | Charon | Fenrir | Orus. style: cách đọc ngắn gọn.
+ - lines: [giây bắt đầu, câu thoại], viết bằng ngôn ngữ người dùng yêu cầu (mặc định tiếng Việt), khớp từng cảnh; ~2.5 từ/giây; các câu KHÔNG chồng lên nhau, cách nhau ≥0.3s. Không cần lời thoại thì "lines":[].
+ - voice: nữ Kore | Aoede | Zephyr | Leda; nam Puck | Charon | Fenrir | Orus (đọc được mọi ngôn ngữ). style: cách đọc ngắn gọn.
+ - lang: mã ngôn ngữ lời thoại khi KHÔNG phải tiếng Việt, ví dụ "en-US", "ja-JP", "ko-KR", "zh-CN", "fr-FR", "es-ES", "de-DE", "th-TH", "id-ID". Chữ trên hình và phụ đề cùng ngôn ngữ đó; font phải có đủ ký tự (Noto Sans JP/KR/SC, Noto Sans Thai…).
  - music.preset: lofi | ambient | upbeat | cinematic | corporate, hoặc "music": false.
  - Phụ đề (nếu có) đọc từ chính khối này: JSON.parse(document.getElementById('h2v-audio').textContent).
  - duration trong meta dài hơn câu thoại cuối ít nhất 1 giây.
@@ -1798,8 +981,7 @@ const AI = { provider: 'gemini', gModel: 'gemini-3.5-flash', oModel: '', oKey: '
 function loadAiCfg() {
   let c = {}; try { c = JSON.parse(localStorage.getItem('h2v-ai') || '{}'); } catch (e) {}
   Object.assign(AI, c.cfg || {}); AI.log = c.log || []; AI.versions = c.versions || [];
-  // Bản app: mặc định dùng ChatGPT nhúng (không cần key) nếu chưa từng chọn và chưa có key
-  if (!c.cfg && typeof H2VWeb !== 'undefined' && H2VWeb.available() && !TTS.gKey) AI.provider = 'chatgpt-web';
+  if (/-web$/.test(AI.provider)) AI.provider = 'gemini';
 }
 function saveAiCfg() {
   try {
@@ -1807,42 +989,10 @@ function saveAiCfg() {
     localStorage.setItem('h2v-ai', JSON.stringify({ cfg, log: AI.log.slice(-40), versions: AI.versions.slice(-8) }));
   } catch (e) {}
 }
-const WEB_OK = () => typeof H2VWeb !== 'undefined' && H2VWeb.available();
-const aiIsWeb = (p) => /-web$/.test(p || AI.provider);
-const aiWebSite = (p) => (p || AI.provider).startsWith('gemini') ? 'gemini' : 'chatgpt';
-const aiName = (p) => { p = p || AI.provider; return (p.startsWith('gemini') ? 'Gemini' : 'ChatGPT') + (aiIsWeb(p) ? ' (trong app)' : ''); };
-const aiKey = () => aiIsWeb() ? 'web' : AI.provider === 'gemini' ? TTS.gKey.trim() : AI.oKey.trim();
-const aiModel = () => aiIsWeb() ? 'web' : AI.provider === 'gemini' ? AI.gModel : AI.oModel;
-
-function syncAiUI() {
-  if (aiIsWeb() && !WEB_OK()) AI.provider = 'gemini';
-  document.querySelectorAll('#aiProvider option[data-web]').forEach(o => { o.hidden = o.disabled = !WEB_OK(); });
-  const web = aiIsWeb();
-  ['aiModel', 'aiReloadModels', 'aiKey', 'aiKeyLink'].forEach(id => { $(id).style.display = web ? 'none' : ''; });
-  $('aiWebShow').style.display = $('aiWebKeepL').style.display = web ? '' : 'none';
-  $('aiProvider').value = AI.provider; $('aiModel').value = aiModel(); $('aiKey').value = web ? '' : aiKey();
-  $('aiKey').placeholder = AI.provider === 'gemini' ? 'Gemini API key (dùng chung với giọng đọc)' : 'OpenAI API key (sk-…)';
-  $('aiKeyLink').href = AI.provider === 'gemini' ? 'https://aistudio.google.com/apikey' : 'https://platform.openai.com/api-keys';
-  $('aiKeyLink').textContent = AI.provider === 'gemini' ? 'Lấy key miễn phí' : 'Lấy key OpenAI';
-  $('aiStyles').innerHTML = AI_STYLES.map(s => `<button class="chip ${s.id === AI.style ? 'on' : ''}" data-style="${s.id}">${s.name}</button>`).join('')
-    + `<button class="chip ${AI.editOpen ? 'on' : ''}" data-edit="1" title="AI sửa trên code đang mở trong ô HTML thay vì làm video mới">🛠 Sửa code đang mở</button>`;
-  const editing = AI.editOpen || AI.versions.length > 0;
-  $('aiHint').textContent = editing ? 'AI sẽ sửa trên code hiện tại' : `Video mới · ${AI_STYLES.find(s => s.id === AI.style).name} · ${S.width}×${S.height}`;
-}
-function renderAiLog() {
-  const box = $('aiLog');
-  if (!AI.log.length) {
-    const ideas = ['Video dọc 20 giây giới thiệu quán cà phê "Mộc" ở Đà Lạt, giọng nữ ấm áp', 'Giải thích lãi suất kép trong 30 giây cho người mới', 'Top 3 mẹo ngủ ngon, giọng nam, nhạc ambient', 'Doanh thu 4 quý năm nay tăng trưởng mạnh, quý 4 cao nhất'];
-    box.innerHTML = `<div class="ai-empty">Chọn phong cách ở trên, mô tả video bạn muốn rồi bấm <b>Gửi</b>.<br>AI viết code, app tự tạo giọng đọc, nhạc nền và xem trước ngay. Muốn sửa thì nhắn tiếp.<br><br>${ideas.map(i => `<button class="chip" data-idea="${escapeHtml(i)}" style="margin:3px">${escapeHtml(i)}</button>`).join('')}</div>`;
-    return;
-  }
-  box.innerHTML = AI.log.map((m, i) => {
-    let meta = '';
-    if (m.role === 'bot' && m.v != null && AI.versions[m.v]) meta = `<div class="meta">✓ Đã nạp vào app · ${AI.versions[m.v].lines} dòng<button class="btn" data-restore="${m.v}">↩ Dùng lại bản này</button></div>`;
-    return `<div class="ai-msg ${m.role}${m.err ? ' err' : ''}">${escapeHtml(m.text)}${meta}</div>`;
-  }).join('');
-  box.scrollTop = box.scrollHeight;
-}
+const aiName = (p) => ((p || AI.provider).startsWith('gemini') ? 'Gemini' : 'ChatGPT');
+const aiKey = () => AI.provider === 'gemini' ? TTS.gKey.trim() : AI.oKey.trim();
+const aiModel = () => AI.provider === 'gemini' ? AI.gModel : AI.oModel;
+function syncAiUI() {} // YouTube Studio vẫn gọi hàm này
 
 async function* sseData(resp) {
   const rd = resp.body.getReader(), dec = new TextDecoder(); let buf = '';
@@ -1862,10 +1012,6 @@ async function aiHttpError(r, who) {
   return new Error(`${who} lỗi ${r.status}: ${msg}`);
 }
 async function aiCall(system, user, onText, signal) {
-  if (aiIsWeb()) {
-    const r = await H2VWeb.ask(aiWebSite(), aiWebPrompt(system, user), { onProgress: onText, signal });
-    return { text: r.text, finish: '' };
-  }
   const key = aiKey(), model = aiModel();
   if (!model) throw new Error('Chưa chọn model. Bấm ↻ để tải danh sách model của key.');
   let text = '', finish = '';
@@ -1902,68 +1048,7 @@ async function aiCall(system, user, onText, signal) {
   return { text, finish };
 }
 /** Trang web không có "system prompt": gộp hướng dẫn + yêu cầu thành một tin nhắn. */
-function aiWebPrompt(system, user) {
-  return 'HƯỚNG DẪN (làm đúng theo, không cần nhắc lại hay giải thích hướng dẫn):\n' + system + '\n\n=====\n\n' + user;
-}
-function extractHtml(text) {
-  const blocks = [...text.matchAll(/```[ \t]*(?:html|HTML|xml)?[ \t]*\r?\n([\s\S]*?)```/g)].map(m => m[1]);
-  let code = blocks.sort((a, b) => b.length - a.length)[0];
-  if (!code) { const m = text.match(/```[ \t]*(?:html|HTML)?[ \t]*\r?\n([\s\S]*)$/); if (m) code = m[1]; }
-  if (!code) { const k = text.search(/<!doctype html|<html[\s>]/i); if (k >= 0) code = text.slice(k); }
-  if (!code) return { code: null };
-  code = code.trim();
-  return { code, complete: /<\/html>\s*$/i.test(code) };
-}
-function aiNote(text) { const k = text.indexOf('```'); return (k >= 0 ? text.slice(0, k) : text).trim().slice(0, 800); }
-
-async function aiSend() {
-  const prompt = $('aiPrompt').value.trim();
-  if (!prompt || AI.busy) return;
-  if (!aiKey()) { toast(AI.provider === 'gemini' ? 'Dán Gemini API key vào ô "API key" trước nhé (miễn phí).' : 'Dán OpenAI API key vào ô "API key" trước nhé.', 5000); $('aiKey').focus(); return; }
-  const editing = AI.editOpen || AI.versions.length > 0;
-  const style = AI_STYLES.find(s => s.id === AI.style);
-  const ex = EXAMPLES.find(e => e.file && e.file.startsWith(style.ex));
-  let system = AI_RULES + `\n\nKÍCH THƯỚC MẶC ĐỊNH: ${S.width}×${S.height} (nếu người dùng không nói khác; video dọc dùng 1080×1920, ngang 1920×1080).` + charsForAI();
-  let user;
-  if (editing) {
-    const prev = AI.log.filter(m => m.role === 'user').slice(-4).map(m => '- ' + m.text).join('\n');
-    system += `\n\nNHIỆM VỤ: SỬA video theo yêu cầu, giữ nguyên những gì người dùng không yêu cầu đổi.${style.guide ? '\n\n' + style.guide : ''}`;
-    user = `${prev ? 'Các yêu cầu trước đó:\n' + prev + '\n\n' : ''}Code video hiện tại:\n\`\`\`html\n${S.code.html}\n\`\`\`\n\nYêu cầu sửa: ${prompt}\n\nTrả về TOÀN BỘ file đã sửa.`;
-  } else {
-    system += `\n\n${style.guide || 'PHONG CÁCH: tự chọn phong cách đẹp, hiện đại, phù hợp nội dung.'}${ex ? `\n\nFILE MẪU THAM KHẢO (đúng chuẩn của app${style.id === 'whiteboard' ? ', DÙNG LÀM KHUNG' : ''}):\n\`\`\`html\n${ex.html}\n\`\`\`` : ''}`;
-    user = `Yêu cầu video: ${prompt}`;
-  }
-  AI.log.push({ role: 'user', text: prompt }); $('aiPrompt').value = '';
-  const bot = { role: 'bot', text: '⏳ Đang gửi yêu cầu…' }; AI.log.push(bot); renderAiLog();
-  AI.busy = true; AI.ctrl = new AbortController(); $('aiSend').disabled = true; $('aiStop').style.display = '';
-  const t0 = performance.now();
-  const tick = setInterval(() => { if (bot.text.startsWith('⏳')) { bot.text = `⏳ ${aiName()} đang suy nghĩ… ${Math.round((performance.now() - t0) / 1000)}s`; renderAiLog(); } }, 1000);
-  try {
-    let last = 0;
-    const { text, finish } = await aiCall(system, user, txt => {
-      if (/^[🔐✋]/u.test(txt)) { bot.text = txt; renderAiLog(); return; }
-      const now = performance.now(); if (now - last < 250) return; last = now;
-      const note = aiNote(txt), codeLen = Math.max(0, txt.length - (txt.indexOf('```') >= 0 ? txt.indexOf('```') : txt.length));
-      bot.text = (note ? note + '\n\n' : '') + `✍️ Đang viết code… ${(codeLen / 1000).toFixed(1)}k ký tự · ${Math.round((now - t0) / 1000)}s`; renderAiLog();
-    }, AI.ctrl.signal);
-    const { code, complete } = extractHtml(text);
-    if (!code) throw new Error('AI không trả về code HTML. Thử nói rõ hơn, ví dụ "viết video…".\n\n' + text.slice(0, 400));
-    if (!complete) throw new Error(`Code bị cắt giữa chừng${finish ? ' (' + finish + ')' : ''}. Thử yêu cầu video ngắn hơn hoặc ít cảnh hơn, hoặc gửi lại.`);
-    AI.versions.push({ code, prompt, lines: code.split('\n').length });
-    bot.text = aiNote(text) || 'Xong!'; bot.v = AI.versions.length - 1;
-    loadCode(code);
-    toast('Đã nạp code mới, đang xem trước');
-  } catch (e) {
-    bot.err = true;
-    bot.text = e.name === 'AbortError' ? 'Đã dừng.' : (e instanceof TypeError && !aiIsWeb() ? 'Không kết nối được tới ' + (AI.provider === 'gemini' ? 'Gemini' : 'OpenAI') + '. Kiểm tra Internet (trang trên claude.ai bị chặn gọi ra ngoài, hãy dùng app hoặc file index.html).' : e.message);
-  } finally {
-    clearInterval(tick); AI.busy = false; AI.ctrl = null; $('aiSend').disabled = false; $('aiStop').style.display = 'none';
-    renderAiLog(); syncAiUI(); saveAiCfg();
-  }
-}
-
 async function aiLoadModels(silent) {
-  if (aiIsWeb()) return;
   const key = aiKey(); if (!key) { if (!silent) toast('Nhập API key trước'); return; }
   try {
     let ids = [];
@@ -1993,34 +1078,6 @@ async function aiLoadModels(silent) {
   } catch (e) { if (!silent) toast(e instanceof TypeError ? 'Không kết nối được' : e.message, 6000); }
 }
 
-function initAi() {
-  loadAiCfg(); syncAiUI(); renderAiLog();
-  $('aiProvider').onchange = () => { AI.provider = $('aiProvider').value; syncAiUI(); saveAiCfg(); aiLoadModels(true); };
-  $('aiModel').onchange = () => { const v = $('aiModel').value.trim(); if (AI.provider === 'gemini') AI.gModel = v; else AI.oModel = v; saveAiCfg(); };
-  $('aiKey').onchange = () => {
-    const v = $('aiKey').value.trim();
-    if (AI.provider === 'gemini') { TTS.gKey = v; if (TTS.provider !== 'local' || !SERVER) TTS.provider = 'gemini'; saveTtsCfg(); syncTtsUI(); renderTracks(); }
-    else AI.oKey = v;
-    saveAiCfg(); aiLoadModels(true);
-  };
-  $('aiReloadModels').onclick = () => aiLoadModels(false);
-  $('aiWebShow').onclick = () => H2VWeb.show(aiWebSite());
-  $('aiWebKeep').onchange = () => { H2VWeb.state.keep = $('aiWebKeep').checked; };
-  $('aiStyles').onclick = e => {
-    const b = e.target.closest('.chip'); if (!b) return;
-    if (b.dataset.edit) AI.editOpen = !AI.editOpen; else AI.style = b.dataset.style;
-    syncAiUI(); saveAiCfg();
-  };
-  $('aiLog').onclick = e => {
-    const r = e.target.closest('[data-restore]'); if (r) { const v = AI.versions[+r.dataset.restore]; if (v) { loadCode(v.code); toast('Đã dùng lại bản này'); } return; }
-    const idea = e.target.closest('[data-idea]'); if (idea) { $('aiPrompt').value = idea.dataset.idea; $('aiPrompt').focus(); }
-  };
-  $('aiSend').onclick = aiSend;
-  $('aiStop').onclick = () => { if (AI.ctrl) AI.ctrl.abort(); };
-  $('aiNew').onclick = () => { if (AI.busy) return; AI.log = []; AI.versions = []; AI.editOpen = false; renderAiLog(); syncAiUI(); saveAiCfg(); $('aiPrompt').focus(); };
-  $('aiPrompt').addEventListener('keydown', e => { if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); aiSend(); } });
-  if (aiKey()) aiLoadModels(true);
-}
 
 /* ---------------- Xuất video trong trình duyệt ---------------- */
 let cancelFlag = false;
@@ -2043,7 +1100,6 @@ async function pickAudioCodec() {
 }
 
 async function renderInBrowser() {
-  if (usesChars()) await updateLipsync();
   if (!('VideoEncoder' in window)) { setStatus('Trình duyệt này không hỗ trợ WebCodecs. Hãy dùng Chrome, Edge hoặc Safari 17+ mới nhất, hoặc dùng "Xuất HQ".', true); return; }
   const w = even(S.width), h = even(S.height), fps = S.fps, total = totalFrames();
   const bitrate = Math.round(w * h * fps * 0.12 * S.quality);
@@ -2111,7 +1167,6 @@ async function renderInBrowser() {
 
 /* ---------------- Xuất HQ qua máy chủ local ---------------- */
 async function renderOnServer() {
-  if (usesChars()) await updateLipsync();
   stop(); beginJob();
   try {
     setStatus('Đang chuẩn bị âm thanh…');
@@ -2140,10 +1195,10 @@ async function renderOnServer() {
 function blobToB64(b) { return new Promise(r => { const fr = new FileReader(); fr.onload = () => r(fr.result.split(',')[1]); fr.readAsDataURL(b); }); }
 
 function beginJob() {
-  cancelFlag = false; $('btnRender').disabled = true; $('btnRenderHQ').disabled = true; $('btnCancel').style.display = '';
+  cancelFlag = false; $('btnRender').disabled = true; $('btnCancel').style.display = '';
   $('result').classList.remove('on'); setProg(0);
 }
-function endJob() { $('btnRender').disabled = false; $('btnRenderHQ').disabled = !SERVER; $('btnCancel').style.display = 'none'; }
+function endJob() { $('btnRender').disabled = false; $('btnCancel').style.display = 'none'; }
 
 let lastBlob = null, lastUrl = null;
 function showResult(blob, info) {
@@ -2164,11 +1219,10 @@ async function saveVideo() {
 function setTab(t) {
   S.tab = t;
   document.querySelectorAll('.tab').forEach(b => b.classList.toggle('on', b.dataset.tab === t));
-  const ai = t === 'ai', pp = t === 'prompt';
-  $('code').style.display = ai || pp ? 'none' : '';
-  $('aiPanel').style.display = ai ? 'flex' : 'none';
+  const pp = t === 'prompt';
+  $('code').style.display = pp ? 'none' : '';
   $('promptPanel').style.display = pp ? 'flex' : 'none';
-  if (ai) { syncAiUI(); setTimeout(() => $('aiPrompt').focus(), 0); } else if (pp) renderPP(); else $('code').value = S.code[t];
+  if (pp) renderSkill(); else $('code').value = S.code.html;
 }
 function syncSettingsUI() {
   $('w').value = S.width; $('h').value = S.height; $('fps').value = S.fps; $('dur').value = S.duration;
@@ -2181,21 +1235,19 @@ function applyMeta(html) {
   if (m.fps) S.fps = m.fps; if (m.duration) S.duration = m.duration;
 }
 function loadCode(html, css = '', js = '', autoAudio = true) {
-  S.code = { html, css, js }; applyMeta(html); setTab(S.tab === 'ai' || S.tab === 'prompt' ? S.tab : 'html'); syncSettingsUI(); markAudioDirty(); save(); reloadPreview(false);
+  S.code = { html, css, js }; applyMeta(html); setTab(S.tab === 'prompt' ? S.tab : 'html'); syncSettingsUI(); markAudioDirty(); save(); reloadPreview(false);
   detectAudio(autoAudio);
 }
 const looksLikeDoc = t => /^\s*(<!doctype\s+html|<html[\s>])/i.test(t);
 
 let editTimer = null;
 function init() {
-  EXAMPLES.forEach((ex, i) => { const o = document.createElement('option'); o.value = i; o.textContent = ex.name; $('exampleSel').appendChild(o); });
   SIZES.forEach(([n, w, h]) => { const c = document.createElement('button'); c.className = 'chip'; c.textContent = n; c.dataset.w = w; c.dataset.h = h;
     c.onclick = () => { S.width = w; S.height = h; syncSettingsUI(); save(); reloadPreview(); }; $('sizePresets').appendChild(c); });
 
   if (!restore() && EXAMPLES.length) { S.code = { html: EXAMPLES[0].html, css: '', js: '' }; applyMeta(S.code.html); }
-  initAi();
-  initChars();
-  initPP();
+  loadAiCfg();
+  initSkill();
   H2VStudio.init();
   $('btnStudio').onclick = () => H2VStudio.open();
   setTab('html'); syncSettingsUI(); renderTracks();
@@ -2227,7 +1279,6 @@ function init() {
   $('code').addEventListener('keydown', e => {
     if (e.key === 'Tab') { e.preventDefault(); const ta = e.target, s = ta.selectionStart; ta.setRangeText('  ', s, ta.selectionEnd, 'end'); ta.dispatchEvent(new Event('input')); }
   });
-  $('exampleSel').onchange = e => { const ex = EXAMPLES[e.target.value]; if (ex) loadCode(ex.html); e.target.value = ''; };
   $('btnOpen').onclick = () => $('fileOpen').click();
   $('fileOpen').onchange = async e => { const f = e.target.files[0]; if (f) loadCode(await f.text()); e.target.value = ''; };
 
@@ -2257,29 +1308,17 @@ function init() {
     addTrack(tr); const t = S.tracks[S.tracks.length - 1];
     await ensureMusic(t); renderTracks();
   };
-  $('addTts').onclick = () => {
-    addTrack({ kind: 'tts', name: 'Giọng đọc', text: '', voice: S.lastVoice || VOICES[0][0], gvoice: S.lastGVoice || 'Kore', style: '', rate: 0, start: 0.5 });
-    const nr = ttsNotReady(); if (nr) { toast(nr, 5000); $('ttsBox').open = true; }
-  };
   loadTtsCfg(); syncTtsUI();
   $('ttsProvider').onchange = () => { TTS.provider = $('ttsProvider').value; saveTtsCfg(); syncTtsUI(); renderTracks(); };
   [['gKey', 'gKey'], ['gModel', 'gModel'], ['azKey', 'azKey'], ['azRegion', 'azRegion']].forEach(([id, k]) =>
     $(id).addEventListener('change', () => { TTS[k] = $(id).value.trim(); saveTtsCfg(); renderTracks(); }));
-  $('btnScript').onclick = runScript;
-  $('btnScriptFromCode').onclick = () => {
-    const all = [S.code.html, S.code.css, S.code.js].join('\n');
-    const lines = all.split(/\r?\n/).filter(l => /^\s*(?:\/\/|\*|#)?\s*\[\s*\d+(?:[.,]\d+)?\s*s?\s*\]\s*\S/.test(l)).map(l => l.trim().replace(/^(\/\/|\*|#)\s*/, ''));
-    if (!lines.length) { toast('Không thấy dòng lời thoại dạng [0.5s] … trong code'); return; }
-    $('script').value = lines.join('\n'); toast('Đã lấy ' + lines.length + ' câu lời thoại');
-  };
   $('fitAudio').onclick = () => {
     let end = 0; S.tracks.forEach(t => { if (t.buffer && t.kind !== 'music' && !t.loop) end = Math.max(end, t.start + t.buffer.duration); });
     if (!end) { toast('Chưa có giọng đọc hay file audio để khớp'); return; }
     S.duration = Math.ceil((end + 0.5) * 2) / 2; syncSettingsUI(); markAudioDirty(); save(); updateTime(); toast('Thời lượng: ' + S.duration + 's');
   };
 
-  $('btnRender').onclick = renderInBrowser;
-  $('btnRenderHQ').onclick = renderOnServer;
+  $('btnRender').onclick = () => (SERVER ? renderOnServer() : renderInBrowser());
   $('btnCancel').onclick = () => { cancelFlag = true; };
   $('btnSave').onclick = saveVideo;
   new ResizeObserver(layoutStage).observe($('stage'));
@@ -2317,12 +1356,8 @@ async function detectServer() {
     if (!r.ok) return;
     const j = await r.json();
     SERVER = true; SERVER_PROXY = !!j.proxy;
-    if (j.rhubarb) { LIP.rhubarb = true; LIP.key = ''; scheduleLipsync(); }
-    $('btnRenderHQ').classList.add('pri'); $('btnRender').classList.remove('pri'); $('btnRender').textContent = 'Xuất nhanh (trình duyệt)';
-    $('btnRenderHQ').textContent = 'Xuất video (chất lượng cao)';
     $('srvBadge').textContent = j.app ? 'Bản ứng dụng ✓' : 'Máy chủ local ✓';
     $('srvBadge').classList.add('on');
-    $('btnRenderHQ').disabled = false; $('btnRenderHQ').title = 'Render bằng Chrome thật + FFmpeg (chính xác nhất)';
     let saved = null; try { saved = localStorage.getItem('h2v-tts'); } catch (e) {}
     SERVER_TTS = !!j.tts;
     if (j.tts && ((TTS.provider === 'gemini' && !TTS.gKey) || (TTS.provider === 'azure' && !TTS.azKey) || !saved)) TTS.provider = 'local';

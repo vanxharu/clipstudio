@@ -39,19 +39,17 @@ npm start
 
 ## Dùng web app
 
-**🤖 AI viết video (Gemini miễn phí hoặc ChatGPT):** mở tab **🤖 AI viết video** bên trái, dán API key (Gemini dùng chung key với giọng đọc), chọn phong cách (Bảng trắng, Chữ động, 3D Three.js, Biểu đồ, Tự do) rồi mô tả video. AI viết code đúng chuẩn của app. App tự nạp, tạo giọng đọc, nhạc và xem trước. Muốn sửa thì nhắn tiếp, ví dụ "chữ to hơn", "thêm cảnh cuối". Mỗi bản AI viết đều có nút **↩ Dùng lại bản này**.
-
-**Cách nhanh nhất: dán code là xong.** Copy code (ví dụ ChatGPT viết theo `PROMPT-cho-AI.md`) rồi bấm **📋 Dán code**, hoặc nhấn Ctrl+V vào ô code. Nếu code có khối `<script type="application/json" id="h2v-audio">`, app sẽ tự đọc lời thoại, giọng, nhạc nền, tạo giọng đọc và khớp thời lượng. Lần đầu app hỏi Gemini API key (miễn phí, chỉ nhập một lần). Sau đó bấm **▶ Xuất video**.
+**Cách nhanh nhất: dán code là xong.** Copy code (do Gem/Project cài **🧩 Bộ skill** viết) rồi bấm **📋 Dán code**, hoặc nhấn Ctrl+V vào ô code. Nếu code có khối `<script type="application/json" id="h2v-audio">`, app sẽ tự đọc lời thoại, giọng, nhạc nền, tạo giọng đọc và khớp thời lượng. Lần đầu app hỏi Gemini API key (miễn phí, chỉ nhập một lần). Sau đó bấm **▶ Xuất video**.
 
 
-1. Dán code vào tab **HTML** (có thể là cả một trang hoàn chỉnh), **CSS** hoặc **JS**. Bạn cũng có thể chọn **Mẫu có sẵn** hoặc **Mở file…**.
+1. Dán code vào tab **📄 Code video** (cả một trang HTML hoàn chỉnh), hoặc **Mở file…**.
 2. Chọn khung hình: 16:9, 9:16 (TikTok/Reels/Shorts), 1:1, 4:5, 4K… Sau đó chọn FPS và thời lượng.
 3. Thêm âm thanh nếu muốn:
    - **Nhạc nền tự tạo**: 5 phong cách (Lo-fi, Ambient, Sôi động, Điện ảnh, Doanh nghiệp). Bấm 🎲 để đổi biến thể. Nhạc được tổng hợp mới hoàn toàn nên không vướng bản quyền.
    - **File audio**: mp3/wav/m4a của bạn, ví dụ nhạc tải từ Pixabay Music hoặc YouTube Audio Library.
-   - **Giọng đọc (TTS)**: mở mục **🎙 Cài đặt giọng đọc** rồi chọn dịch vụ (xem bên dưới). Bạn có thể dán cả kịch bản dạng `[0.5s] câu…`, hoặc bấm **Lấy lời thoại từ code**, rồi bấm **Tạo giọng đọc cho tất cả**. Bấm **Khớp thời lượng** để video dài bằng giọng đọc.
+   - **Giọng đọc**: app tự đọc lời thoại trong khối `h2v-audio` của code, nhiều ngôn ngữ. Chọn dịch vụ ở **🎙 Cài đặt giọng đọc** (xem bên dưới). Bấm **Khớp thời lượng** để video dài bằng giọng đọc.
    - Tuỳ chọn **Tự giảm nhạc khi có giọng đọc** sẽ hạ nhạc nền xuống lúc có người nói.
-4. Bấm **Xuất MP4 (trong trình duyệt)** hoặc **Xuất HQ**.
+4. Bấm **▶ Xuất video**. Bản app xuất bằng Chrome thật + FFmpeg; bản web xuất ngay trong trình duyệt.
 
 ### Hai chế độ xuất khác nhau thế nào?
 
@@ -60,12 +58,12 @@ npm start
 
 ## 🧩 Bộ skill cho ChatGPT / Gemini (miễn phí)
 
-Tab **📝 Tạo prompt → 🧩 Bộ skill GPT/Gem** tạo sẵn một hướng dẫn chính và 5 file kiến thức (quy tắc, phong cách, nhân vật của bạn, file mẫu).
+Tab **🧩 Bộ skill GPT/Gem** tạo sẵn một hướng dẫn chính và 5 file kiến thức (quy tắc, phong cách, file mẫu).
 
 - **Gemini**: tạo Gem, dán hướng dẫn chính vào Instructions, tải 5 file lên Knowledge.
 - **ChatGPT**: tạo Project, dán hướng dẫn chính vào Instructions của dự án, thêm 5 file (bản miễn phí cho tối đa 5 file).
 - Sau đó chỉ cần nhắn "làm video về…", copy code AI trả về, bấm **📋 Dán code** trong app.
-- Thêm/sửa nhân vật thì tải lại file `1-quy-tac-va-phong-cach.md` và thay file cũ.
+- Giọng đọc đọc được nhiều ngôn ngữ: app tự nhận ngôn ngữ của lời thoại (hoặc trường `"lang"` trong khối h2v-audio, ví dụ `"en-US"`, `"ja-JP"`).
 
 ## 📺 YouTube Studio
 
@@ -74,35 +72,13 @@ Bấm **📺 YouTube Studio** trên thanh trên cùng. Thanh bên trái có các
 - **🏠 Dự án:** mỗi video là một dự án, tự lưu trong app. Có thống kê lượt chạy AI, model và thời gian AI trung bình.
 - **📺 Phân tích:** dán link YouTube để lấy thông tin video (kênh, thời lượng, lượt xem, lượt thích, ngày đăng) và **lời thoại gốc** (văn bản / có mốc thời gian / SRT; copy, xuất TXT/SRT). App thử lấy phụ đề YouTube trước, không được thì **nhờ Gemini nghe video** (chỉ video công khai, tốn lượt miễn phí). Cũng có thể tự dán hoặc tải file .txt/.srt. Bấm **Phân tích kịch bản** để AI phân tích cấu trúc, hook, cảm xúc, cách cải thiện.
 - **✍️ Viết lại:** 5 chế độ (từ link YouTube, file tải lên, không viết lại, link tham khảo, ý tưởng), mức viết lại nhẹ/vừa/hoàn toàn, giữ ý chính/cảm xúc/CTA, ngôn ngữ, thời lượng, hướng dẫn thêm. Kết quả có 3 tab: **kịch bản mới**, **so sánh thay đổi** (đỏ/xanh) và **phụ đề SRT**.
-  **🎬 Dựng video từ kịch bản:** *video đầy đủ* (đọc hết kịch bản, phụ đề chạy đúng theo giọng thật, có thể có nhân vật dẫn chuyện) hoặc *video ngắn bằng AI* (≤ 60 giây).
+  **🎬 Dựng video từ kịch bản:** *video đầy đủ* (đọc hết kịch bản, phụ đề chạy đúng theo giọng thật) hoặc *video ngắn bằng AI* (≤ 60 giây).
 - **🏷️ SEO:** tiêu đề gợi ý có điểm SEO (chọn một để dùng cho thumbnail và mô tả), bảng từ khoá chính/phụ/dài, tag YouTube và báo cáo chi tiết.
 - **🖼️ Thumbnail:** 3 ý tưởng kèm prompt vẽ ảnh, có nút **Copy + mở ChatGPT/Gemini**.
 - **📄 Mô tả:** mô tả có chương theo mốc thời gian, 10 hashtag, bình luận ghim, bài đăng cộng đồng.
 - **⚙️ Cài đặt:** AI dùng cho Studio (Gemini/ChatGPT, model, key) và thông tin kênh (email, fanpage…).
 
 Đọc dữ liệu YouTube cần **bản app (.exe) hoặc `npm start`**, vì trình duyệt chặn đọc trực tiếp. Kịch bản dài cần nhiều lượt tạo giọng: Gemini miễn phí có giới hạn số lượt mỗi ngày, nên dùng Azure (500k ký tự/tháng) hoặc edge-tts.
-
-## 📝 Tạo prompt cho ChatGPT / Gemini
-
-Tab **📝 Tạo prompt** bên trái tạo sẵn prompt cho 4 việc:
-- **🎨 Vẽ nhân vật:** một ảnh lưới nhiều tư thế, cùng một nhân vật, nền một màu. Có thể đính kèm hình bạn tự vẽ để AI vẽ theo.
-- **👄 Vẽ hình miệng:** 3 hình (đóng/hé/mở) hoặc 9 hình chuẩn Rhubarb, có mảng màu da để che miệng gốc.
-- **📜 Kịch bản:** chia cảnh, lời thoại và khối JSON lời thoại để dán vào app.
-- **🎬 Code video:** đầy đủ luật của app, phong cách, nhân vật, file mẫu, lời thoại có sẵn.
-
-Bấm **📋 Copy + mở ChatGPT/Gemini** rồi dán (Ctrl+V). Ảnh AI vẽ xong thì tải về và vào **🧑‍🎨 Nhân vật → 📐 Nạp ảnh lưới**. App tự xoá nền, cắt từng ô và đặt tên theo đúng prompt vừa tạo. Các tư thế được giữ cùng tỉ lệ để nhân vật không to nhỏ khi đổi tư thế.
-
-## Nhân vật bạn tự vẽ (🧑‍🎨 Nhân vật)
-
-1. Bấm **🧑‍🎨 Nhân vật** → **＋ Nhân vật mới**, đặt tên và mô tả (để AI hiểu nhân vật).
-2. Kéo thả các ảnh **PNG nền trong suốt**, mỗi ảnh một tư thế (vui, buồn, chỉ tay…). Tên file thành tên tư thế. App tự cắt viền trống và thu nhỏ ảnh.
-3. **Nhép miệng:** vẽ hình miệng thành PNG riêng (có tô màu da để che miệng gốc) rồi bấm **👄 Đặt miệng** trên từng tư thế để chỉ chỗ đặt và chỉnh cỡ.
-   - Đơn giản: 3 hình (đóng, hé, mở). Miệng mở theo độ lớn giọng.
-   - Chính xác: 6–9 hình A–F (G, H, X tuỳ chọn) theo chuẩn Rhubarb Lip Sync. Bản .exe có sẵn Rhubarb nên tự nhận âm tiết. Chạy từ mã nguồn thì đặt Rhubarb vào `vendor/rhubarb/`.
-4. Bấm **▶ Thử nhân vật trong video mẫu** để xem ngay. Hoặc nhắn tab AI, ví dụ "cho Mèo Cam giới thiệu quán cà phê". AI tự dùng đúng nhân vật và tư thế.
-5. **Xuất…/Nhập…** để mang nhân vật sang máy khác (file `.h2v-char.json`).
-
-Nhân vật được lưu trong app (IndexedDB) và dùng lại được cho mọi video. Trong code, nhân vật được gọi bằng `H2V.character('ten', {...})`, xem `PROMPT-cho-AI.md`.
 
 ## Giọng đọc ngay trên web (không cần cài gì)
 
