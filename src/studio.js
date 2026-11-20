@@ -535,7 +535,7 @@ var H2VStudio = (function () {
     }
     var code = longVideoCode(p, v);
     close(); loadCode(code);
-    toast('Đã dựng video. App đang tạo giọng đọc cho từng đoạn, xong là xem trước và xuất được.', 6000);
+    toast('Đã dựng video. Bấm 🎙 Tạo âm thanh ở thanh trên cùng để tạo giọng đọc, rồi Xuất video.', 7000);
   }
   function longVideoCode(p, v) {
     var W = v.fmt === '9:16' ? 1080 : 1920, H = v.fmt === '9:16' ? 1920 : 1080, vert = H > W;

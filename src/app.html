@@ -930,6 +930,7 @@ function setAuto(sub, cls, opts = {}) {
   $('abKey').style.display = opts.needKey ? '' : 'none';
   $('abVoice').style.display = opts.voiceBtn ? '' : 'none';
   if (opts.voiceBtn) $('abVoice').textContent = opts.voiceBtn;
+  $('abVoice').classList.toggle('pri', !!opts.voiceBtn && /Tạo/.test(opts.voiceBtn));
 }
 
 async function applyAudioSpec() {
@@ -1007,12 +1008,16 @@ function detectAudio(auto) {
   if (auto) { applyAudioSpec(); return; }
   if (JSON.stringify(spec) !== AUTO.hash) {
     const hasAuto = S.tracks.some(t => t.auto);
-    setAuto(hasAuto ? 'Kịch bản trong code đã thay đổi.' : 'Đã nhận kịch bản trong code.', '', { voiceBtn: hasAuto ? '🎙 Cập nhật giọng đọc' : '🎙 Tạo giọng đọc & nhạc' });
+    setAuto(hasAuto ? 'Kịch bản trong code đã thay đổi. Bấm 🎙 để tạo lại âm thanh.' : 'Đã nhận kịch bản. Bấm 🎙 Tạo âm thanh khi sẵn sàng.', '', { voiceBtn: hasAuto ? '🎙 Tạo lại âm thanh' : '🎙 Tạo âm thanh' });
   } else setAuto(S.tracks.some(t => t.auto && t.kind === 'tts' && t.buffer) ? '✓ Giọng đọc đã sẵn sàng.' : '', 'ok');
 }
 
 async function exportVideo() {
   if (AUTO.busy) { toast('Đang tạo giọng đọc, đợi xong rồi xuất nhé'); return; }
+  if (AUTO.spec && !AUTO.spec.error && (AUTO.spec.lines.length || AUTO.spec.music) && JSON.stringify(AUTO.spec) !== AUTO.hash && AUTO.warned !== JSON.stringify(AUTO.spec)) {
+    toast('Chưa tạo âm thanh cho kịch bản này. Bấm 🎙 Tạo âm thanh trước (hoặc bấm Xuất video lần nữa để xuất không tiếng).', 6000);
+    AUTO.warned = JSON.stringify(AUTO.spec); return;
+  }
   const go = SERVER ? renderOnServer : renderInBrowser;
   $('result').closest('.card').scrollIntoView({ behavior: 'smooth', block: 'start' });
   await go();
@@ -1372,7 +1377,7 @@ function applyMeta(html) {
   if (m.width) S.width = even(m.width); if (m.height) S.height = even(m.height);
   if (m.fps) S.fps = m.fps; if (m.duration) S.duration = m.duration;
 }
-function loadCode(html, css = '', js = '', autoAudio = true) {
+function loadCode(html, css = '', js = '', autoAudio = false) { // âm thanh chỉ tạo khi bấm nút 🎙
   S.code = { html, css, js }; applyMeta(html); setTab(S.tab === 'prompt' ? S.tab : 'html'); syncSettingsUI(); markAudioDirty(); save(); reloadPreview(false);
   detectAudio(autoAudio);
 }
