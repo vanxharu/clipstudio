@@ -275,9 +275,17 @@
         <summary>🎙 Cài đặt giọng đọc</summary>
         <div class="grid" style="margin-top:10px">
           <label class="f">Dịch vụ giọng đọc<select id="ttsProvider">
-            <option value="gemini">Google Gemini (miễn phí)</option>
+            <option value="piper">Piper: AI trên máy (miễn phí, không giới hạn)</option>
+            <option value="gemini">Google Gemini (miễn phí, ít lượt)</option>
             <option value="azure">Microsoft Azure (miễn phí 500k ký tự/tháng)</option>
             <option value="local">Giọng Windows (miễn phí, offline, không cần key)</option></select></label>
+        </div>
+        <div id="ttsCfg-piper" class="ttscfg">
+          <div class="grid" style="margin-top:8px">
+            <label class="f">Ngôn ngữ<select id="pLang"></select></label>
+            <label class="f">Giọng<select id="pVoice"><option value="">Tự chọn</option></select></label>
+          </div>
+          <p class="note">Giọng AI chạy ngay trên máy bạn (Piper, mã nguồn mở): miễn phí, <b>không giới hạn</b>, không cần key, không cần mạng sau khi tải giọng. Mỗi giọng tải một lần (~20–110 MB). Nghe tự nhiên kém Gemini/Azure một chút. Chỉ có trong bản app. <span id="piperState"></span></p>
         </div>
         <div id="ttsCfg-gemini" class="ttscfg">
           <div class="grid" style="margin-top:8px">
@@ -286,7 +294,7 @@
               <option value="gemini-3.1-flash-tts-preview">gemini-3.1-flash-tts-preview</option>
               <option value="gemini-2.5-flash-preview-tts">gemini-2.5-flash-preview-tts</option></select></label>
           </div>
-          <p class="note">Lấy key miễn phí tại <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">aistudio.google.com/apikey</a>: đăng nhập Google → Create API key, không cần thẻ. Gói miễn phí giới hạn số lượt mỗi phút/ngày, và Google có thể dùng dữ liệu gói miễn phí để cải thiện sản phẩm.</p>
+          <p class="note">⚠️ Gói miễn phí chỉ được rất ít lượt mỗi ngày. Hết lượt thì app <b>tự chuyển sang Piper</b> (hoặc Azure nếu có key) và đọc lại cả video bằng một giọng cho đồng nhất. Lấy key miễn phí tại <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">aistudio.google.com/apikey</a>: đăng nhập Google → Create API key, không cần thẻ. Gói miễn phí giới hạn số lượt mỗi phút/ngày, và Google có thể dùng dữ liệu gói miễn phí để cải thiện sản phẩm.</p>
         </div>
         <div id="ttsCfg-azure" class="ttscfg">
           <div class="grid" style="margin-top:8px">
@@ -581,7 +589,7 @@ function renderTracks() {
       extra = `<div class="row"><select class="inp" data-k="preset">${Object.entries(H2VMusic.PRESETS).map(([k, p]) => `<option value="${k}" ${k === tr.preset ? 'selected' : ''}>${p.name}</option>`).join('')}</select>
         <button class="btn" data-act="reroll">🎲 Biến thể khác</button><span>${tr.info ? tr.info.bpm + ' BPM · giọng ' + tr.info.key : ''}</span></div>`;
     } else if (tr.kind === 'tts') {
-      const g = TTS.provider === 'gemini', vk = g ? 'gvoice' : 'voice', cur = g ? (tr.gvoice || 'Kore') : tr.voice;
+      const g = (tr.provider || TTS.provider) === 'gemini', vk = g ? 'gvoice' : 'voice', cur = g ? (tr.gvoice || 'Kore') : tr.voice;
       const nr = ttsNotReady();
       extra = `<textarea data-k="text" placeholder="Nhập nội dung cần đọc…">${escapeHtml(tr.text || '')}</textarea>
         <div class="row"><select class="inp" data-k="${vk}">${(g ? GEMINI_VOICES : VOICES).map(([v, n]) => `<option value="${v}" ${v === cur ? 'selected' : ''}>${n}</option>`).join('')}</select>
@@ -632,22 +640,64 @@ const GEMINI_VOICES = [
 ];
 function loadTtsCfg() { try { Object.assign(TTS, JSON.parse(localStorage.getItem('h2v-tts') || '{}')); } catch (e) {} }
 function saveTtsCfg() { try { localStorage.setItem('h2v-tts', JSON.stringify(TTS)); } catch (e) {} }
-let SERVER_TTS = false;
+let SERVER_TTS = false, SERVER_PIPER = false;
+// Dịch vụ giọng đọc: dùng được không, và đang "hết lượt" tới khi nào
+const TTS_NAMES = { piper: 'Piper', gemini: 'Gemini', azure: 'Azure', local: 'giọng Windows' };
+let TTS_EXH = {}; try { TTS_EXH = JSON.parse(localStorage.getItem('h2v-tts-exh') || '{}'); } catch (e) {}
+function ttsReady(p) {
+  if (p === 'gemini') return !!TTS.gKey.trim();
+  if (p === 'azure') return !!(TTS.azKey.trim() && TTS.azRegion.trim());
+  if (p === 'piper') return SERVER && SERVER_PIPER;
+  if (p === 'local') return SERVER && SERVER_TTS;
+  return false;
+}
+const ttsExhausted = p => (TTS_EXH[p] || 0) > Date.now();
+/** Thứ tự thử: dịch vụ bạn chọn trước, rồi Azure → Piper → Gemini → giọng Windows. */
+function ttsChain() {
+  return [...new Set([TTS.provider, 'azure', 'piper', 'gemini', 'local'])].filter(p => ttsReady(p) && !ttsExhausted(p));
+}
+function markExhausted(p, untilMs) { TTS_EXH[p] = untilMs; try { localStorage.setItem('h2v-tts-exh', JSON.stringify(TTS_EXH)); } catch (e) {} }
+/** Hạn mức theo ngày của Gemini làm mới lúc nửa đêm giờ Thái Bình Dương. */
+function nextPacificMidnight() {
+  const f = new Intl.DateTimeFormat('en-US', { timeZone: 'America/Los_Angeles', hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  const [h, m, sec] = f.format(new Date()).split(':').map(Number);
+  return Date.now() + ((24 - (h % 24)) * 3600 - m * 60 - sec) * 1000 + 60000;
+}
+class QuotaError extends Error { constructor(msg, provider, untilMs) { super(msg); this.quota = true; this.provider = provider; this.until = untilMs; } }
 function ttsNotReady() {
-  // Không có key nhưng app có giọng Edge miễn phí → tự chuyển sang, khỏi hỏi key
-  const noKey = (TTS.provider === 'gemini' && !TTS.gKey.trim()) || (TTS.provider === 'azure' && !(TTS.azKey.trim() && TTS.azRegion.trim()));
-  if (noKey && SERVER && SERVER_TTS) { TTS.provider = 'local'; saveTtsCfg(); try { syncTtsUI(); } catch (e) {} }
-  if (TTS.provider === 'local') return SERVER ? '' : 'Cần chạy máy chủ local (npm start)';
-  if (TTS.provider === 'gemini') return TTS.gKey.trim() ? '' : 'Nhập Gemini API key trong "Cài đặt giọng đọc"';
-  if (TTS.provider === 'azure') return TTS.azKey.trim() && TTS.azRegion.trim() ? '' : 'Nhập Azure key và region trong "Cài đặt giọng đọc"';
+  if (ttsChain().length) return '';
+  if (!ttsReady(TTS.provider) && TTS.provider === 'piper') return 'Piper chỉ có trong bản app (.exe). Hãy chọn Gemini hoặc Azure và nhập key.';
+  if (ttsExhausted(TTS.provider)) return TTS_NAMES[TTS.provider] + ' đã hết lượt hôm nay. Chọn dịch vụ khác trong "Cài đặt giọng đọc".';
+  if (TTS.provider === 'local') return SERVER ? '' : 'Cần bản app (.exe) hoặc máy chủ local';
+  if (TTS.provider === 'gemini') return 'Nhập Gemini API key trong "Cài đặt giọng đọc"';
+  if (TTS.provider === 'azure') return 'Nhập Azure key và region trong "Cài đặt giọng đọc"';
   return 'Chưa chọn dịch vụ';
 }
 function syncTtsUI() {
   $('ttsProvider').value = TTS.provider; $('gKey').value = TTS.gKey; $('gModel').value = TTS.gModel;
   $('azKey').value = TTS.azKey; $('azRegion').value = TTS.azRegion;
-  ['gemini', 'azure', 'local'].forEach(p => $('ttsCfg-' + p).classList.toggle('on', p === TTS.provider));
+  ['piper', 'gemini', 'azure', 'local'].forEach(p => $('ttsCfg-' + p).classList.toggle('on', p === TTS.provider));
+  if (TTS.provider === 'piper') loadPiperVoices();
   $('localTtsState').textContent = SERVER ? '✓ Đã kết nối máy chủ local.' : 'Chưa thấy máy chủ local.';
+  $('piperState').textContent = SERVER_PIPER ? '' : '(Bản đang mở chưa có Piper.)';
 }
+/* ---- Piper: chọn giọng theo ngôn ngữ ---- */
+let piperLoadT = null;
+async function loadPiperVoices() {
+  if (!SERVER_PIPER) return;
+  const sel = $('pLang');
+  if (!sel.options.length) sel.innerHTML = LANGS.map(l => `<option value="${l[0]}">${l[1]}</option>`).join('');
+  const lang = TTS.pLang || (AUTO.spec && AUTO.spec.lines && AUTO.spec.lines.length ? resolveVoice(AUTO.spec).lang : 'vi-VN');
+  sel.value = lang;
+  const vs = $('pVoice'); vs.innerHTML = '<option value="">Đang tải danh sách…</option>';
+  try {
+    const r = await fetch('/api/piper/voices?lang=' + encodeURIComponent(lang)); if (!r.ok) throw new Error(await r.text());
+    const list = await r.json(), cur = (TTS.piperVoices || {})[lang] || '';
+    vs.innerHTML = `<option value="">Tự chọn (theo giọng nam/nữ trong code)</option>` + list.map(v => `<option value="${v.key}" ${v.key === cur ? 'selected' : ''}>${escapeHtml(v.name)} · ${v.quality}${v.gender ? ' · ' + (v.gender === 'female' ? 'nữ' : 'nam') : ''}${v.speakers > 1 ? ' · ' + v.speakers + ' người' : ''} · ${v.installed ? '✓ đã tải' : Math.round(v.size / 1048576) + ' MB'}</option>`).join('');
+    if (!list.length) vs.innerHTML = '<option value="">Piper chưa có giọng cho ngôn ngữ này</option>';
+  } catch (e) { vs.innerHTML = '<option value="">Không tải được danh sách (cần Internet lần đầu)</option>'; }
+}
+
 const escXml = s => String(s).replace(/[<>&'"]/g, c => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;', "'": '&apos;', '"': '&quot;' }[c]));
 function b64ToBytes(b64) { const s = atob(b64), u = new Uint8Array(s.length); for (let i = 0; i < s.length; i++) u[i] = s.charCodeAt(i); return u; }
 async function pcmToBuffer(b64, mime) {
@@ -668,14 +718,31 @@ function cloudFetch(url, opts) {
   if (SERVER_PROXY) return fetch('/api/proxy', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ url, method: opts.method, headers: opts.headers, body: opts.body }) });
   return fetch(url, opts);
 }
-async function synthesize(tr, onWait) {
+async function synthesizeAs(P, tr, onWait, onInfo) {
   const text = tr.text.trim();
-  if (TTS.provider === 'local') {
+  if (P === 'piper') {
+    // Ngôn ngữ và nam/nữ lấy theo giọng đã chọn của câu (vd vi-VN-NamMinhNeural → tiếng Việt, nam)
+    const vm = (tr.voice || '').match(/^[a-z]{2,3}-[A-Z]{2}/), vl = VOICES.find(x => x[0] === tr.voice);
+    const lang = vm ? vm[0] : (tr.lang || 'vi-VN'), gender = vl ? (/\(nam\)/.test(vl[1]) ? 'male' : 'female') : (tr.gender || '');
+    const body = JSON.stringify({ engine: 'piper', text, lang, gender, piperVoice: (TTS.piperVoices || {})[lang] || '', rate: tr.rate || 0 });
+    let poll = null;
+    if (onInfo) poll = setInterval(async () => {
+      try { const pr = await (await fetch('/api/piper/progress')).json(); const k = Object.keys(pr)[0];
+        if (k && pr[k].total) onInfo(`Đang tải giọng Piper "${k}" lần đầu: ${Math.round(pr[k].got / 1048576)}/${Math.round(pr[k].total / 1048576)} MB…`); } catch (e) {}
+    }, 1000);
+    try {
+      const r = await fetch('/api/tts', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body });
+      if (r.status === 422) throw Object.assign(new Error(await r.text()), { quota: true, skip: true, provider: 'piper' });
+      if (!r.ok) throw new Error(await r.text());
+      return ac().decodeAudioData(await r.arrayBuffer());
+    } finally { clearInterval(poll); }
+  }
+  if (P === 'local') {
     const r = await fetch('/api/tts', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text, voice: tr.voice, rate: tr.rate || 0 }) });
     if (!r.ok) throw new Error(await r.text());
     return ac().decodeAudioData(await r.arrayBuffer());
   }
-  if (TTS.provider === 'azure') {
+  if (P === 'azure') {
     const voice = tr.voice || 'vi-VN-HoaiMyNeural', lang = voice.split('-').slice(0, 2).join('-'), rate = Math.round(tr.rate || 0);
     const ssml = `<speak version='1.0' xml:lang='${lang}'><voice name='${voice}'><prosody rate='${rate >= 0 ? '+' : ''}${rate}%'>${escXml(text)}</prosody></voice></speak>`;
     const r = await cloudFetch(`https://${TTS.azRegion.trim()}.tts.speech.microsoft.com/cognitiveservices/v1`, {
@@ -683,7 +750,7 @@ async function synthesize(tr, onWait) {
       headers: { 'Ocp-Apim-Subscription-Key': TTS.azKey.trim(), 'Content-Type': 'application/ssml+xml', 'X-Microsoft-OutputFormat': 'audio-24khz-96kbitrate-mono-mp3' }
     });
     if (r.status === 401) throw new Error('Azure từ chối key (401). Kiểm tra lại key và region.');
-    if (r.status === 429) throw new Error('Azure báo vượt giới hạn (429). Đợi một lát rồi thử lại.');
+    if (r.status === 429 || r.status === 403) throw new QuotaError('Azure báo hết hạn mức miễn phí (' + r.status + ').', 'azure', Date.now() + (r.status === 403 ? 6 * 3600e3 : 120e3));
     if (!r.ok) throw new Error('Azure lỗi ' + r.status + ': ' + (await r.text()).slice(0, 200));
     return ac().decodeAudioData(await r.arrayBuffer());
   }
@@ -699,9 +766,13 @@ async function synthesize(tr, onWait) {
   for (let attempt = 0; ; attempt++) {
     const r = await cloudFetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-goog-api-key': TTS.gKey.trim() }, body });
     let j = null; try { j = await r.json(); } catch (e) {}
-    if (r.status === 429 && attempt < 4) {
+    if (r.status === 429) {
+      const det = (j && j.error && j.error.details) || [], msg = (j && j.error && j.error.message) || '';
+      const daily = /per ?day|PerDay|daily/i.test(msg + JSON.stringify(det));
+      if (daily || attempt >= 2) throw new QuotaError(daily ? 'Gemini đã hết lượt miễn phí hôm nay.' : 'Gemini đang quá tải lượt (429).', 'gemini', daily ? nextPacificMidnight() : Date.now() + 120e3);
       let wait = 20 * (attempt + 1);
-      const d = j && j.error && (j.error.details || []).find(x => x.retryDelay); if (d) wait = Math.ceil(parseFloat(d.retryDelay)) + 1;
+      const d = det.find(x => x.retryDelay); if (d) wait = Math.ceil(parseFloat(d.retryDelay)) + 1;
+      if (wait > 70) throw new QuotaError('Gemini bắt chờ ' + wait + 's.', 'gemini', Date.now() + wait * 1000);
       if (onWait) onWait(wait);
       await sleep(wait * 1000); continue;
     }
@@ -718,6 +789,21 @@ async function synthesize(tr, onWait) {
   }
 }
 
+/** Một câu: thử lần lượt các dịch vụ, gặp hết lượt thì chuyển dịch vụ kế tiếp. */
+async function synthesize(tr, onWait, onInfo) {
+  let last = null; const skip = new Set();
+  for (;;) {
+    const P = ttsChain().find(p => !skip.has(p)); if (!P) break;
+    try { const buf = await synthesizeAs(P, tr, onWait, onInfo); tr.provider = P; return buf; }
+    catch (e) {
+      if (!e.quota) throw e;
+      if (e.skip) skip.add(P); else markExhausted(e.provider, e.until);
+      last = e; const next = ttsChain().find(p => !skip.has(p));
+      if (next) toast(e.message + ' Chuyển sang ' + TTS_NAMES[next] + '…', 6000);
+    }
+  }
+  throw last || new Error(ttsNotReady() || 'Không có dịch vụ giọng đọc nào dùng được');
+}
 async function makeTts(tr, btn) {
   if (!tr.text || !tr.text.trim()) { toast('Hãy nhập nội dung cần đọc'); return false; }
   const nr = ttsNotReady(); if (nr) { toast(nr, 5000); $('ttsBox').open = true; return false; }
@@ -790,11 +876,12 @@ function resolveVoice(spec) {
   const lang = (spec.lang && LANGS.find(l => l[0].toLowerCase() === spec.lang.toLowerCase() || l[0].slice(0, 2) === spec.lang.toLowerCase().slice(0, 2))) ||
     (a && LANGS.find(l => a[0].startsWith(l[0]))) || LANGS.find(l => l[0] === detectLang((spec.lines || []).map(x => x.text).join(' '))) || LANGS[0];
   const voice = a && a[0].startsWith(lang[0]) ? a[0] : `${lang[0]}-${male ? lang[3] : lang[2]}Neural`;
-  return { gvoice: g ? g[0] : (male ? 'Charon' : 'Kore'), voice, lang: lang[0] };
+  return { gvoice: g ? g[0] : (male ? 'Charon' : 'Kore'), voice, lang: lang[0], gender: male ? 'male' : 'female' };
 }
 function voiceLabel(spec) {
   const r = resolveVoice(spec);
   if (TTS.provider === 'gemini') return (GEMINI_VOICES.find(x => x[0] === r.gvoice) || [, r.gvoice])[1];
+  if (TTS.provider === 'piper') return 'Piper · ' + (LANGS.find(l => l[0] === r.lang) || [, r.lang])[1] + ' · ' + (r.gender === 'male' ? 'nam' : 'nữ');
   return (VOICES.find(x => x[0] === r.voice) || [, r.voice])[1];
 }
 function setAuto(sub, cls, opts = {}) {
@@ -825,27 +912,44 @@ async function applyAudioSpec() {
   if (!spec.lines.length) { setAuto('✓ Đã thêm nhạc nền. Bấm ▶ Xuất video khi sẵn sàng.', 'ok'); return; }
   const nr = ttsNotReady();
   if (nr) {
-    const needKey = TTS.provider !== 'local' || !SERVER;
+    const needKey = !SERVER && (TTS.provider === 'gemini' || TTS.provider === 'piper');
     setAuto(needKey ? 'Cần Gemini API key (miễn phí, chỉ nhập một lần) để tạo giọng đọc.' : nr, 'err', { needKey });
     return;
   }
   AUTO.busy = true; $('abExport').disabled = true;
   const vv = resolveVoice(spec);
-  const made = [];
+  let made = [], switched = '';
   try {
-    for (let i = 0; i < spec.lines.length; i++) {
-      const ln = spec.lines[i];
-      const tr = { kind: 'tts', auto: true, text: ln.text, start: ln.start, voice: vv.voice, gvoice: vv.gvoice, style: spec.style, rate: spec.rate, volume: 1 };
-      const key = [TTS.provider, TTS.provider === 'gemini' ? TTS.gModel + ':' + vv.gvoice : vv.voice, spec.style, spec.rate, ln.text].join('|');
-      if (voiceCache.has(key)) tr.buffer = voiceCache.get(key);
-      else {
-        setAuto(`Đang tạo giọng đọc ${i + 1}/${spec.lines.length}: "${ln.text.slice(0, 60)}"…`);
-        tr.buffer = await synthesize(tr, s => setAuto(`Đạt giới hạn miễn phí, chờ ${s}s rồi tạo tiếp (${i + 1}/${spec.lines.length})…`));
-        voiceCache.set(key, tr.buffer);
+    // Cả video dùng MỘT dịch vụ cho đồng nhất giọng; dịch vụ hết lượt giữa chừng thì làm lại toàn bộ bằng dịch vụ kế tiếp
+    const skip = new Set();
+    for (;;) {
+      const P = ttsChain().find(p => !skip.has(p));
+      if (!P) throw new Error(ttsNotReady() || 'Mọi dịch vụ giọng đọc đều đã hết lượt. Chọn Piper (bản app) hoặc nhập key Azure.');
+      S.tracks = S.tracks.filter(t => !(t.auto && t.kind === 'tts')); made = [];
+      try {
+        for (let i = 0; i < spec.lines.length; i++) {
+          const ln = spec.lines[i];
+          const tr = { kind: 'tts', auto: true, text: ln.text, start: ln.start, voice: vv.voice, gvoice: vv.gvoice, lang: vv.lang, gender: vv.gender, style: spec.style, rate: spec.rate, volume: 1, provider: P };
+          const pv = P === 'gemini' ? TTS.gModel + ':' + vv.gvoice : P === 'piper' ? ((TTS.piperVoices || {})[vv.lang] || vv.lang + ':' + vv.gender) : vv.voice;
+          const key = [P, pv, spec.style, spec.rate, ln.text].join('|');
+          if (voiceCache.has(key)) tr.buffer = voiceCache.get(key);
+          else {
+            setAuto(`${switched}Đang tạo giọng đọc (${TTS_NAMES[P]}) ${i + 1}/${spec.lines.length}: "${ln.text.slice(0, 60)}"…`);
+            tr.buffer = await synthesizeAs(P, tr, s => setAuto(`Đạt giới hạn miễn phí, chờ ${s}s rồi tạo tiếp (${i + 1}/${spec.lines.length})…`), msg => setAuto(msg));
+            voiceCache.set(key, tr.buffer);
+          }
+          tr.name = ln.text.slice(0, 40) + (ln.text.length > 40 ? '…' : '');
+          if (spec.chain && made.length) { const pv2 = made[made.length - 1]; tr.start = +(pv2.start + pv2.buffer.duration + spec.gap).toFixed(3); }
+          addTrack(tr); made.push(S.tracks[S.tracks.length - 1]);
+        }
+        break;
+      } catch (e) {
+        if (!e.quota) throw e;
+        if (e.skip) skip.add(P); else markExhausted(e.provider, e.until);
+        const next = ttsChain().find(p => !skip.has(p));
+        switched = `${e.message} Đọc lại cả video bằng ${next ? TTS_NAMES[next] : '…'}. `;
+        if (next) toast(switched, 7000);
       }
-      tr.name = ln.text.slice(0, 40) + (ln.text.length > 40 ? '…' : '');
-      if (spec.chain && made.length) { const pv = made[made.length - 1]; tr.start = +(pv.start + pv.buffer.duration + spec.gap).toFixed(3); }
-      addTrack(tr); made.push(S.tracks[S.tracks.length - 1]);
     }
     // Cảnh báo câu đè lên nhau
     const warn = [];
@@ -855,7 +959,7 @@ async function applyAudioSpec() {
     if (spec.fit && (end + spec.padEnd > S.duration || spec.chain)) { S.duration = Math.ceil((end + spec.padEnd) * 2) / 2; syncSettingsUI(); updateTime(); save(); }
     markAudioDirty(); renderTracks();
     if (/H2V_VOICE/.test(S.code.html + S.code.js)) reloadPreview(true);
-    setAuto(warn.length ? '⚠️ ' + warn.join('; ') + '. Hãy giãn mốc thời gian hoặc rút gọn câu.' : `✓ Đã tạo ${made.length} câu giọng đọc (đến giây ${end.toFixed(1)}). Bấm ▶ để nghe thử hoặc ▶ Xuất video.`, warn.length ? 'err' : 'ok');
+    setAuto(warn.length ? '⚠️ ' + warn.join('; ') + '. Hãy giãn mốc thời gian hoặc rút gọn câu.' : `${switched ? '↪ Đã chuyển dịch vụ. ' : ''}✓ Đã tạo ${made.length} câu giọng đọc (${TTS_NAMES[made[0] ? made[0].provider : TTS.provider]}) (đến giây ${end.toFixed(1)}). Bấm ▶ để nghe thử hoặc ▶ Xuất video.`, warn.length ? 'err' : 'ok');
   } catch (e) {
     setAuto('Lỗi tạo giọng đọc: ' + netHint(e), 'err', { voiceBtn: '↻ Thử lại', needKey: /key/i.test(e.message) });
   } finally { AUTO.busy = false; $('abExport').disabled = false; }
@@ -1309,7 +1413,9 @@ function init() {
     await ensureMusic(t); renderTracks();
   };
   loadTtsCfg(); syncTtsUI();
-  $('ttsProvider').onchange = () => { TTS.provider = $('ttsProvider').value; saveTtsCfg(); syncTtsUI(); renderTracks(); };
+  $('ttsProvider').onchange = () => { TTS.provider = $('ttsProvider').value; delete TTS_EXH[TTS.provider]; saveTtsCfg(); syncTtsUI(); renderTracks(); };
+  $('pLang').onchange = () => { TTS.pLang = $('pLang').value; saveTtsCfg(); loadPiperVoices(); };
+  $('pVoice').onchange = () => { const l = $('pLang').value; TTS.piperVoices = Object.assign({}, TTS.piperVoices, { [l]: $('pVoice').value }); saveTtsCfg(); };
   [['gKey', 'gKey'], ['gModel', 'gModel'], ['azKey', 'azKey'], ['azRegion', 'azRegion']].forEach(([id, k]) =>
     $(id).addEventListener('change', () => { TTS[k] = $(id).value.trim(); saveTtsCfg(); renderTracks(); }));
   $('fitAudio').onclick = () => {
@@ -1359,8 +1465,10 @@ async function detectServer() {
     $('srvBadge').textContent = j.app ? 'Bản ứng dụng ✓' : 'Máy chủ local ✓';
     $('srvBadge').classList.add('on');
     let saved = null; try { saved = localStorage.getItem('h2v-tts'); } catch (e) {}
-    SERVER_TTS = !!j.tts;
-    if (j.tts && ((TTS.provider === 'gemini' && !TTS.gKey) || (TTS.provider === 'azure' && !TTS.azKey) || !saved)) TTS.provider = 'local';
+    SERVER_TTS = !!j.tts; SERVER_PIPER = !!j.piper;
+    if (j.piper && (!saved || (TTS.provider === 'gemini' && !TTS.gKey) || (TTS.provider === 'azure' && !TTS.azKey) || (TTS.provider === 'local' && !TTS.v2))) { TTS.provider = 'piper'; TTS.v2 = true; saveTtsCfg(); }
+    else if (j.tts && ((TTS.provider === 'gemini' && !TTS.gKey) || (TTS.provider === 'azure' && !TTS.azKey) || !saved)) TTS.provider = 'local';
+    if (TTS.provider === 'piper' && !j.piper) TTS.provider = 'gemini';
     syncTtsUI();
     renderTracks();
   } catch (e) {}

@@ -7,6 +7,7 @@ const os = require('os');
 const path = require('path');
 const crypto = require('crypto');
 const core = require('./lib/core');
+const piper = require('./lib/piper');
 
 const PORT = process.env.PORT !== undefined ? +process.env.PORT : 3210;
 const HOST = process.env.HOST || '127.0.0.1';
@@ -44,7 +45,7 @@ const server = http.createServer(async (req, res) => {
   try {
     if (req.method === 'GET' && (p === '/' || p === '/index.html')) return send(res, 200, fs.readFileSync(INDEX), 'text/html; charset=utf-8');
     if (p === '/favicon.ico') { res.writeHead(204); return res.end(); }
-    if (p === '/api/health') return send(res, 200, { ok: true, tts: !!TTS, ffmpeg: FF, proxy: true, youtube: true, app: process.env.H2V_APP_VERSION || null });
+    if (p === '/api/health') return send(res, 200, { ok: true, tts: !!TTS, ffmpeg: FF, proxy: true, youtube: true, piper: piper.available(), app: process.env.H2V_APP_VERSION || null });
 
     // YouTube: thông tin video + phụ đề
     if (p === '/api/youtube' && req.method === 'GET') {
@@ -71,9 +72,24 @@ const server = http.createServer(async (req, res) => {
       const b = await readBody(req, 1e6);
       if (!b.text || !b.text.trim()) return send(res, 400, 'Thiếu nội dung', 'text/plain; charset=utf-8');
       const out = path.join(WORK, 'tts-' + crypto.randomUUID() + '.mp3');
-      await core.tts({ text: b.text.slice(0, 20000), voice: b.voice, rate: +b.rate || 0, out });
+      let used = '';
+      if (b.engine === 'piper') {
+        try { used = (await piper.tts({ text: b.text.slice(0, 20000), lang: b.lang, gender: b.gender, key: b.piperVoice, rate: +b.rate || 0, out, ffmpeg: core.ffmpegPath() })).voice; }
+        catch (e) { if (/chưa có giọng/.test(e.message)) return send(res, 422, e.message, 'text/plain; charset=utf-8'); throw e; }
+      }
+      else await core.tts({ text: b.text.slice(0, 20000), voice: b.voice, rate: +b.rate || 0, out });
       const data = fs.readFileSync(out); fs.rmSync(out, { force: true });
+      res.setHeader('X-Voice', used);
       return send(res, 200, data, 'audio/mpeg');
+    }
+
+    // Piper: danh sách giọng theo ngôn ngữ, tải giọng, tiến độ tải
+    if (p === '/api/piper/voices' && req.method === 'GET') return send(res, 200, await piper.voicesFor(url.searchParams.get('lang') || 'vi-VN'));
+    if (p === '/api/piper/progress' && req.method === 'GET') return send(res, 200, piper.progress());
+    if (p === '/api/piper/download' && req.method === 'POST') {
+      const b = await readBody(req, 1e4);
+      await piper.ensureVoice(String(b.key || ''));
+      return send(res, 200, { ok: true });
     }
 
     if (p === '/api/render' && req.method === 'POST') {

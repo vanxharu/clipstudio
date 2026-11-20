@@ -5,6 +5,12 @@ const path = require('path');
 if (!app.requestSingleInstanceLock()) { app.quit(); }
 
 process.env.H2V_APP_VERSION = app.getVersion();
+process.env.H2V_DATA = app.getPath('userData');
+// Piper (giọng đọc offline) đóng gói kèm app
+try {
+  const pp = path.join(process.resourcesPath || '', 'piper', process.platform === 'win32' ? 'piper.exe' : 'piper');
+  if (app.isPackaged && require('fs').existsSync(pp)) process.env.PIPER_PATH = pp;
+} catch (e) {}
 let win = null, server = null;
 
 function send(state) { if (win && !win.isDestroyed()) win.webContents.send('h2v-update', state); }

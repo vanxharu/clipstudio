@@ -1,7 +1,7 @@
 {
   "name": "html2video-studio",
   "productName": "HTML Video Studio",
-  "version": "1.8.0",
+  "version": "1.9.0",
   "description": "Biến HTML/CSS/JS thành video MP4: xem trước, render bằng Edge/Chrome + FFmpeg, giọng đọc TTS, nhạc nền tự tạo.",
   "author": "HTML Video Studio",
   "license": "MIT",
@@ -80,6 +80,15 @@
       {
         "provider": "github",
         "releaseType": "release"
+      }
+    ],
+    "extraResources": [
+      {
+        "from": "vendor/piper",
+        "to": "piper",
+        "filter": [
+          "**/*"
+        ]
       }
     ]
   }

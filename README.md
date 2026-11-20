@@ -80,6 +80,12 @@ Bấm **📺 YouTube Studio** trên thanh trên cùng. Thanh bên trái có các
 
 Đọc dữ liệu YouTube cần **bản app (.exe) hoặc `npm start`**, vì trình duyệt chặn đọc trực tiếp. Kịch bản dài cần nhiều lượt tạo giọng: Gemini miễn phí có giới hạn số lượt mỗi ngày, nên dùng Azure (500k ký tự/tháng) hoặc edge-tts.
 
+## 🎙 Giọng đọc Piper (offline, miễn phí, không giới hạn)
+
+Bản app (.exe) kèm sẵn [Piper](https://github.com/rhasspy/piper) (MIT): giọng AI chạy ngay trên máy, không cần key, không giới hạn lượt. Lần đầu dùng một ngôn ngữ, app tải giọng từ [rhasspy/piper-voices](https://huggingface.co/rhasspy/piper-voices) (khoảng 20–110 MB), sau đó chạy offline. Chọn giọng trong **🎙 Cài đặt giọng đọc → Piper**.
+
+**Tự chuyển dịch vụ khi hết lượt:** khi Gemini (hoặc Azure) báo hết hạn mức, app đánh dấu dịch vụ đó tạm nghỉ (Gemini làm mới lúc nửa đêm giờ Thái Bình Dương) và **đọc lại cả video** bằng dịch vụ kế tiếp (Azure → Piper → Gemini → giọng Windows) để cả video cùng một giọng. Ngôn ngữ Piper chưa có giọng (vd tiếng Nhật, Hàn) thì app tự bỏ qua Piper.
+
 ## Giọng đọc ngay trên web (không cần cài gì)
 
 | Dịch vụ | Miễn phí | Tiếng Việt | Cần gì |
