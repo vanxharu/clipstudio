@@ -742,13 +742,14 @@ async function synthesizeAs(P, tr, onWait, onInfo) {
     } finally { clearInterval(poll); }
   }
   if (P === 'local') {
-    const r = await fetch('/api/tts', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text, voice: tr.voice, rate: tr.rate || 0 }) });
+    const r = await fetch('/api/tts', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text, voice: tr.voice, rate: tr.rate || 0, pitch: tr.pitch || 0 }) });
     if (!r.ok) throw new Error(await r.text());
     return ac().decodeAudioData(await r.arrayBuffer());
   }
   if (P === 'azure') {
     const voice = tr.voice || 'vi-VN-HoaiMyNeural', lang = voice.split('-').slice(0, 2).join('-'), rate = Math.round(tr.rate || 0);
-    const ssml = `<speak version='1.0' xml:lang='${lang}'><voice name='${voice}'><prosody rate='${rate >= 0 ? '+' : ''}${rate}%'>${escXml(text)}</prosody></voice></speak>`;
+    const pitch = Math.round(tr.pitch || 0);
+    const ssml = `<speak version='1.0' xml:lang='${lang}'><voice name='${voice}'><prosody rate='${rate >= 0 ? '+' : ''}${rate}%' pitch='${pitch >= 0 ? '+' : ''}${pitch}%'>${escXml(text)}</prosody></voice></speak>`;
     const r = await cloudFetch(`https://${TTS.azRegion.trim()}.tts.speech.microsoft.com/cognitiveservices/v1`, {
       method: 'POST', body: ssml,
       headers: { 'Ocp-Apim-Subscription-Key': TTS.azKey.trim(), 'Content-Type': 'application/ssml+xml', 'X-Microsoft-OutputFormat': 'audio-24khz-96kbitrate-mono-mp3' }
@@ -844,8 +845,10 @@ const AUTO = { spec: null, hash: null, busy: false };
 
 function normSpec(raw) {
   const arr = raw.lines || raw.script || raw.voiceover || [];
-  const lines = arr.map(l => Array.isArray(l) ? { start: +l[0], text: String(l[1] ?? '') }
-      : { start: +(l.t ?? l.start ?? l.time ?? l.at), text: String(l.text ?? l.say ?? '') })
+  // Mỗi câu: [giây, "câu"] hoặc [giây, "câu", {"voice": "Orus", "style": "...", "rate": 0}] hoặc {t, text, voice, style}
+  const opt = o => (o && typeof o === 'object' ? { voice: String(o.voice || o.speaker || ''), style: o.style != null ? String(o.style) : null, rate: o.rate != null ? +o.rate : null } : {});
+  const lines = arr.map(l => Array.isArray(l) ? Object.assign({ start: +l[0], text: String(l[1] ?? '') }, typeof l[2] === 'string' ? { voice: l[2] } : opt(l[2]))
+      : Object.assign({ start: +(l.t ?? l.start ?? l.time ?? l.at), text: String(l.text ?? l.say ?? '') }, opt(l)))
     .filter(l => l.text.trim() && isFinite(l.start)).sort((a, b) => a.start - b.start);
   let music = raw.music;
   if (typeof music === 'string') music = { preset: music };
@@ -889,7 +892,24 @@ function resolveVoice(spec) {
   const voice = a && a[0].startsWith(lang[0]) ? a[0] : `${lang[0]}-${male ? lang[3] : lang[2]}Neural`;
   return { gvoice: g ? g[0] : (male ? 'Charon' : 'Kore'), voice, lang: lang[0], gender: male ? 'male' : 'female' };
 }
+/** Giọng cho từng câu. Cùng ngôn ngữ cho cả video; nam/nữ và "nhân vật" theo voice của câu. */
+function lineVoices(spec) {
+  const base = resolveVoice(spec), seen = { male: [], female: [] }, PITCH = [0, 12, -10, 22, -18, 30];
+  return spec.lines.map(ln => {
+    const vname = (ln.voice || spec.voice || '').trim();
+    const r = vname ? resolveVoice(Object.assign({}, spec, { voice: vname, lang: base.lang })) : base;
+    // Các nhân vật cùng giới: dịch vụ chỉ có 1 giọng nam/1 giọng nữ thì đổi cao độ cho dễ phân biệt
+    const list = seen[r.gender], ch = vname.toLowerCase() || '_';
+    if (!list.includes(ch)) list.push(ch);
+    return Object.assign({}, r, { lang: base.lang, name: vname, pitch: PITCH[list.indexOf(ch) % PITCH.length], style: ln.style != null ? ln.style : spec.style, rate: ln.rate != null ? ln.rate : spec.rate });
+  });
+}
 function voiceLabel(spec) {
+  const lv = lineVoices(spec), names = [...new Set(lv.map(v => v.name || '_'))];
+  if (names.length > 1) {
+    const m = new Set(lv.filter(v => v.gender === 'male').map(v => v.name)).size, f = names.length - m;
+    return `${(LANGS.find(l => l[0] === lv[0].lang) || [, lv[0].lang])[1]} · ${names.length} giọng (${m} nam, ${f} nữ)`;
+  }
   const r = resolveVoice(spec);
   if (TTS.provider === 'gemini') return (GEMINI_VOICES.find(x => x[0] === r.gvoice) || [, r.gvoice])[1];
   if (TTS.provider === 'piper') return 'Piper · ' + (LANGS.find(l => l[0] === r.lang) || [, r.lang])[1] + ' · ' + (r.gender === 'male' ? 'nam' : 'nữ');
@@ -928,7 +948,7 @@ async function applyAudioSpec() {
     return;
   }
   AUTO.busy = true; $('abExport').disabled = true;
-  const vv = resolveVoice(spec);
+  const vv = resolveVoice(spec), LV = lineVoices(spec);
   let made = [], switched = '';
   try {
     // Cả video dùng MỘT dịch vụ cho đồng nhất giọng; dịch vụ hết lượt giữa chừng thì làm lại toàn bộ bằng dịch vụ kế tiếp
@@ -941,9 +961,10 @@ async function applyAudioSpec() {
       try {
         for (let i = 0; i < spec.lines.length; i++) {
           const ln = spec.lines[i];
-          const tr = { kind: 'tts', auto: true, text: ln.text, start: ln.start, voice: vv.voice, gvoice: vv.gvoice, lang: vv.lang, gender: vv.gender, style: spec.style, rate: spec.rate, volume: 1, provider: P };
-          const pv = P === 'gemini' ? TTS.gModel + ':' + vv.gvoice : P === 'piper' ? ((TTS.piperVoices || {})[vv.lang] || vv.lang + ':' + vv.gender) : vv.voice;
-          const key = [P, pv, spec.style, spec.rate, ln.text].join('|');
+          const lv = LV[i];
+          const tr = { kind: 'tts', auto: true, text: ln.text, start: ln.start, voice: lv.voice, gvoice: lv.gvoice, lang: lv.lang, gender: lv.gender, pitch: lv.pitch, style: lv.style, rate: lv.rate, volume: 1, provider: P };
+          const pv = P === 'gemini' ? TTS.gModel + ':' + lv.gvoice : P === 'piper' ? ((TTS.piperVoices || {})[lv.lang] || lv.lang + ':' + lv.gender) : lv.voice + ':' + lv.pitch;
+          const key = [P, pv, lv.style, lv.rate, ln.text].join('|');
           if (voiceCache.has(key)) tr.buffer = voiceCache.get(key);
           else {
             setAuto(`${switched}Đang tạo giọng đọc (${TTS_NAMES[P]}) ${i + 1}/${spec.lines.length}: "${ln.text.slice(0, 60)}"…`);
@@ -1084,6 +1105,7 @@ QUY TẮC BẮT BUỘC
 <\/script>
  - lines: [giây bắt đầu, câu thoại], viết bằng ngôn ngữ người dùng yêu cầu (mặc định tiếng Việt), khớp từng cảnh; ~2.5 từ/giây; các câu KHÔNG chồng lên nhau, cách nhau ≥0.3s. Không cần lời thoại thì "lines":[].
  - voice: nữ Kore | Aoede | Zephyr | Leda; nam Puck | Charon | Fenrir | Orus (đọc được mọi ngôn ngữ). style: cách đọc ngắn gọn.
+ - NHIỀU NHÂN VẬT / HỘI THOẠI: thêm phần thứ ba cho từng câu: [giây, "câu", {"voice": "Orus", "style": "giọng ông lão hiền từ"}]. Mỗi nhân vật giữ MỘT voice suốt video, đúng giới tính (nữ Kore | Aoede | Zephyr | Leda, nam Puck | Charon | Fenrir | Orus); người kể chuyện dùng voice chung. App tự đổi sang giọng nam/nữ tương ứng khi dùng Piper, Azure hay giọng Windows.
  - lang: mã ngôn ngữ lời thoại khi KHÔNG phải tiếng Việt, ví dụ "en-US", "ja-JP", "ko-KR", "zh-CN", "fr-FR", "es-ES", "de-DE", "th-TH", "id-ID". Chữ trên hình và phụ đề cùng ngôn ngữ đó; font phải có đủ ký tự (Noto Sans JP/KR/SC, Noto Sans Thai…).
  - music.preset: lofi | ambient | upbeat | cinematic | corporate, hoặc "music": false.
  - Phụ đề (nếu có) đọc từ chính khối này: JSON.parse(document.getElementById('h2v-audio').textContent).

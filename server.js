@@ -77,7 +77,7 @@ const server = http.createServer(async (req, res) => {
         try { used = (await piper.tts({ text: b.text.slice(0, 20000), lang: b.lang, gender: b.gender, key: b.piperVoice, rate: +b.rate || 0, out, ffmpeg: core.ffmpegPath() })).voice; }
         catch (e) { if (e.unsupported) return send(res, 422, e.message, 'text/plain; charset=utf-8'); throw e; }
       }
-      else await core.tts({ text: b.text.slice(0, 20000), voice: b.voice, rate: +b.rate || 0, out });
+      else await core.tts({ text: b.text.slice(0, 20000), voice: b.voice, rate: +b.rate || 0, pitch: +b.pitch || 0, out });
       const data = fs.readFileSync(out); fs.rmSync(out, { force: true });
       res.setHeader('X-Voice', used);
       return send(res, 200, data, 'audio/mpeg');
