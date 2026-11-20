@@ -58,6 +58,16 @@ npm start
 - **Trong trình duyệt**: tool chụp DOM qua SVG rồi mã hoá bằng WebCodecs. Cách này nhanh và không cần cài gì. Hạn chế: một số thứ có thể hiển thị khác Chrome thật, như font từ trang khác không cho tải (CORS), `backdrop-filter`, iframe con hay ảnh bị chặn CORS. Canvas và WebGL thì được chụp trực tiếp nên luôn đúng. Trên Linux, Chrome thường không có bộ mã hoá AAC nên âm thanh sẽ là Opus (vẫn trong file MP4).
 - **HQ**: tool chụp ảnh màn hình bằng Chrome thật rồi mã hoá bằng FFmpeg (H.264 + AAC). Hình giống hệt khi mở trang trên Chrome và tương thích với mọi nền tảng.
 
+## 📝 Tạo prompt cho ChatGPT / Gemini
+
+Tab **📝 Tạo prompt** bên trái tạo sẵn prompt cho 4 việc:
+- **🎨 Vẽ nhân vật:** một ảnh lưới nhiều tư thế, cùng một nhân vật, nền một màu. Có thể đính kèm hình bạn tự vẽ để AI vẽ theo.
+- **👄 Vẽ hình miệng:** 3 hình (đóng/hé/mở) hoặc 9 hình chuẩn Rhubarb, có mảng màu da để che miệng gốc.
+- **📜 Kịch bản:** chia cảnh, lời thoại và khối JSON lời thoại để dán vào app.
+- **🎬 Code video:** đầy đủ luật của app, phong cách, nhân vật, file mẫu, lời thoại có sẵn.
+
+Bấm **📋 Copy + mở ChatGPT/Gemini** rồi dán (Ctrl+V). Ảnh AI vẽ xong thì tải về và vào **🧑‍🎨 Nhân vật → 📐 Nạp ảnh lưới**. App tự xoá nền, cắt từng ô và đặt tên theo đúng prompt vừa tạo. Các tư thế được giữ cùng tỉ lệ để nhân vật không to nhỏ khi đổi tư thế.
+
 ## Nhân vật bạn tự vẽ (🧑‍🎨 Nhân vật)
 
 1. Bấm **🧑‍🎨 Nhân vật** → **＋ Nhân vật mới**, đặt tên và mô tả (để AI hiểu nhân vật).
