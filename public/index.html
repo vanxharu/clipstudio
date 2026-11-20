@@ -315,7 +315,7 @@
           <label class="f">Dịch vụ giọng đọc<select id="ttsProvider">
             <option value="gemini">Google Gemini (miễn phí)</option>
             <option value="azure">Microsoft Azure (miễn phí 500k ký tự/tháng)</option>
-            <option value="local">Giọng Edge (miễn phí, không cần key)</option></select></label>
+            <option value="local">Giọng Windows (miễn phí, offline, không cần key)</option></select></label>
         </div>
         <div id="ttsCfg-gemini" class="ttscfg">
           <div class="grid" style="margin-top:8px">
@@ -334,7 +334,7 @@
           <p class="note">Tạo tài nguyên <b>Speech</b> gói <b>Free F0</b> tại <a href="https://portal.azure.com/#create/Microsoft.CognitiveServicesSpeechServices" target="_blank" rel="noopener">portal.azure.com</a>, rồi chép Key và Region ở mục "Keys and Endpoint". Có giọng Hoài My, Nam Minh. Đăng ký Azure cần thẻ để xác minh.</p>
         </div>
         <div id="ttsCfg-local" class="ttscfg">
-          <p class="note">Giọng đọc Microsoft Edge (Hoài My, Nam Minh và hàng trăm giọng khác), miễn phí, không cần key. Có sẵn trong bản app (.exe) hoặc khi chạy <code>npm start</code>. <span id="localTtsState"></span></p>
+          <p class="note">Dùng giọng đọc có sẵn trong Windows, miễn phí, chạy offline, không cần key (chỉ bản app .exe). Chưa có giọng tiếng Việt thì vào <b>Cài đặt Windows › Thời gian &amp; ngôn ngữ › Giọng nói › Thêm giọng nói › Tiếng Việt</b>, rồi mở lại app. Giọng Windows nghe máy hơn Gemini/Azure; muốn giọng tự nhiên hãy dùng Gemini (key miễn phí). <span id="localTtsState"></span></p>
         </div>
         <p class="note">🔒 Key chỉ lưu trong trình duyệt của bạn và gửi thẳng tới Google/Microsoft. Đừng chia sẻ trang khi đã nhập key.</p>
         <label class="f" style="margin-top:10px">Lời thoại theo mốc thời gian, mỗi dòng một câu, ví dụ: <code>[0.5s] Xin chào các bạn</code>
@@ -1424,7 +1424,7 @@ var H2VStudio = (function () {
       '<div class="st-row">Giọng <select class="inp" id="stVvoice" style="width:auto">' + GEMINI_VOICES.slice(0, 8).map(function (g) { return '<option value="' + g[0] + '"' + (g[0] === v.voice ? ' selected' : '') + '>' + g[1] + '</option>'; }).join('') + '</select>' +
       ' Nhạc <select class="inp" id="stVmusic" style="width:auto">' + Object.keys(H2VMusic.PRESETS).map(function (k) { return '<option value="' + k + '"' + (k === v.music ? ' selected' : '') + '>' + H2VMusic.PRESETS[k].name + '</option>'; }).join('') + '<option value="none"' + (v.music === 'none' ? ' selected' : '') + '>Không nhạc</option></select>' +
       ' Nền <select class="inp" id="stVtheme" style="width:auto"><option value="dark"' + (v.theme === 'dark' ? ' selected' : '') + '>Tối</option><option value="light"' + (v.theme === 'light' ? ' selected' : '') + '>Sáng</option><option value="paper"' + (v.theme === 'paper' ? ' selected' : '') + '>Giấy</option></select></div>' +
-      '<div class="st-empty">Kịch bản: ' + nWords + ' từ · ≈ ' + fmtTime(nWords / 2.5) + ' · cần ~' + nChunks + ' lượt tạo giọng. ' + (nChunks > 15 && TTS.provider === 'gemini' ? '⚠️ Gemini miễn phí giới hạn số lượt mỗi ngày: với video dài nên dùng Azure (500k ký tự/tháng) hoặc edge-tts trong bản app.' : '') + '</div>' +
+      '<div class="st-empty">Kịch bản: ' + nWords + ' từ · ≈ ' + fmtTime(nWords / 2.5) + ' · cần ~' + nChunks + ' lượt tạo giọng. ' + (nChunks > 15 && TTS.provider === 'gemini' ? '⚠️ Gemini miễn phí giới hạn số lượt mỗi ngày: với video dài nên dùng Azure (500k ký tự/tháng) hoặc giọng Windows trong bản app.' : '') + '</div>' +
       '<div class="st-row"><span class="sp" style="flex:1"></span><button class="btn pri" data-v="go">Dựng video</button></div></div></div>';
     document.body.appendChild(el);
     el.onclick = function (e) {

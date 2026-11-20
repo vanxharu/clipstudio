@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Máy chủ local: phục vụ web app + render HQ (Chrome + FFmpeg) + giọng đọc TTS (edge-tts)
+// Máy chủ local: phục vụ web app + render HQ (Chrome + FFmpeg) + giọng đọc TTS (giọng Windows / edge-tts nếu có)
 // Chạy: npm start   (mặc định http://localhost:3210)
 const http = require('http');
 const fs = require('fs');

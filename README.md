@@ -66,7 +66,7 @@ Chọn **🌐 ChatGPT trong app** hoặc **🌐 Gemini trong app** ở tab 🤖 
 - **YouTube Studio**: phân tích, viết lại kịch bản, SEO, mô tả đều chạy qua tài khoản của bạn. Không lấy được phụ đề thì app nhờ Gemini trong app xem link YouTube.
 - **Tạo ảnh nhân vật / miệng**: tab 📝 Tạo prompt có nút **🌐 Tự làm bằng ChatGPT/Gemini**; ảnh vẽ xong được tự tách nền và cắt lưới vào thư viện nhân vật.
 - **Thumbnail**: mỗi ý tưởng có nút vẽ trong app, ảnh hiện ngay và tải về được.
-- **Giọng đọc**: mặc định dùng giọng Microsoft Edge miễn phí, không cần key.
+- **Giọng đọc**: bản app dùng giọng có sẵn của Windows (miễn phí, offline, không cần key). Muốn giọng tự nhiên hơn, dùng Gemini TTS (key miễn phí).
 
 Lưu ý: giao diện ChatGPT/Gemini thay đổi thường xuyên. Nếu app không tự nhận câu trả lời, bấm **📥 Lấy code từ trang** hoặc **🖼 Lấy ảnh** trên khung. Tự động hoá trang web có thể trái điều khoản của OpenAI/Google; hãy dùng vừa phải, tự chịu trách nhiệm với tài khoản của mình.
 
