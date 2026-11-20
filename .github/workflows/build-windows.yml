@@ -1,13 +1,17 @@
 # Tự build bộ cài Windows (.exe) và phát hành để app tự cập nhật.
 #
-# Cách 1 (dễ nhất): GitHub > Actions > "Build Windows app" > Run workflow > nhập phiên bản (vd 1.0.1) > Run
-#                   -> build + tạo Release v1.0.1 -> mọi app đã cài sẽ tự tải bản mới.
-#                   Để trống ô phiên bản -> chỉ build thử, tải file .exe ở mục Artifacts (không phát hành).
-# Cách 2: đẩy tag git dạng v1.0.1  (git tag v1.0.1 && git push origin v1.0.1)
+# Cách phát hành (chọn một):
+#  1. Tăng "version" trong package.json (vd 1.0.0 -> 1.0.1) rồi đẩy lên nhánh main
+#     -> tự build + tạo Release v1.0.1 -> mọi app đã cài tự cập nhật.
+#  2. GitHub > Actions > "Build Windows app" > Run workflow > nhập phiên bản (vd 1.0.1) > Run.
+#     Để trống ô phiên bản = chỉ build thử, tải .exe ở mục Artifacts (không phát hành).
+#  3. Đẩy tag git dạng v1.0.1.
 name: Build Windows app
 
 on:
   push:
+    branches: [main]
+    paths: ['package.json']
     tags: ['v*']
   workflow_dispatch:
     inputs:
@@ -19,11 +23,13 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: build-windows-${{ github.ref }}
+  cancel-in-progress: false
+
 jobs:
   build:
     runs-on: windows-latest
-    env:
-      RELEASE_VERSION: ${{ startsWith(github.ref, 'refs/tags/v') && github.ref_name || inputs.version }}
     steps:
       - uses: actions/checkout@v4
 
@@ -31,32 +37,52 @@ jobs:
         with:
           node-version: 20
 
-      - name: Đặt số phiên bản
-        if: env.RELEASE_VERSION != ''
+      - name: Xác định phiên bản
         shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          INPUT_VERSION: ${{ inputs.version }}
         run: |
-          V="${RELEASE_VERSION#v}"
-          if ! [[ "$V" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then echo "::error::Phiên bản phải có dạng 1.2.3 (nhận được: $V)"; exit 1; fi
-          npm version "$V" --no-git-tag-version --allow-same-version
-          echo "Phát hành phiên bản $V"
+          MODE=test; V=""
+          if [[ "$GITHUB_REF" == refs/tags/v* ]]; then V="${GITHUB_REF_NAME#v}"; MODE=release
+          elif [[ "$GITHUB_EVENT_NAME" == "workflow_dispatch" && -n "$INPUT_VERSION" ]]; then V="${INPUT_VERSION#v}"; MODE=release
+          elif [[ "$GITHUB_EVENT_NAME" == "push" ]]; then
+            V=$(node -p "require('./package.json').version")
+            CODE=$(curl -s -o /dev/null -w "%{http_code}" -H "Authorization: Bearer $GH_TOKEN" \
+              "https://api.github.com/repos/$GITHUB_REPOSITORY/releases/tags/v$V")
+            if [[ "$CODE" == "200" ]]; then echo "Release v$V đã có, bỏ qua."; MODE=skip; else MODE=release; fi
+          fi
+          if [[ "$MODE" == "release" && ! "$V" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "::error::Phiên bản phải có dạng 1.2.3 (nhận được: $V)"; exit 1
+          fi
+          echo "MODE=$MODE" >> "$GITHUB_ENV"
+          echo "VERSION=$V" >> "$GITHUB_ENV"
+          echo "Chế độ: $MODE  Phiên bản: ${V:-(giữ nguyên)}"
+
+      - name: Đặt số phiên bản
+        if: env.MODE == 'release'
+        run: npm version "${{ env.VERSION }}" --no-git-tag-version --allow-same-version
 
       - name: Cài thư viện
+        if: env.MODE != 'skip'
         run: npm install --no-audit --no-fund
 
       - name: Ghép web app
+        if: env.MODE != 'skip'
         run: node build.js
 
       - name: Build & phát hành
-        if: env.RELEASE_VERSION != ''
+        if: env.MODE == 'release'
         run: npx electron-builder --win --publish always
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build thử (không phát hành)
-        if: env.RELEASE_VERSION == ''
+        if: env.MODE == 'test'
         run: npx electron-builder --win --publish never
 
       - uses: actions/upload-artifact@v4
+        if: env.MODE != 'skip'
         with:
           name: HTML-Video-Studio-Windows
           path: |

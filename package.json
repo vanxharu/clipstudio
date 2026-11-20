@@ -5,6 +5,10 @@
   "description": "Biến HTML/CSS/JS thành video MP4: xem trước, render bằng Edge/Chrome + FFmpeg, giọng đọc TTS, nhạc nền tự tạo.",
   "author": "HTML Video Studio",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/vanxharu/clipstudio.git"
+  },
   "main": "electron/main.js",
   "bin": {
     "html2video": "render.js"

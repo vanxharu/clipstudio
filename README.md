@@ -80,6 +80,9 @@ Bản ứng dụng gói sẵn mọi thứ: giao diện, FFmpeg và máy chủ re
 
 ### Phát hành một phiên bản
 
+**Cách nhanh nhất:** sửa số `"version"` trong `package.json` lên cao hơn (ví dụ `1.0.0` → `1.0.1`) rồi đẩy lên nhánh `main`. GitHub sẽ tự build và phát hành. Nếu bản đó đã phát hành rồi, GitHub tự bỏ qua.
+
+**Hoặc bấm tay:**
 1. Vào tab **Actions** → **Build Windows app** → **Run workflow**.
 2. Nhập phiên bản, ví dụ `1.0.0` (lần sau tăng lên `1.0.1`, `1.1.0`…), rồi bấm **Run workflow**.
 3. Chờ khoảng 5–10 phút. Khi xong, mục **Releases** sẽ có file `HTML-Video-Studio-Setup-1.0.0.exe`. Đó là bộ cài để tải về và chia sẻ.
