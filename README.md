@@ -58,17 +58,14 @@ npm start
 - **Trong trình duyệt**: tool chụp DOM qua SVG rồi mã hoá bằng WebCodecs. Cách này nhanh và không cần cài gì. Hạn chế: một số thứ có thể hiển thị khác Chrome thật, như font từ trang khác không cho tải (CORS), `backdrop-filter`, iframe con hay ảnh bị chặn CORS. Canvas và WebGL thì được chụp trực tiếp nên luôn đúng. Trên Linux, Chrome thường không có bộ mã hoá AAC nên âm thanh sẽ là Opus (vẫn trong file MP4).
 - **HQ**: tool chụp ảnh màn hình bằng Chrome thật rồi mã hoá bằng FFmpeg (H.264 + AAC). Hình giống hệt khi mở trang trên Chrome và tương thích với mọi nền tảng.
 
-## 🌐 ChatGPT / Gemini ngay trong app (không cần API key, chỉ bản .exe)
+## 🧩 Bộ skill cho ChatGPT / Gemini (miễn phí)
 
-Chọn **🌐 ChatGPT trong app** hoặc **🌐 Gemini trong app** ở tab 🤖 AI viết video hay ⚙️ Cài đặt của YouTube Studio. Lần đầu, app mở khung trang chat ở bên phải để bạn đăng nhập tài khoản của mình (app nhớ phiên đăng nhập). Sau đó app tự làm hết:
+Tab **📝 Tạo prompt → 🧩 Bộ skill GPT/Gem** tạo sẵn một hướng dẫn chính và 5 file kiến thức (quy tắc, phong cách, nhân vật của bạn, file mẫu).
 
-- **AI viết video**: tự dán yêu cầu, tự bấm Gửi, chờ trả lời, lấy code HTML về và xem trước.
-- **YouTube Studio**: phân tích, viết lại kịch bản, SEO, mô tả đều chạy qua tài khoản của bạn. Không lấy được phụ đề thì app nhờ Gemini trong app xem link YouTube.
-- **Tạo ảnh nhân vật / miệng**: tab 📝 Tạo prompt có nút **🌐 Tự làm bằng ChatGPT/Gemini**; ảnh vẽ xong được tự tách nền và cắt lưới vào thư viện nhân vật.
-- **Thumbnail**: mỗi ý tưởng có nút vẽ trong app, ảnh hiện ngay và tải về được.
-- **Giọng đọc**: bản app dùng giọng có sẵn của Windows (miễn phí, offline, không cần key). Muốn giọng tự nhiên hơn, dùng Gemini TTS (key miễn phí).
-
-Lưu ý: giao diện ChatGPT/Gemini thay đổi thường xuyên. Nếu app không tự nhận câu trả lời, bấm **📥 Lấy code từ trang** hoặc **🖼 Lấy ảnh** trên khung. Tự động hoá trang web có thể trái điều khoản của OpenAI/Google; hãy dùng vừa phải, tự chịu trách nhiệm với tài khoản của mình.
+- **Gemini**: tạo Gem, dán hướng dẫn chính vào Instructions, tải 5 file lên Knowledge.
+- **ChatGPT**: tạo Project, dán hướng dẫn chính vào Instructions của dự án, thêm 5 file (bản miễn phí cho tối đa 5 file).
+- Sau đó chỉ cần nhắn "làm video về…", copy code AI trả về, bấm **📋 Dán code** trong app.
+- Thêm/sửa nhân vật thì tải lại file `1-quy-tac-va-phong-cach.md` và thay file cũ.
 
 ## 📺 YouTube Studio
 

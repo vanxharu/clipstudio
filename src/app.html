@@ -172,6 +172,10 @@
   .anchor-ctl { display: flex; gap: 10px; align-items: center; padding: 10px 14px; font-size: 13px; }
   .anchor-ctl .sp { flex: 1; }
   .kbd { font: 11px var(--mono); border: 1px solid var(--line); padding: 0 5px; border-radius: 4px; color: var(--mute); }
+  .skill-guide { font-size: 13px; line-height: 1.55; }
+  .skill-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 8px; }
+  .skill-cols > div { background: var(--bg); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; }
+  .skill-cols ol { margin: 6px 0 0; padding-left: 18px; }
 </style>
 </head>
 <body>
@@ -203,7 +207,6 @@
 <main>
   <section class="editor">
     <div class="tabs">
-      <button class="tab ai-tab" data-tab="ai">🤖 AI viết video</button>
       <button class="tab ai-tab" data-tab="prompt">📝 Tạo prompt</button>
       <button class="tab on" data-tab="html">HTML</button>
       <button class="tab" data-tab="css">CSS</button>
@@ -225,9 +228,6 @@
             <button class="btn pri" id="ppGpt">📋 Copy + mở ChatGPT</button>
             <button class="btn pri" id="ppGem">📋 Copy + mở Gemini</button>
             <button class="btn" id="ppCopy">📋 Copy</button>
-            <button class="btn" id="ppToAi" style="display:none" title="Gửi sang tab AI viết video trong app">➤ Gửi AI trong app</button>
-            <button class="btn pri" id="ppWebGpt" style="display:none" title="App tự gửi cho ChatGPT nhúng trong app và tự lấy kết quả về">🌐 Tự làm bằng ChatGPT</button>
-            <button class="btn pri" id="ppWebGem" style="display:none" title="App tự gửi cho Gemini nhúng trong app và tự lấy kết quả về">🌐 Tự làm bằng Gemini</button>
           </div>
           <div class="pp-tip" id="ppTip"></div>
         </div>
@@ -1508,7 +1508,7 @@ H2V.character('ten', { x: 540, y: 1500, height: 750, poses: [[0,'tu-the-1'],[5,'
 }
 
 /* ---------------- Tab Tạo prompt (cho ChatGPT / Gemini bản web) ---------------- */
-const PP_TYPES = [['char', '🎨 Vẽ nhân vật'], ['mouth', '👄 Vẽ hình miệng'], ['script', '📜 Kịch bản'], ['code', '🎬 Code video']];
+const PP_TYPES = [['skill', '🧩 Bộ skill GPT/Gem'], ['char', '🎨 Vẽ nhân vật'], ['mouth', '👄 Vẽ hình miệng'], ['script', '📜 Kịch bản'], ['code', '🎬 Code video']];
 const POSE_PRESETS = [
   ['chao', 'Vẫy tay chào', 'standing, smiling, waving one hand hello'],
   ['chi-tay', 'Chỉ tay sang phải', 'standing, pointing to the right side with one arm fully extended, presenting something'],
@@ -1537,7 +1537,7 @@ const MOUTH_FULL_EN = [['A', 'closed mouth, lips pressed together (M, B, P sound
   ['F', 'puckered lips with a small round opening (OO / W sound)'], ['G', 'upper teeth resting on the lower lip (F, V sounds)'],
   ['H', 'open mouth with the tongue raised behind the upper teeth (L sound)'], ['X', 'relaxed closed mouth at rest, neutral']];
 const PP = {
-  type: 'char',
+  type: 'skill',
   char: { name: '', desc: '', style: 'flat', customStyle: '', poses: ['chao', 'chi-tay', 'giai-thich', 'vui', 'suy-nghi', 'ngac-nhien'], extra: '', bg: 'green', noMouth: true, ref: false },
   mouth: { charId: '', desc: '', style: 'flat', set: 'simple', bg: 'green', ref: true },
   script: { topic: '', audience: 'người xem TikTok phổ thông', duration: 30, tone: 'gần gũi, dễ hiểu', fmt: '9:16', charId: '' },
@@ -1635,6 +1635,7 @@ ${c.idea || '(mô tả video bạn muốn)'}
 - Giọng đọc: "${c.voice}". Nhạc nền: ${c.music === 'none' ? 'không' : '"' + c.music + '"'}.${ch ? `\n- Dùng nhân vật "${ch.id}" làm người dẫn chuyện, đổi tư thế khớp lời thoại, talk: true.` : ''}${c.script.trim() ? `\n- DÙNG ĐÚNG lời thoại sau (giữ nguyên câu và mốc thời gian, đưa vào "lines" của khối h2v-audio, dựng cảnh khớp từng câu):\n${c.script.trim()}` : ''}`;
 }
 const PP_TIPS = {
+  skill: `Ô trên là <b>hướng dẫn chính</b> (dán vào Instructions). Sau khi cài, dùng loại <b>🎬 Code video</b> hoặc nhắn thẳng yêu cầu cho Gem/Project.`,
   char: `<b>Cách dùng:</b>
 1. Bấm <b>Copy + mở ChatGPT</b> (hoặc Gemini), rồi dán prompt (Ctrl+V). Nếu đã có hình tự vẽ, đính kèm ảnh vào khung chat và tick "Đính kèm hình…".
 2. Chưa ưng thì nhắn AI vẽ lại. Ưng rồi thì tải ảnh về.
@@ -1643,13 +1644,33 @@ const PP_TIPS = {
 Trong app: <b>🧑‍🎨 Nhân vật</b> → <b>📐 Nạp ảnh lưới</b>. App tự xoá nền, cắt và gán vào đúng ô miệng. Sau đó bấm <b>👄 Đặt miệng</b> trên từng tư thế.`,
   script: `<b>Cách dùng:</b> dán vào ChatGPT/Gemini để có kịch bản và khối JSON lời thoại.
 Chép khối JSON đó vào ô "Lời thoại có sẵn" ở loại <b>🎬 Code video</b> để AI dựng video khớp đúng lời thoại.`,
-  code: `<b>Cách dùng:</b> dán vào ChatGPT/Gemini. Copy toàn bộ code AI trả về rồi bấm <b>📋 Dán code</b> trên thanh trên cùng.
-App tự nhận lời thoại, giọng đọc, nhạc và nhân vật. Hoặc bấm <b>➤ Gửi AI trong app</b> để dùng tab AI viết video.`
+  code: `<b>Cách dùng:</b> dán vào ChatGPT/Gemini (hoặc nhắn thẳng ý tưởng cho Gem/Project đã cài bộ skill). Copy toàn bộ code AI trả về rồi bấm <b>📋 Dán code</b>.
+App tự nhận lời thoại, giọng đọc, nhạc và nhân vật.`
 };
 function renderPP() {
   $('ppTypes').innerHTML = PP_TYPES.map(([k, n]) => `<button class="chip ${k === PP.type ? 'on' : ''}" data-pp="${k}">${n}</button>`).join('');
   const f = $('ppForm'), t = PP.type;
-  if (t === 'char') {
+  if (t === 'skill') {
+    const fs = H2VSkill.files(), nCh = CHARS.list.filter(c => c.poses.length).length;
+    f.innerHTML = `<div class="f full skill-guide">
+      <b>Cài một lần, sau đó chỉ cần nhắn "làm video về…" là AI trả code đúng chuẩn app.</b>
+      <div class="skill-cols">
+        <div><b>Gemini (miễn phí) → Gem</b><ol>
+          <li>Bấm <b>📋 Copy + mở Gemini Gem</b> (bên dưới).</li>
+          <li>Đặt tên Gem: <i>Video Studio</i>. Dán vào ô <b>Hướng dẫn / Instructions</b> (Ctrl+V).</li>
+          <li>Mục <b>Kiến thức / Knowledge</b>: tải lên 5 file kiến thức (nút tải bên dưới).</li>
+          <li>Lưu. Mỗi lần làm video: mở Gem này, nhắn yêu cầu.</li></ol></div>
+        <div><b>ChatGPT (miễn phí) → Project</b><ol>
+          <li>Mở chatgpt.com → thanh bên trái → <b>Dự án mới / New project</b>, đặt tên <i>Video Studio</i>.</li>
+          <li>Trong dự án: <b>⋯ → Hướng dẫn / Instructions</b>, dán hướng dẫn chính (nút <b>📋 Copy</b>).</li>
+          <li>Thêm 5 file kiến thức (bản miễn phí cho tối đa 5 file mỗi dự án).</li>
+          <li>Mỗi lần làm video: mở cuộc trò chuyện mới <b>bên trong</b> dự án này.</li></ol></div>
+      </div>
+      <div class="addbar" style="margin-top:8px"><button class="btn pri" data-skdl="all">⬇ Tải 5 file kiến thức (.zip)</button>
+        ${fs.filter(x => !x.main).map(x => `<button class="btn" data-skdl="${x.name}" title="${(x.text.length / 1000).toFixed(1)}k ký tự">${x.name}</button>`).join('')}</div>
+      <div class="note">Nhân vật trong file 1: ${nCh ? nCh + ' nhân vật (' + CHARS.list.filter(c => c.poses.length).map(c => c.id).join(', ') + ')' : 'chưa có'}. Khi thêm/sửa nhân vật, tải lại <b>1-quy-tac-va-phong-cach.md</b> và thay file cũ trong Gem/Project.
+      AI trả code xong: copy cả khối code → bấm <b>📋 Dán code</b> ở trên cùng app → app tự tạo giọng, nhạc, xem trước → <b>Xuất video</b>.</div></div>`;
+  } else if (t === 'char') {
     const c = PP.char;
     f.innerHTML = `
       <label class="f">Tên nhân vật<input class="inp" data-k="name" value="${escapeHtml(c.name)}" placeholder="Mèo Cam"></label>
@@ -1692,15 +1713,14 @@ function renderPP() {
       <label class="f full">Lời thoại có sẵn (tuỳ chọn, ví dụ khối JSON từ bước Kịch bản)<textarea class="inp" data-k="script" placeholder='[[0.5, "Câu 1"], [4.2, "Câu 2"]]'>${escapeHtml(c.script)}</textarea></label>
       <label class="chk full"><input type="checkbox" data-k="template" ${c.template ? 'checked' : ''}> Kèm file mẫu của phong cách (AI làm đúng chuẩn hơn, prompt dài hơn)</label>`;
   }
-  $('ppToAi').style.display = t === 'code' ? '' : 'none';
-  const web = typeof H2VWeb !== 'undefined' && H2VWeb.available();
-  $('ppWebGpt').style.display = $('ppWebGem').style.display = web ? '' : 'none';
+  $('ppGem').textContent = t === 'skill' ? '📋 Copy + mở Gemini Gem' : '📋 Copy + mở Gemini';
+  $('ppGpt').textContent = t === 'skill' ? '📋 Copy + mở ChatGPT' : '📋 Copy + mở ChatGPT';
   $('ppTip').innerHTML = PP_TIPS[t];
   regenPP();
 }
 function regenPP() {
   const t = PP.type;
-  const txt = t === 'char' ? buildCharPrompt() : t === 'mouth' ? buildMouthPrompt() : t === 'script' ? buildScriptPrompt() : buildCodePrompt();
+  const txt = t === 'skill' ? H2VSkill.mainInstructions() : t === 'char' ? buildCharPrompt() : t === 'mouth' ? buildMouthPrompt() : t === 'script' ? buildScriptPrompt() : buildCodePrompt();
   $('ppText').value = txt; $('ppCount').textContent = txt.length.toLocaleString('vi-VN') + ' ký tự'; savePP();
 }
 async function ppCopy(url) {
@@ -1709,44 +1729,6 @@ async function ppCopy(url) {
   catch (e) { $('ppText').select(); document.execCommand('copy'); }
   if (url) { window.open(url, '_blank', 'noopener'); toast('Đã copy prompt. Dán vào khung chat bằng Ctrl+V.', 4000); }
   else toast('Đã copy prompt');
-}
-/** Gửi prompt của tab "Tạo prompt" cho ChatGPT/Gemini nhúng, tự lấy ảnh / kịch bản / code về. */
-async function ppWeb(site) {
-  const t = PP.type, prompt = $('ppText').value, name = site === 'gemini' ? 'Gemini' : 'ChatGPT';
-  const btns = [$('ppWebGpt'), $('ppWebGem')]; if (btns.some(b => b.disabled)) return;
-  btns.forEach(b => { b.disabled = true; }); const label = btns.map(b => b.textContent);
-  const busy = $(site === 'gemini' ? 'ppWebGem' : 'ppWebGpt'); busy.textContent = '⏳ ' + name + ' đang làm…';
-  try {
-    if (t === 'char' || t === 'mouth') {
-      const o = PP[t], manual = !!o.ref;
-      const r = await H2VWeb.ask(site, prompt, { expect: 'image', timeoutMin: 10, autoSend: !manual,
-        manualHint: 'Đã dán prompt. Đính kèm ảnh nhân vật của bạn vào khung chat rồi bấm Gửi, app sẽ tự lấy ảnh.' });
-      // Chọn / tạo nhân vật đích rồi mở hộp cắt lưới (tách nền tự động)
-      let c;
-      if (t === 'mouth') c = CHARS.list.find(x => x.id === o.charId);
-      else {
-        const id = slug(o.name || 'nhan-vat') || 'nhan-vat';
-        c = CHARS.list.find(x => x.id === id);
-        if (!c) { c = { id, name: o.name || 'Nhân vật', desc: o.desc || '', poses: [], mouths: {} }; CHARS.list.push(c); saveChars(); }
-      }
-      if (!c) { H2VWeb.saveDataUrl(r.image, 'mieng.png'); toast('Đã tải ảnh về. Chọn nhân vật trong ô "Nhân vật trong thư viện" để app tự cắt.', 6000); return; }
-      CHARS.sel = c.id; openChars(); SHEET.want = t === 'mouth' ? 'mouth' : 'poses';
-      await openSheet(H2VWeb.dataUrlToFile(r.image, (t === 'mouth' ? 'mieng-' : 'nhan-vat-') + c.id + '.png'));
-      toast('Đã lấy ảnh từ ' + name + '. Kiểm tra lưới rồi bấm "✂️ Cắt & thêm vào nhân vật".', 6000);
-    } else {
-      const r = await H2VWeb.ask(site, prompt, { expect: 'text' });
-      if (t === 'code') {
-        const { code } = extractHtml(r.text);
-        if (!code) throw new Error(name + ' không trả về code HTML.');
-        loadCode(code); setTab('html'); toast('Đã nạp code từ ' + name);
-      } else {
-        const m = r.text.match(/```(?:json)?\s*([\s\S]*?)```/), body = (m ? m[1] : r.text).trim();
-        PP.code.script = body; PP.code.idea = PP.code.idea || PP.script.topic; PP.code.duration = PP.script.duration; PP.code.fmt = PP.script.fmt; PP.code.charId = PP.script.charId;
-        PP.type = 'code'; renderPP(); toast('Đã có kịch bản từ ' + name + ', điền sẵn vào bước "Code video".', 6000);
-      }
-    }
-  } catch (e) { if (e.name !== 'AbortError') toast(e.message, 7000); }
-  finally { btns.forEach((b, i) => { b.disabled = false; b.textContent = label[i]; }); }
 }
 function initPP() {
   loadPP();
@@ -1767,16 +1749,9 @@ function initPP() {
   });
   $('ppText').addEventListener('input', () => { $('ppCount').textContent = $('ppText').value.length.toLocaleString('vi-VN') + ' ký tự'; });
   $('ppGpt').onclick = () => ppCopy('https://chatgpt.com/');
-  $('ppGem').onclick = () => ppCopy('https://gemini.google.com/app');
+  $('ppGem').onclick = () => ppCopy(PP.type === 'skill' ? 'https://gemini.google.com/gems/create' : 'https://gemini.google.com/app');
+  $('ppForm').addEventListener('click', e => { const b = e.target.closest('[data-skdl]'); if (!b) return; if (b.dataset.skdl === 'all') H2VSkill.downloadAll(); else H2VSkill.downloadOne(b.dataset.skdl); });
   $('ppCopy').onclick = () => ppCopy(null);
-  $('ppWebGpt').onclick = () => ppWeb('chatgpt');
-  $('ppWebGem').onclick = () => ppWeb('gemini');
-  $('ppToAi').onclick = () => {
-    const c = PP.code, ch = CHARS.list.find(x => x.id === c.charId);
-    AI.style = c.style; AI.versions = []; AI.editOpen = false; saveAiCfg();
-    $('aiPrompt').value = `${c.idea}\nThời lượng ~${c.duration}s, khung ${c.fmt}, giọng "${c.voice}", nhạc ${c.music}.${ch ? ` Dùng nhân vật "${ch.id}" dẫn chuyện.` : ''}${c.script.trim() ? '\nDùng đúng lời thoại:\n' + c.script.trim() : ''}`;
-    setTab('ai'); toast('Đã chuyển sang tab AI, bấm Gửi để AI viết video');
-  };
 }
 
 /* ---------------- AI viết video (Gemini / ChatGPT) ---------------- */
@@ -2223,7 +2198,7 @@ function init() {
   initPP();
   H2VStudio.init();
   $('btnStudio').onclick = () => H2VStudio.open();
-  setTab('ai'); syncSettingsUI(); renderTracks();
+  setTab('html'); syncSettingsUI(); renderTracks();
 
   document.querySelectorAll('.tab').forEach(b => b.onclick = () => setTab(b.dataset.tab));
   $('code').addEventListener('input', () => {

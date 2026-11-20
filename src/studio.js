@@ -530,7 +530,7 @@ var H2VStudio = (function () {
     var el = document.createElement('div'); el.className = 'modal'; el.id = 'stVid'; el.style.zIndex = 30;
     el.innerHTML = '<div class="anchor-panel" style="width:min(640px,94vw)"><div class="modal-head"><b>🎬 Dựng video từ kịch bản</b><span class="sp" style="flex:1"></span><button class="btn icon" data-v="close">✕</button></div><div style="padding:14px 16px;display:flex;flex-direction:column;gap:10px">' +
       '<div class="st-radio"><label><input type="radio" name="stVk" value="long"' + (v.kind === 'long' ? ' checked' : '') + '> <b>Video đầy đủ</b> (đọc hết kịch bản, phụ đề chạy theo giọng, nhân vật dẫn chuyện)</label>' +
-      '<label><input type="radio" name="stVk" value="short"' + (v.kind === 'short' ? ' checked' : '') + '> <b>Video ngắn bằng AI</b> (≤ 60 giây, AI chọn ý hay và dựng hình minh hoạ)</label></div>' +
+      '<label><input type="radio" name="stVk" value="short"' + (v.kind === 'short' ? ' checked' : '') + '> <b>Video ngắn bằng AI</b> (≤ 60 giây; app copy yêu cầu để bạn dán vào Gem/Project Video Studio)</label></div>' +
       '<div class="st-row">Khung <select class="inp" id="stVfmt" style="width:auto"><option value="9:16"' + (v.fmt === '9:16' ? ' selected' : '') + '>9:16 dọc</option><option value="16:9"' + (v.fmt === '16:9' ? ' selected' : '') + '>16:9 ngang</option></select>' +
       ' Nhân vật <select class="inp" id="stVchar" style="width:auto">' + charOpts(v.charId, 'Không') + '</select></div>' +
       '<div class="st-row">Giọng <select class="inp" id="stVvoice" style="width:auto">' + GEMINI_VOICES.slice(0, 8).map(function (g) { return '<option value="' + g[0] + '"' + (g[0] === v.voice ? ' selected' : '') + '>' + g[1] + '</option>'; }).join('') + '</select>' +
@@ -556,11 +556,13 @@ var H2VStudio = (function () {
   }
   function buildVideo(p, v) {
     if (v.kind === 'short') {
-      AI.style = 'motion'; AI.versions = []; AI.editOpen = false; saveAiCfg();
-      close(); setTab('ai');
-      $('aiPrompt').value = 'Làm video ngắn ≤ 60 giây (khung ' + v.fmt + ') từ kịch bản dưới đây: chọn những ý hay nhất, viết lại lời thoại ngắn gọn, có hook ở 3 giây đầu và kết bằng lời kêu gọi xem video đầy đủ.' +
+      var req = 'Làm video ngắn ≤ 60 giây (khung ' + v.fmt + ') từ kịch bản dưới đây: chọn những ý hay nhất, viết lại lời thoại ngắn gọn, có hook ở 3 giây đầu và kết bằng lời kêu gọi xem video đầy đủ.' +
         ' Giọng "' + v.voice + '", nhạc ' + v.music + '.' + (v.charId ? ' Dùng nhân vật "' + v.charId + '" dẫn chuyện, talk: true.' : '') + (p.chosenTitle ? '\nTiêu đề: ' + p.chosenTitle : '') + '\n\nKỊCH BẢN:\n' + p.script.slice(0, 6000);
-      aiSend(); return;
+      (navigator.clipboard ? navigator.clipboard.writeText(req) : Promise.reject()).catch(function () {}).then(function () {
+        close(); window.open('https://gemini.google.com/gems/view', '_blank', 'noopener');
+        toast('Đã copy yêu cầu làm video ngắn. Mở Gem/Project "Video Studio" của bạn, dán (Ctrl+V) và gửi; AI trả code thì bấm 📋 Dán code.', 9000);
+      });
+      return;
     }
     var code = longVideoCode(p, v);
     close(); loadCode(code);

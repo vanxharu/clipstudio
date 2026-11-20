@@ -13,7 +13,7 @@ const examples = fs.readdirSync(exDir).filter(f => f.endsWith('.html')).sort().m
 });
 
 let app = R('src/app.html');
-const libs = ['src/mp4mux.js', 'src/capture.js', 'src/music.js', 'src/studio.js', 'src/aiweb.js']
+const libs = ['src/mp4mux.js', 'src/capture.js', 'src/music.js', 'src/studio.js', 'src/skill.js']
   .map(f => '<script>\n' + R(f).replace(/<\/script/gi, '<\\/script') + '\n</script>').join('\n');
 app = app.replace('<!--@@LIBS@@-->', () => libs)
   .replace('/*@@SHIM@@*/""', () => safe(R('src/timeshim.js')))
