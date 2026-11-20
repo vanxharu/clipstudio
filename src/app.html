@@ -226,6 +226,8 @@
             <button class="btn pri" id="ppGem">📋 Copy + mở Gemini</button>
             <button class="btn" id="ppCopy">📋 Copy</button>
             <button class="btn" id="ppToAi" style="display:none" title="Gửi sang tab AI viết video trong app">➤ Gửi AI trong app</button>
+            <button class="btn pri" id="ppWebGpt" style="display:none" title="App tự gửi cho ChatGPT nhúng trong app và tự lấy kết quả về">🌐 Tự làm bằng ChatGPT</button>
+            <button class="btn pri" id="ppWebGem" style="display:none" title="App tự gửi cho Gemini nhúng trong app và tự lấy kết quả về">🌐 Tự làm bằng Gemini</button>
           </div>
           <div class="pp-tip" id="ppTip"></div>
         </div>
@@ -234,14 +236,18 @@
     <div class="aipanel" id="aiPanel" style="display:none">
       <div class="ai-cfg">
         <select id="aiProvider" class="inp">
-          <option value="gemini">Gemini (miễn phí)</option>
-          <option value="openai">ChatGPT (OpenAI)</option>
+          <option value="chatgpt-web" data-web="1">🌐 ChatGPT trong app (không cần key)</option>
+          <option value="gemini-web" data-web="1">🌐 Gemini trong app (không cần key)</option>
+          <option value="gemini">Gemini API (key miễn phí)</option>
+          <option value="openai">ChatGPT API (OpenAI key)</option>
         </select>
         <input id="aiModel" class="inp" list="aiModels" placeholder="model" title="Tên model. Bấm ↻ để tải danh sách model của key">
         <datalist id="aiModels"></datalist>
         <button class="btn icon" id="aiReloadModels" title="Tải danh sách model">↻</button>
         <input id="aiKey" class="inp" type="password" placeholder="API key" autocomplete="off">
         <a id="aiKeyLink" href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">Lấy key</a>
+        <button class="btn" id="aiWebShow" style="display:none" title="Mở khung ChatGPT/Gemini để đăng nhập hoặc xem trực tiếp">🌐 Mở khung / đăng nhập</button>
+        <label class="chip" id="aiWebKeepL" style="display:none" title="Giữ khung mở để xem AI làm việc"><input type="checkbox" id="aiWebKeep" style="margin:0 4px 0 0">Giữ khung</label>
       </div>
       <div class="ai-styles" id="aiStyles"></div>
       <div class="ai-log" id="aiLog"></div>
@@ -309,7 +315,7 @@
           <label class="f">Dịch vụ giọng đọc<select id="ttsProvider">
             <option value="gemini">Google Gemini (miễn phí)</option>
             <option value="azure">Microsoft Azure (miễn phí 500k ký tự/tháng)</option>
-            <option value="local">Máy chủ local · edge-tts</option></select></label>
+            <option value="local">Giọng Edge (miễn phí, không cần key)</option></select></label>
         </div>
         <div id="ttsCfg-gemini" class="ttscfg">
           <div class="grid" style="margin-top:8px">
@@ -328,7 +334,7 @@
           <p class="note">Tạo tài nguyên <b>Speech</b> gói <b>Free F0</b> tại <a href="https://portal.azure.com/#create/Microsoft.CognitiveServicesSpeechServices" target="_blank" rel="noopener">portal.azure.com</a>, rồi chép Key và Region ở mục "Keys and Endpoint". Có giọng Hoài My, Nam Minh. Đăng ký Azure cần thẻ để xác minh.</p>
         </div>
         <div id="ttsCfg-local" class="ttscfg">
-          <p class="note">Dùng edge-tts trên máy bạn: chạy <code>npm start</code> và <code>pip install edge-tts</code>. <span id="localTtsState"></span></p>
+          <p class="note">Giọng đọc Microsoft Edge (Hoài My, Nam Minh và hàng trăm giọng khác), miễn phí, không cần key. Có sẵn trong bản app (.exe) hoặc khi chạy <code>npm start</code>. <span id="localTtsState"></span></p>
         </div>
         <p class="note">🔒 Key chỉ lưu trong trình duyệt của bạn và gửi thẳng tới Google/Microsoft. Đừng chia sẻ trang khi đã nhập key.</p>
         <label class="f" style="margin-top:10px">Lời thoại theo mốc thời gian, mỗi dòng một câu, ví dụ: <code>[0.5s] Xin chào các bạn</code>
@@ -690,7 +696,11 @@ const GEMINI_VOICES = [
 ];
 function loadTtsCfg() { try { Object.assign(TTS, JSON.parse(localStorage.getItem('h2v-tts') || '{}')); } catch (e) {} }
 function saveTtsCfg() { try { localStorage.setItem('h2v-tts', JSON.stringify(TTS)); } catch (e) {} }
+let SERVER_TTS = false;
 function ttsNotReady() {
+  // Không có key nhưng app có giọng Edge miễn phí → tự chuyển sang, khỏi hỏi key
+  const noKey = (TTS.provider === 'gemini' && !TTS.gKey.trim()) || (TTS.provider === 'azure' && !(TTS.azKey.trim() && TTS.azRegion.trim()));
+  if (noKey && SERVER && SERVER_TTS) { TTS.provider = 'local'; saveTtsCfg(); try { syncTtsUI(); } catch (e) {} }
   if (TTS.provider === 'local') return SERVER ? '' : 'Cần chạy máy chủ local (npm start)';
   if (TTS.provider === 'gemini') return TTS.gKey.trim() ? '' : 'Nhập Gemini API key trong "Cài đặt giọng đọc"';
   if (TTS.provider === 'azure') return TTS.azKey.trim() && TTS.azRegion.trim() ? '' : 'Nhập Azure key và region trong "Cài đặt giọng đọc"';
@@ -1595,6 +1605,8 @@ function renderPP() {
       <label class="chk full"><input type="checkbox" data-k="template" ${c.template ? 'checked' : ''}> Kèm file mẫu của phong cách (AI làm đúng chuẩn hơn, prompt dài hơn)</label>`;
   }
   $('ppToAi').style.display = t === 'code' ? '' : 'none';
+  const web = typeof H2VWeb !== 'undefined' && H2VWeb.available();
+  $('ppWebGpt').style.display = $('ppWebGem').style.display = web ? '' : 'none';
   $('ppTip').innerHTML = PP_TIPS[t];
   regenPP();
 }
@@ -1609,6 +1621,44 @@ async function ppCopy(url) {
   catch (e) { $('ppText').select(); document.execCommand('copy'); }
   if (url) { window.open(url, '_blank', 'noopener'); toast('Đã copy prompt. Dán vào khung chat bằng Ctrl+V.', 4000); }
   else toast('Đã copy prompt');
+}
+/** Gửi prompt của tab "Tạo prompt" cho ChatGPT/Gemini nhúng, tự lấy ảnh / kịch bản / code về. */
+async function ppWeb(site) {
+  const t = PP.type, prompt = $('ppText').value, name = site === 'gemini' ? 'Gemini' : 'ChatGPT';
+  const btns = [$('ppWebGpt'), $('ppWebGem')]; if (btns.some(b => b.disabled)) return;
+  btns.forEach(b => { b.disabled = true; }); const label = btns.map(b => b.textContent);
+  const busy = $(site === 'gemini' ? 'ppWebGem' : 'ppWebGpt'); busy.textContent = '⏳ ' + name + ' đang làm…';
+  try {
+    if (t === 'char' || t === 'mouth') {
+      const o = PP[t], manual = !!o.ref;
+      const r = await H2VWeb.ask(site, prompt, { expect: 'image', timeoutMin: 10, autoSend: !manual,
+        manualHint: 'Đã dán prompt. Đính kèm ảnh nhân vật của bạn vào khung chat rồi bấm Gửi, app sẽ tự lấy ảnh.' });
+      // Chọn / tạo nhân vật đích rồi mở hộp cắt lưới (tách nền tự động)
+      let c;
+      if (t === 'mouth') c = CHARS.list.find(x => x.id === o.charId);
+      else {
+        const id = slug(o.name || 'nhan-vat') || 'nhan-vat';
+        c = CHARS.list.find(x => x.id === id);
+        if (!c) { c = { id, name: o.name || 'Nhân vật', desc: o.desc || '', poses: [], mouths: {} }; CHARS.list.push(c); saveChars(); }
+      }
+      if (!c) { H2VWeb.saveDataUrl(r.image, 'mieng.png'); toast('Đã tải ảnh về. Chọn nhân vật trong ô "Nhân vật trong thư viện" để app tự cắt.', 6000); return; }
+      CHARS.sel = c.id; openChars(); SHEET.want = t === 'mouth' ? 'mouth' : 'poses';
+      await openSheet(H2VWeb.dataUrlToFile(r.image, (t === 'mouth' ? 'mieng-' : 'nhan-vat-') + c.id + '.png'));
+      toast('Đã lấy ảnh từ ' + name + '. Kiểm tra lưới rồi bấm "✂️ Cắt & thêm vào nhân vật".', 6000);
+    } else {
+      const r = await H2VWeb.ask(site, prompt, { expect: 'text' });
+      if (t === 'code') {
+        const { code } = extractHtml(r.text);
+        if (!code) throw new Error(name + ' không trả về code HTML.');
+        loadCode(code); setTab('html'); toast('Đã nạp code từ ' + name);
+      } else {
+        const m = r.text.match(/```(?:json)?\s*([\s\S]*?)```/), body = (m ? m[1] : r.text).trim();
+        PP.code.script = body; PP.code.idea = PP.code.idea || PP.script.topic; PP.code.duration = PP.script.duration; PP.code.fmt = PP.script.fmt; PP.code.charId = PP.script.charId;
+        PP.type = 'code'; renderPP(); toast('Đã có kịch bản từ ' + name + ', điền sẵn vào bước "Code video".', 6000);
+      }
+    }
+  } catch (e) { if (e.name !== 'AbortError') toast(e.message, 7000); }
+  finally { btns.forEach((b, i) => { b.disabled = false; b.textContent = label[i]; }); }
 }
 function initPP() {
   loadPP();
@@ -1631,6 +1681,8 @@ function initPP() {
   $('ppGpt').onclick = () => ppCopy('https://chatgpt.com/');
   $('ppGem').onclick = () => ppCopy('https://gemini.google.com/app');
   $('ppCopy').onclick = () => ppCopy(null);
+  $('ppWebGpt').onclick = () => ppWeb('chatgpt');
+  $('ppWebGem').onclick = () => ppWeb('gemini');
   $('ppToAi').onclick = () => {
     const c = PP.code, ch = CHARS.list.find(x => x.id === c.charId);
     AI.style = c.style; AI.versions = []; AI.editOpen = false; saveAiCfg();
@@ -1680,18 +1732,32 @@ QUY TẮC BẮT BUỘC
 - Sau đó MỘT khối \`\`\`html chứa TOÀN BỘ file (không rút gọn, không "...", không bỏ phần nào). Không viết gì sau khối code.`;
 
 const AI = { provider: 'gemini', gModel: 'gemini-3.5-flash', oModel: '', oKey: '', style: 'whiteboard', editOpen: false, log: [], versions: [], ctrl: null, busy: false };
-function loadAiCfg() { try { const c = JSON.parse(localStorage.getItem('h2v-ai') || '{}'); Object.assign(AI, c.cfg || {}); AI.log = c.log || []; AI.versions = c.versions || []; } catch (e) {} }
+function loadAiCfg() {
+  let c = {}; try { c = JSON.parse(localStorage.getItem('h2v-ai') || '{}'); } catch (e) {}
+  Object.assign(AI, c.cfg || {}); AI.log = c.log || []; AI.versions = c.versions || [];
+  // Bản app: mặc định dùng ChatGPT nhúng (không cần key) nếu chưa từng chọn và chưa có key
+  if (!c.cfg && typeof H2VWeb !== 'undefined' && H2VWeb.available() && !TTS.gKey) AI.provider = 'chatgpt-web';
+}
 function saveAiCfg() {
   try {
     const cfg = { provider: AI.provider, gModel: AI.gModel, oModel: AI.oModel, oKey: AI.oKey, style: AI.style };
     localStorage.setItem('h2v-ai', JSON.stringify({ cfg, log: AI.log.slice(-40), versions: AI.versions.slice(-8) }));
   } catch (e) {}
 }
-const aiKey = () => AI.provider === 'gemini' ? TTS.gKey.trim() : AI.oKey.trim();
-const aiModel = () => AI.provider === 'gemini' ? AI.gModel : AI.oModel;
+const WEB_OK = () => typeof H2VWeb !== 'undefined' && H2VWeb.available();
+const aiIsWeb = (p) => /-web$/.test(p || AI.provider);
+const aiWebSite = (p) => (p || AI.provider).startsWith('gemini') ? 'gemini' : 'chatgpt';
+const aiName = (p) => { p = p || AI.provider; return (p.startsWith('gemini') ? 'Gemini' : 'ChatGPT') + (aiIsWeb(p) ? ' (trong app)' : ''); };
+const aiKey = () => aiIsWeb() ? 'web' : AI.provider === 'gemini' ? TTS.gKey.trim() : AI.oKey.trim();
+const aiModel = () => aiIsWeb() ? 'web' : AI.provider === 'gemini' ? AI.gModel : AI.oModel;
 
 function syncAiUI() {
-  $('aiProvider').value = AI.provider; $('aiModel').value = aiModel(); $('aiKey').value = aiKey();
+  if (aiIsWeb() && !WEB_OK()) AI.provider = 'gemini';
+  document.querySelectorAll('#aiProvider option[data-web]').forEach(o => { o.hidden = o.disabled = !WEB_OK(); });
+  const web = aiIsWeb();
+  ['aiModel', 'aiReloadModels', 'aiKey', 'aiKeyLink'].forEach(id => { $(id).style.display = web ? 'none' : ''; });
+  $('aiWebShow').style.display = $('aiWebKeepL').style.display = web ? '' : 'none';
+  $('aiProvider').value = AI.provider; $('aiModel').value = aiModel(); $('aiKey').value = web ? '' : aiKey();
   $('aiKey').placeholder = AI.provider === 'gemini' ? 'Gemini API key (dùng chung với giọng đọc)' : 'OpenAI API key (sk-…)';
   $('aiKeyLink').href = AI.provider === 'gemini' ? 'https://aistudio.google.com/apikey' : 'https://platform.openai.com/api-keys';
   $('aiKeyLink').textContent = AI.provider === 'gemini' ? 'Lấy key miễn phí' : 'Lấy key OpenAI';
@@ -1733,6 +1799,10 @@ async function aiHttpError(r, who) {
   return new Error(`${who} lỗi ${r.status}: ${msg}`);
 }
 async function aiCall(system, user, onText, signal) {
+  if (aiIsWeb()) {
+    const r = await H2VWeb.ask(aiWebSite(), aiWebPrompt(system, user), { onProgress: onText, signal });
+    return { text: r.text, finish: '' };
+  }
   const key = aiKey(), model = aiModel();
   if (!model) throw new Error('Chưa chọn model. Bấm ↻ để tải danh sách model của key.');
   let text = '', finish = '';
@@ -1768,6 +1838,10 @@ async function aiCall(system, user, onText, signal) {
   }
   return { text, finish };
 }
+/** Trang web không có "system prompt": gộp hướng dẫn + yêu cầu thành một tin nhắn. */
+function aiWebPrompt(system, user) {
+  return 'HƯỚNG DẪN (làm đúng theo, không cần nhắc lại hay giải thích hướng dẫn):\n' + system + '\n\n=====\n\n' + user;
+}
 function extractHtml(text) {
   const blocks = [...text.matchAll(/```[ \t]*(?:html|HTML|xml)?[ \t]*\r?\n([\s\S]*?)```/g)].map(m => m[1]);
   let code = blocks.sort((a, b) => b.length - a.length)[0];
@@ -1800,10 +1874,11 @@ async function aiSend() {
   const bot = { role: 'bot', text: '⏳ Đang gửi yêu cầu…' }; AI.log.push(bot); renderAiLog();
   AI.busy = true; AI.ctrl = new AbortController(); $('aiSend').disabled = true; $('aiStop').style.display = '';
   const t0 = performance.now();
-  const tick = setInterval(() => { if (bot.text.startsWith('⏳')) { bot.text = `⏳ ${AI.provider === 'gemini' ? 'Gemini' : 'ChatGPT'} đang suy nghĩ… ${Math.round((performance.now() - t0) / 1000)}s`; renderAiLog(); } }, 1000);
+  const tick = setInterval(() => { if (bot.text.startsWith('⏳')) { bot.text = `⏳ ${aiName()} đang suy nghĩ… ${Math.round((performance.now() - t0) / 1000)}s`; renderAiLog(); } }, 1000);
   try {
     let last = 0;
     const { text, finish } = await aiCall(system, user, txt => {
+      if (/^[🔐✋]/u.test(txt)) { bot.text = txt; renderAiLog(); return; }
       const now = performance.now(); if (now - last < 250) return; last = now;
       const note = aiNote(txt), codeLen = Math.max(0, txt.length - (txt.indexOf('```') >= 0 ? txt.indexOf('```') : txt.length));
       bot.text = (note ? note + '\n\n' : '') + `✍️ Đang viết code… ${(codeLen / 1000).toFixed(1)}k ký tự · ${Math.round((now - t0) / 1000)}s`; renderAiLog();
@@ -1817,7 +1892,7 @@ async function aiSend() {
     toast('Đã nạp code mới, đang xem trước');
   } catch (e) {
     bot.err = true;
-    bot.text = e.name === 'AbortError' ? 'Đã dừng.' : (e instanceof TypeError ? 'Không kết nối được tới ' + (AI.provider === 'gemini' ? 'Gemini' : 'OpenAI') + '. Kiểm tra Internet (trang trên claude.ai bị chặn gọi ra ngoài, hãy dùng app hoặc file index.html).' : e.message);
+    bot.text = e.name === 'AbortError' ? 'Đã dừng.' : (e instanceof TypeError && !aiIsWeb() ? 'Không kết nối được tới ' + (AI.provider === 'gemini' ? 'Gemini' : 'OpenAI') + '. Kiểm tra Internet (trang trên claude.ai bị chặn gọi ra ngoài, hãy dùng app hoặc file index.html).' : e.message);
   } finally {
     clearInterval(tick); AI.busy = false; AI.ctrl = null; $('aiSend').disabled = false; $('aiStop').style.display = 'none';
     renderAiLog(); syncAiUI(); saveAiCfg();
@@ -1825,6 +1900,7 @@ async function aiSend() {
 }
 
 async function aiLoadModels(silent) {
+  if (aiIsWeb()) return;
   const key = aiKey(); if (!key) { if (!silent) toast('Nhập API key trước'); return; }
   try {
     let ids = [];
@@ -1865,6 +1941,8 @@ function initAi() {
     saveAiCfg(); aiLoadModels(true);
   };
   $('aiReloadModels').onclick = () => aiLoadModels(false);
+  $('aiWebShow').onclick = () => H2VWeb.show(aiWebSite());
+  $('aiWebKeep').onchange = () => { H2VWeb.state.keep = $('aiWebKeep').checked; };
   $('aiStyles').onclick = e => {
     const b = e.target.closest('.chip'); if (!b) return;
     if (b.dataset.edit) AI.editOpen = !AI.editOpen; else AI.style = b.dataset.style;
@@ -2183,7 +2261,8 @@ async function detectServer() {
     $('srvBadge').classList.add('on');
     $('btnRenderHQ').disabled = false; $('btnRenderHQ').title = 'Render bằng Chrome thật + FFmpeg (chính xác nhất)';
     let saved = null; try { saved = localStorage.getItem('h2v-tts'); } catch (e) {}
-    if (j.tts && !TTS.gKey && !TTS.azKey && !saved) TTS.provider = 'local';
+    SERVER_TTS = !!j.tts;
+    if (j.tts && ((TTS.provider === 'gemini' && !TTS.gKey) || (TTS.provider === 'azure' && !TTS.azKey) || !saved)) TTS.provider = 'local';
     syncTtsUI();
     renderTracks();
   } catch (e) {}

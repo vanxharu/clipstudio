@@ -22,7 +22,7 @@ const PROXY_HOSTS = [/^generativelanguage\.googleapis\.com$/, /^[a-z0-9-]+\.tts\
 
 const jobs = new Map();
 let queue = Promise.resolve();
-const TTS = core.ttsCommand();
+const TTS = core.ttsAvailable();
 const FF = core.ffmpegOk();
 
 function send(res, code, body, type = 'application/json; charset=utf-8') {
@@ -150,7 +150,7 @@ module.exports = { start, stop, info: { tts: !!TTS, ffmpeg: FF } };
 if (require.main === module) {
   start().then(port => {
     console.log(`\n  HTML → Video Studio đang chạy:  http://localhost:${port}\n`);
-    console.log(`  FFmpeg: ${FF ? 'có ✓' : 'CHƯA CÓ ✗ (cần để Xuất HQ)'}   ·   edge-tts: ${TTS ? 'có ✓' : 'chưa có (pip install edge-tts), không bắt buộc nếu dùng Gemini/Azure'}\n`);
+    console.log(`  FFmpeg: ${FF ? 'có ✓' : 'CHƯA CÓ ✗ (cần để Xuất HQ)'}   ·   giọng Edge: ${TTS ? 'có ✓' : 'chưa có (npm install)'}\n`);
   }).catch(e => { console.error('Không mở được cổng:', e.message); process.exit(1); });
   const bye = async () => { await stop(); process.exit(0); };
   process.on('SIGINT', bye); process.on('SIGTERM', bye);

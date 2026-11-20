@@ -67,10 +67,11 @@ var H2VStudio = (function () {
 
   /* ---------- AI ---------- */
   function aiReady() { return !!aiKey(); }
-  function modelName() { return (AI.provider === 'gemini' ? 'Gemini · ' : 'ChatGPT · ') + (aiModel() || 'chưa chọn'); }
+  function webOk() { return typeof H2VWeb !== 'undefined' && H2VWeb.available(); }
+  function modelName() { return aiIsWeb() ? aiName() + ', không cần key' : (AI.provider === 'gemini' ? 'Gemini · ' : 'ChatGPT · ') + (aiModel() || 'chưa chọn'); }
   function setStatus(msg) { var el = $s('stStatus'); if (el) el.textContent = msg || ('Sẵn sàng (Dự án: ' + ((cur() || {}).name || '—') + ' | Model: ' + modelName() + ')'); }
   async function runAI(label, system, user, onText) {
-    if (!aiReady()) { ST.page = 'settings'; render(); throw new Error('Chưa có API key. Nhập Gemini key (miễn phí) trong ⚙️ Cài đặt của Studio.'); }
+    if (!aiReady()) { ST.page = 'settings'; render(); throw new Error('Chưa có API key. Chọn "ChatGPT/Gemini trong app" (không cần key) hoặc nhập Gemini key trong ⚙️ Cài đặt của Studio.'); }
     if (ST.busy) throw new Error('Đang chạy: ' + ST.busy);
     ST.busy = label; ST.ctrl = new AbortController(); renderBusy();
     var t0 = performance.now(), last = 0;
@@ -127,15 +128,33 @@ var H2VStudio = (function () {
       return { start: tt[0], dur: Math.max(0.3, tt[1] - tt[0]), text: l.slice(i + 1).join(' ').trim() };
     }).filter(Boolean);
   }
+  var TRANSCRIBE_ASK = 'Chép lại CHÍNH XÁC toàn bộ lời nói trong video, giữ nguyên ngôn ngữ gốc, không tóm tắt, không thêm bình luận hay mô tả hình ảnh. Mỗi dòng một câu theo định dạng [mm:ss] nội dung (video dài hơn 1 giờ thì [h:mm:ss]). Nếu video không có lời nói, chỉ ghi: [00:00] (không có lời thoại)';
+  /** Không có key: nhờ Gemini nhúng trong app xem link YouTube. */
+  async function geminiWebTranscribe(p, onText) {
+    if (ST.busy) throw new Error('Đang chạy: ' + ST.busy);
+    ST.busy = 'Gemini (trong app) đang nghe video'; ST.ctrl = new AbortController(); renderBusy();
+    var t0 = performance.now();
+    try {
+      var r = await H2VWeb.ask('gemini', p.url + '\n\n' + TRANSCRIBE_ASK + '\nTrả lời bằng MỘT khối ```text chứa toàn bộ lời thoại.', { signal: ST.ctrl.signal, timeoutMin: 15, onProgress: function (t) {
+        setStatus('⏳ Gemini (trong app) đang nghe video… ' + Math.round((performance.now() - t0) / 1000) + 's'); if (onText) onText(t); } });
+      var m = r.text.match(/```[a-z]*\s*([\s\S]*?)```/), body = m ? m[1] : r.text;
+      var segs = parseTimedText(body);
+      if (!segs.length) throw new Error('Gemini không chép được lời thoại: ' + r.text.slice(0, 200));
+      ST.stats.runs++; return { segments: segs, lang: null, auto: true, source: 'gemini-web' };
+    } catch (e) { if (e.name === 'AbortError') throw new Error('Đã dừng'); throw e; }
+    finally { ST.busy = null; ST.ctrl = null; renderBusy(); setStatus(); }
+  }
   async function geminiTranscribe(p, onText) {
-    var key = TTS.gKey.trim(); if (!key) throw new Error('Cần Gemini API key (⚙️ Cài đặt) để nhờ Gemini nghe video.');
+    var key = TTS.gKey.trim();
+    if (!key && webOk()) return geminiWebTranscribe(p, onText);
+    if (!key) throw new Error('Cần Gemini API key (⚙️ Cài đặt) để nhờ Gemini nghe video.');
     var model = (AI.provider === 'gemini' && AI.gModel) || 'gemini-3.5-flash';
     ST.busy = 'Gemini đang nghe video'; ST.ctrl = new AbortController(); renderBusy();
     var t0 = performance.now(), text = '';
     try {
       var r = await fetch('https://generativelanguage.googleapis.com/v1beta/models/' + encodeURIComponent(model) + ':streamGenerateContent?alt=sse', {
         method: 'POST', signal: ST.ctrl.signal, headers: { 'Content-Type': 'application/json', 'x-goog-api-key': key },
-        body: JSON.stringify({ contents: [{ role: 'user', parts: [{ fileData: { fileUri: p.url } }, { text: 'Chép lại CHÍNH XÁC toàn bộ lời nói trong video, giữ nguyên ngôn ngữ gốc, không tóm tắt, không thêm bình luận hay mô tả hình ảnh. Mỗi dòng một câu theo định dạng [mm:ss] nội dung (video dài hơn 1 giờ thì [h:mm:ss]). Nếu video không có lời nói, chỉ ghi: [00:00] (không có lời thoại)' }] }],
+        body: JSON.stringify({ contents: [{ role: 'user', parts: [{ fileData: { fileUri: p.url } }, { text: TRANSCRIBE_ASK }] }],
           generationConfig: { temperature: 0.1, mediaResolution: 'MEDIA_RESOLUTION_LOW' } })
       });
       if (!r.ok) throw await aiHttpError(r, 'Gemini');
@@ -319,7 +338,7 @@ var H2VStudio = (function () {
       if (j.info && j.info.title && /^Dự án \d+$|^Dự án mới$/.test(p.name)) p.name = j.info.title.slice(0, 80);
       if (j.transcript) { p.transcript = j.transcript; touch(p, 'Đã phân tích'); render(); toast('Đã lấy ' + j.transcript.segments.length + ' câu lời thoại'); return; }
       touch(p); render();
-      if (TTS.gKey.trim()) { toast('Không lấy được phụ đề YouTube (' + (j.transcriptError || '') + '). Đang nhờ Gemini nghe video…', 6000); await doGemini(p); }
+      if (TTS.gKey.trim() || webOk()) { toast('Không lấy được phụ đề YouTube (' + (j.transcriptError || '') + '). Đang nhờ Gemini nghe video…', 6000); await doGemini(p); }
       else toast('Không lấy được phụ đề: ' + (j.transcriptError || '') + '. Nhập Gemini key (⚙️ Cài đặt) để Gemini nghe video, hoặc tự dán lời thoại.', 8000);
     } catch (e) { toast('Lỗi: ' + e.message, 7000); }
     finally { setStatus(); }
@@ -444,7 +463,20 @@ var H2VStudio = (function () {
       '<label class="f" style="margin-top:10px">Ghi chú thêm<input class="inp" data-th="note" value="' + esc(t.note) + '" placeholder="Ví dụ: tông đỏ cam, có biểu cảm sốc, chữ vàng viền đen"></label>' +
       '<div class="st-row" style="margin-top:12px"><button class="btn pri" data-act="thumb" data-ai>✨ Tạo 3 ý tưởng thumbnail</button><span class="st-empty">AI viết prompt vẽ ảnh, bấm Copy + mở ChatGPT/Gemini để tạo ảnh.</span></div></div>' +
       (t.concepts ? t.concepts.map(function (c, i) { return '<div class="st-concept"><h3>Ý tưởng ' + (i + 1) + ': ' + esc(c.headline || '') + '</h3><div class="st-empty">' + esc(c.visual || '') + '</div><textarea class="inp st-text" style="min-height:110px;font-family:var(--mono);font-size:12px" data-cprompt="' + i + '">' + esc(c.prompt || '') + '</textarea>' +
-        '<div class="st-row" style="margin-top:6px"><button class="btn pri" data-act="th-gpt" data-i="' + i + '">📋 Copy + mở ChatGPT</button><button class="btn pri" data-act="th-gem" data-i="' + i + '">📋 Copy + mở Gemini</button><button class="btn" data-act="th-copy" data-i="' + i + '">Copy</button></div></div>'; }).join('') : '');
+        '<div class="st-row" style="margin-top:6px"><button class="btn pri" data-act="th-gpt" data-i="' + i + '">📋 Copy + mở ChatGPT</button><button class="btn pri" data-act="th-gem" data-i="' + i + '">📋 Copy + mở Gemini</button><button class="btn" data-act="th-copy" data-i="' + i + '">Copy</button>' +
+        (webOk() ? '<button class="btn pri" data-act="th-wgpt" data-i="' + i + '" data-ai>🌐 Vẽ bằng ChatGPT trong app</button><button class="btn pri" data-act="th-wgem" data-i="' + i + '" data-ai>🌐 Vẽ bằng Gemini trong app</button>' : '') + '</div>' +
+        (c.image ? '<div style="margin-top:8px"><img src="' + c.image + '" style="max-width:100%;max-height:360px;border-radius:8px;border:1px solid var(--line)"><div class="st-row" style="margin-top:6px"><button class="btn" data-act="th-dl" data-i="' + i + '">⬇ Tải ảnh</button></div></div>' : '') + '</div>'; }).join('') : '');
+  }
+  async function thumbWeb(p, i, site) {
+    var c = p.thumb.concepts[i]; if (!c || ST.busy) return;
+    var ch = p.thumb.charId;
+    ST.busy = 'Đang vẽ thumbnail'; ST.ctrl = new AbortController(); renderBusy(); setStatus('⏳ Đang nhờ ' + (site === 'gemini' ? 'Gemini' : 'ChatGPT') + ' vẽ thumbnail…');
+    try {
+      var r = await H2VWeb.ask(site, 'Vẽ ảnh thumbnail YouTube theo mô tả sau (chỉ trả về ảnh):\n\n' + c.prompt, { expect: 'image', signal: ST.ctrl.signal, timeoutMin: 10, autoSend: !ch,
+        manualHint: 'Đã dán prompt. Đính kèm ảnh nhân vật vào khung chat rồi bấm Gửi, app sẽ tự lấy ảnh.' });
+      c.image = r.image; touch(p); render(); toast('Đã lấy ảnh thumbnail');
+    } catch (e) { if (e.name !== 'AbortError') toast(e.message, 7000); }
+    finally { ST.busy = null; ST.ctrl = null; renderBusy(); setStatus(); }
   }
   async function doThumb(p) {
     var t = p.thumb, title = p.chosenTitle || (p.info && p.info.title) || ''; if (!title && !sourceText(p)) { toast('Nhập tiêu đề video'); return; }
@@ -479,11 +511,13 @@ var H2VStudio = (function () {
   function pageSettings() {
     var c = ST.channel;
     return '<h1>Cài đặt</h1><div class="st-card"><h2>AI dùng cho Studio</h2><div class="st-grid2">' +
-      '<label class="f">Dịch vụ<select class="inp" id="stsProv"><option value="gemini"' + (AI.provider === 'gemini' ? ' selected' : '') + '>Gemini (miễn phí)</option><option value="openai"' + (AI.provider === 'openai' ? ' selected' : '') + '>ChatGPT (OpenAI)</option></select></label>' +
+      '<label class="f">Dịch vụ<select class="inp" id="stsProv">' + [['chatgpt-web', '🌐 ChatGPT trong app (không cần key)', 1], ['gemini-web', '🌐 Gemini trong app (không cần key)', 1], ['gemini', 'Gemini API (key miễn phí)'], ['openai', 'ChatGPT API (OpenAI key)']]
+        .filter(function (o) { return !o[2] || webOk(); }).map(function (o) { return '<option value="' + o[0] + '"' + (AI.provider === o[0] ? ' selected' : '') + '>' + o[1] + '</option>'; }).join('') + '</select></label>' +
+      (aiIsWeb() ? '<div class="f"><span>Đăng nhập</span><button class="btn" data-act="web-show">🌐 Mở khung ' + aiName() + ' để đăng nhập</button></div>' :
       '<label class="f">Model<input class="inp" id="stsModel" list="aiModels" value="' + esc(aiModel()) + '"></label>' +
-      '<label class="f">API key ' + (AI.provider === 'gemini' ? '(Gemini, dùng chung với giọng đọc)' : '(OpenAI)') + '<input class="inp" type="password" id="stsKey" value="' + esc(aiKey()) + '"></label>' +
-      '<label class="f">Gemini key (để Gemini nghe video YouTube)<input class="inp" type="password" id="stsGKey" value="' + esc(TTS.gKey) + '"></label></div>' +
-      '<div class="st-empty">Lấy Gemini key miễn phí: aistudio.google.com/apikey. Gemini nghe video chỉ dùng được với video công khai và tốn lượt miễn phí.</div></div>' +
+      '<label class="f">API key ' + (AI.provider === 'gemini' ? '(Gemini, dùng chung với giọng đọc)' : '(OpenAI)') + '<input class="inp" type="password" id="stsKey" value="' + esc(aiKey()) + '"></label>') +
+      '<label class="f">Gemini key (tuỳ chọn, để Gemini API nghe video YouTube)<input class="inp" type="password" id="stsGKey" value="' + esc(TTS.gKey) + '"></label></div>' +
+      '<div class="st-empty">' + (webOk() ? 'Bản app: chọn "trong app" để dùng tài khoản ChatGPT/Gemini của bạn, không cần key. Không có Gemini key thì app nhờ Gemini trong app nghe video. ' : '') + 'Lấy Gemini key miễn phí: aistudio.google.com/apikey.</div></div>' +
       '<div class="st-card"><h2>Thông tin kênh (dùng cho mô tả)</h2><div class="st-grid2">' +
       ['name|Tên kênh', 'email|Email liên hệ', 'fanpage|Fanpage', 'links|Link khác (TikTok, website…)', 'subLang|Ngôn ngữ phụ đề ưu tiên (vd: vi,en)'].map(function (x) { var k = x.split('|'); return '<label class="f">' + k[1] + '<input class="inp" data-ch="' + k[0] + '" value="' + esc(c[k[0]] || '') + '"></label>'; }).join('') + '</div></div>';
   }
@@ -591,7 +625,7 @@ var H2VStudio = (function () {
     if (p && t.dataset.rw) { p.rewrite[t.dataset.rw] = t.type === 'checkbox' ? t.checked : t.value; saveAll(); if (t.dataset.rw === 'mode' || t.dataset.rw === 'level') render(); return; }
     if (p && t.dataset.th) { if (t.dataset.th === 'title') p.chosenTitle = t.value; else p.thumb[t.dataset.th] = t.value; saveAll(); return; }
     if (p && t.dataset.title != null && p.seo) { p.chosenTitle = p.seo.titles[+t.dataset.title].title; saveAll(); render(); return; }
-    if (t.id === 'stsProv') { AI.provider = t.value; saveAiCfg(); syncAiUI(); render(); aiLoadModels(true); return; }
+    if (t.id === 'stsProv') { AI.provider = t.value; saveAiCfg(); syncAiUI(); render(); aiLoadModels(true); setStatus(); return; }
     if (t.id === 'stsModel') { if (AI.provider === 'gemini') AI.gModel = t.value.trim(); else AI.oModel = t.value.trim(); saveAiCfg(); syncAiUI(); setStatus(); return; }
     if (t.id === 'stsKey') { if (AI.provider === 'gemini') { TTS.gKey = t.value.trim(); saveTtsCfg(); syncTtsUI(); } else AI.oKey = t.value.trim(); saveAiCfg(); syncAiUI(); aiLoadModels(true); render(); return; }
     if (t.id === 'stsGKey') { TTS.gKey = t.value.trim(); saveTtsCfg(); syncTtsUI(); syncAiUI(); render(); return; }
@@ -641,6 +675,9 @@ var H2VStudio = (function () {
           if (a !== 'th-copy') { window.open(a === 'th-gpt' ? 'https://chatgpt.com/' : 'https://gemini.google.com/app', '_blank', 'noopener'); toast('Đã copy prompt. Dán vào khung chat (Ctrl+V)' + (p.thumb.charId ? ' và đính kèm ảnh nhân vật' : '') + '.', 5000); } else toast('Đã copy');
         }); break;
       }
+      case 'web-show': H2VWeb.show(aiWebSite()); break;
+      case 'th-wgpt': case 'th-wgem': thumbWeb(p, +b.dataset.i, a === 'th-wgem' ? 'gemini' : 'chatgpt'); break;
+      case 'th-dl': { var cc = p.thumb.concepts[+b.dataset.i]; if (cc && cc.image) H2VWeb.saveDataUrl(cc.image, fileName(p.name) + '-thumbnail-' + (+b.dataset.i + 1) + '.png'); break; }
       case 'desc': doDesc(p); break;
       case 'd-copy': copy((p.desc || {})[b.dataset.k] || ''); break;
     }
