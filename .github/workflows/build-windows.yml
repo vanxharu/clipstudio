@@ -67,18 +67,6 @@ jobs:
         if: env.MODE != 'skip'
         run: npm install --no-audit --no-fund
 
-      - name: Tải Piper (giọng đọc offline, MIT)
-        if: env.MODE != 'skip'
-        shell: pwsh
-        run: |
-          Invoke-WebRequest -Uri "https://github.com/rhasspy/piper/releases/download/2023.11.14-2/piper_windows_amd64.zip" -OutFile piper.zip
-          Expand-Archive piper.zip -DestinationPath pp-tmp
-          $exe = Get-ChildItem pp-tmp -Recurse -Filter piper.exe | Select-Object -First 1
-          if (-not $exe) { throw "Không thấy piper.exe" }
-          New-Item -ItemType Directory -Force vendor | Out-Null
-          Move-Item $exe.DirectoryName vendor/piper
-          Get-ChildItem vendor/piper | Select-Object -First 20 | ForEach-Object { $_.Name }
-
       - name: Ghép web app
         if: env.MODE != 'skip'
         run: node build.js

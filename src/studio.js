@@ -1,5 +1,5 @@
 /* 📺 YouTube Studio: dự án · phân tích video · viết lại kịch bản · SEO · thumbnail · mô tả.
-   Dùng chung AI (aiCall) và giọng đọc với trình dựng video. */
+   Dùng chung AI (aiCall) và giọng đọc VOICEVOX/AivisSpeech với trình dựng video. */
 var H2VStudio = (function () {
   'use strict';
   var ST = { projects: [], curId: null, page: 'dash', busy: null, ctrl: null, stats: { runs: 0, lastMs: 0, totalMs: 0 }, channel: { name: '', email: '', fanpage: '', links: '' }, rwTab: 'script', seoTab: 'result' };
@@ -505,7 +505,7 @@ var H2VStudio = (function () {
       '<div class="st-row">Giọng <select class="inp" id="stVvoice" style="width:auto">' + GEMINI_VOICES.slice(0, 8).map(function (g) { return '<option value="' + g[0] + '"' + (g[0] === v.voice ? ' selected' : '') + '>' + g[1] + '</option>'; }).join('') + '</select>' +
       ' Nhạc <select class="inp" id="stVmusic" style="width:auto">' + Object.keys(H2VMusic.PRESETS).map(function (k) { return '<option value="' + k + '"' + (k === v.music ? ' selected' : '') + '>' + H2VMusic.PRESETS[k].name + '</option>'; }).join('') + '<option value="none"' + (v.music === 'none' ? ' selected' : '') + '>Không nhạc</option></select>' +
       ' Nền <select class="inp" id="stVtheme" style="width:auto"><option value="dark"' + (v.theme === 'dark' ? ' selected' : '') + '>Tối</option><option value="light"' + (v.theme === 'light' ? ' selected' : '') + '>Sáng</option><option value="paper"' + (v.theme === 'paper' ? ' selected' : '') + '>Giấy</option></select></div>' +
-      '<div class="st-empty">Kịch bản: ' + nWords + ' từ · ≈ ' + fmtTime(nWords / 2.5) + ' · cần ~' + nChunks + ' lượt tạo giọng. ' + (nChunks > 15 && TTS.provider === 'gemini' ? '⚠️ Gemini miễn phí giới hạn số lượt mỗi ngày: với video dài nên dùng Azure (500k ký tự/tháng) hoặc giọng Windows trong bản app.' : '') + '</div>' +
+      '<div class="st-empty">Kịch bản: ' + nWords + ' từ · ≈ ' + fmtTime(nWords / 2.5) + ' · cần ~' + nChunks + ' câu đọc. Giọng đọc dùng VOICEVOX/AivisSpeech (tiếng Nhật); kịch bản ngôn ngữ khác sẽ đọc không đúng.</div>' +
       '<div class="st-row"><span class="sp" style="flex:1"></span><button class="btn pri" data-v="go">Dựng video</button></div></div></div>';
     document.body.appendChild(el);
     el.onclick = function (e) {

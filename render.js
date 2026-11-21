@@ -18,7 +18,8 @@ Cách dùng:  node render.js <file.html | thư-mục> [tuỳ chọn]
   -q, --quality <mức>       low | high | max  (mặc định high)
   -a, --audio <file>        Thêm âm thanh; viết dạng file.mp3@2.5 để bắt đầu ở giây 2.5,
                             file.mp3@0:0.4 để đặt âm lượng 0.4 (dùng nhiều lần được)
-      --tts "<nội dung>"    Thêm giọng đọc (cần: pip install edge-tts)
+      --tts "<nội dung>"    Thêm giọng đọc tiếng Nhật (cần mở VOICEVOX hoặc AivisSpeech)
+      --speaker <id>        Mã giọng (style id) của VOICEVOX/AivisSpeech, mặc định 3
       --voice <tên>         Giọng (mặc định vi-VN-HoaiMyNeural; nam: vi-VN-NamMinhNeural)
       --tts-start <giây>    Thời điểm bắt đầu đọc (mặc định 0.5)
       --tts-rate <%>        Tốc độ đọc, ví dụ 10 hoặc -15
@@ -29,7 +30,7 @@ Thư mục: render mọi file .html bên trong (mỗi file một video).
 
 Ví dụ:
   node render.js examples/02-social-9x16.html
-  node render.js intro.html --preset 9x16 -d 12 -a nhac.mp3@0:0.6 --tts "Xin chào các bạn" --fit-audio
+  node render.js intro.html --preset 9x16 -d 12 -a nhac.mp3@0:0.6 --tts "こんにちは" --fit-audio
 `;
 
 const PRESETS = { '16x9': [1920, 1080], '9x16': [1080, 1920], '1x1': [1080, 1080], '4x5': [1080, 1350], '720p': [1280, 720], '4k': [3840, 2160] };
@@ -49,6 +50,7 @@ function parse(argv) {
       case '-q': case '--quality': o.quality = { low: 0.6, high: 1, max: 1.8 }[next()] || 1; break;
       case '-a': case '--audio': o.audio.push(next()); break;
       case '--tts': o.tts = next(); break;
+      case '--speaker': o.speaker = +next(); break;
       case '--voice': o.voice = next(); break;
       case '--tts-start': o.ttsStart = +next(); break;
       case '--tts-rate': o.ttsRate = +next(); break;
@@ -86,8 +88,12 @@ async function renderOne(file, o, tmp) {
   for (const a of audio) if (!fs.existsSync(a.path)) throw new Error('Không thấy file âm thanh: ' + a.path);
   if (o.tts) {
     process.stdout.write('🎙  Đang tạo giọng đọc… ');
-    const mp3 = path.join(tmp, 'tts-' + Date.now() + '.mp3');
-    await core.tts({ text: o.tts, voice: o.voice || 'vi-VN-HoaiMyNeural', rate: o.ttsRate || 0, out: mp3 });
+    const vv = require('./lib/vvengine');
+    const eng = (await vv.engines()).find(e => e.ok);
+    if (!eng) throw new Error('Chưa thấy VOICEVOX hoặc AivisSpeech đang chạy.');
+    const mp3 = path.join(tmp, 'tts-' + Date.now() + '.wav');
+    let spk = o.speaker; if (spk == null) spk = eng.id === 'voicevox' ? 3 : (await vv.speakers(eng.id))[0].styles[0].id;
+    fs.writeFileSync(mp3, await vv.tts(eng.id, { text: o.tts, speaker: spk, rate: o.ttsRate || 0 }));
     const len = probeDuration(mp3);
     const start = o.ttsStart ?? 0.5;
     console.log(len.toFixed(1) + 's');

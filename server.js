@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Máy chủ local: phục vụ web app + render HQ (Chrome + FFmpeg) + giọng đọc TTS (giọng Windows / edge-tts nếu có)
+// Máy chủ local: phục vụ web app + render HQ (Chrome + FFmpeg) + cầu nối giọng đọc VOICEVOX / AivisSpeech
 // Chạy: npm start   (mặc định http://localhost:3210)
 const http = require('http');
 const fs = require('fs');
@@ -7,7 +7,7 @@ const os = require('os');
 const path = require('path');
 const crypto = require('crypto');
 const core = require('./lib/core');
-const piper = require('./lib/piper');
+const vv = require('./lib/vvengine');
 
 const PORT = process.env.PORT !== undefined ? +process.env.PORT : 3210;
 const HOST = process.env.HOST || '127.0.0.1';
@@ -23,7 +23,6 @@ const PROXY_HOSTS = [/^generativelanguage\.googleapis\.com$/, /^[a-z0-9-]+\.tts\
 
 const jobs = new Map();
 let queue = Promise.resolve();
-const TTS = core.ttsAvailable();
 const FF = core.ffmpegOk();
 
 function send(res, code, body, type = 'application/json; charset=utf-8') {
@@ -45,7 +44,7 @@ const server = http.createServer(async (req, res) => {
   try {
     if (req.method === 'GET' && (p === '/' || p === '/index.html')) return send(res, 200, fs.readFileSync(INDEX), 'text/html; charset=utf-8');
     if (p === '/favicon.ico') { res.writeHead(204); return res.end(); }
-    if (p === '/api/health') return send(res, 200, { ok: true, tts: !!TTS, ffmpeg: FF, proxy: true, youtube: true, piper: piper.available(), app: process.env.H2V_APP_VERSION || null });
+    if (p === '/api/health') return send(res, 200, { ok: true, vv: true, ffmpeg: FF, proxy: true, youtube: true, app: process.env.H2V_APP_VERSION || null });
 
     // YouTube: thông tin video + phụ đề
     if (p === '/api/youtube' && req.method === 'GET') {
@@ -68,28 +67,14 @@ const server = http.createServer(async (req, res) => {
       return res.end(buf);
     }
 
-    if (p === '/api/tts' && req.method === 'POST') {
+    // Giọng đọc VOICEVOX / AivisSpeech (đi qua máy chủ này để khỏi vướng CORS)
+    if (p === '/api/vv/engines' && req.method === 'GET') return send(res, 200, await vv.engines());
+    if (p === '/api/vv/speakers' && req.method === 'GET') return send(res, 200, await vv.speakers(url.searchParams.get('engine')));
+    if (p === '/api/vv/tts' && req.method === 'POST') {
       const b = await readBody(req, 1e6);
-      if (!b.text || !b.text.trim()) return send(res, 400, 'Thiếu nội dung', 'text/plain; charset=utf-8');
-      const out = path.join(WORK, 'tts-' + crypto.randomUUID() + '.mp3');
-      let used = '';
-      if (b.engine === 'piper') {
-        try { used = (await piper.tts({ text: b.text.slice(0, 20000), lang: b.lang, gender: b.gender, key: b.piperVoice, rate: +b.rate || 0, out, ffmpeg: core.ffmpegPath() })).voice; }
-        catch (e) { if (e.unsupported) return send(res, 422, e.message, 'text/plain; charset=utf-8'); throw e; }
-      }
-      else await core.tts({ text: b.text.slice(0, 20000), voice: b.voice, rate: +b.rate || 0, pitch: +b.pitch || 0, out });
-      const data = fs.readFileSync(out); fs.rmSync(out, { force: true });
-      res.setHeader('X-Voice', used);
-      return send(res, 200, data, 'audio/mpeg');
-    }
-
-    // Piper: danh sách giọng theo ngôn ngữ, tải giọng, tiến độ tải
-    if (p === '/api/piper/voices' && req.method === 'GET') return send(res, 200, await piper.voicesFor(url.searchParams.get('lang') || 'vi-VN'));
-    if (p === '/api/piper/progress' && req.method === 'GET') return send(res, 200, piper.progress());
-    if (p === '/api/piper/download' && req.method === 'POST') {
-      const b = await readBody(req, 1e4);
-      await piper.ensureVoice(String(b.key || ''));
-      return send(res, 200, { ok: true });
+      if (!b.text || !String(b.text).trim()) return send(res, 400, 'Thiếu nội dung', 'text/plain; charset=utf-8');
+      try { return send(res, 200, await vv.tts(b.engine, { text: String(b.text).slice(0, 5000), speaker: b.speaker, rate: b.rate, pitch: b.pitch, intonation: b.intonation }), 'audio/wav'); }
+      catch (e) { return send(res, e.offline ? 503 : 500, e.message, 'text/plain; charset=utf-8'); }
     }
 
     if (p === '/api/render' && req.method === 'POST') {
@@ -151,12 +136,12 @@ async function stop() {
   try { server.close(); } catch (e) {}
   fs.rmSync(WORK, { recursive: true, force: true });
 }
-module.exports = { start, stop, info: { tts: !!TTS, ffmpeg: FF } };
+module.exports = { start, stop, info: { ffmpeg: FF } };
 
 if (require.main === module) {
   start().then(port => {
     console.log(`\n  HTML → Video Studio đang chạy:  http://localhost:${port}\n`);
-    console.log(`  FFmpeg: ${FF ? 'có ✓' : 'CHƯA CÓ ✗ (cần để Xuất HQ)'}   ·   giọng Edge: ${TTS ? 'có ✓' : 'chưa có (npm install)'}\n`);
+    console.log(`  FFmpeg: ${FF ? 'có ✓' : 'CHƯA CÓ ✗ (cần để Xuất HQ)'}\n`);
   }).catch(e => { console.error('Không mở được cổng:', e.message); process.exit(1); });
   const bye = async () => { await stop(); process.exit(0); };
   process.on('SIGINT', bye); process.on('SIGTERM', bye);

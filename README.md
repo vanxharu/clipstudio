@@ -28,7 +28,7 @@ Có 3 cách dùng:
    npm install
    ```
    Tool dùng Chrome hoặc Edge có sẵn trên máy. Nếu máy không có, chạy thêm `npm i playwright && npx playwright install chromium`.
-4. *(Tuỳ chọn, cho giọng đọc)* `pip install edge-tts`. Đây là giọng Microsoft Edge miễn phí, có tiếng Việt Hoài My (nữ) và Nam Minh (nam). Khi tạo giọng đọc cần có Internet.
+4. *(Cho giọng đọc)* Cài và mở **AivisSpeech** hoặc **VOICEVOX** (miễn phí, tiếng Nhật).
 
 Chạy:
 
@@ -63,7 +63,7 @@ Tab **🧩 Bộ skill GPT/Gem** tạo sẵn một hướng dẫn chính và 5 fi
 - **Gemini**: tạo Gem, dán hướng dẫn chính vào Instructions, tải 5 file lên Knowledge.
 - **ChatGPT**: tạo Project, dán hướng dẫn chính vào Instructions của dự án, thêm 5 file (bản miễn phí cho tối đa 5 file).
 - Sau đó chỉ cần nhắn "làm video về…", copy code AI trả về, bấm **📋 Dán code** trong app.
-- Giọng đọc đọc được nhiều ngôn ngữ: app tự nhận ngôn ngữ của lời thoại (hoặc trường `"lang"` trong khối h2v-audio, ví dụ `"en-US"`, `"ja-JP"`).
+- Lời thoại viết bằng tiếng Nhật (giọng đọc VOICEVOX/AivisSpeech).
 
 ## 📺 YouTube Studio
 
@@ -78,29 +78,22 @@ Bấm **📺 YouTube Studio** trên thanh trên cùng. Thanh bên trái có các
 - **📄 Mô tả:** mô tả có chương theo mốc thời gian, 10 hashtag, bình luận ghim, bài đăng cộng đồng.
 - **⚙️ Cài đặt:** AI dùng cho Studio (Gemini/ChatGPT, model, key) và thông tin kênh (email, fanpage…).
 
-Đọc dữ liệu YouTube cần **bản app (.exe) hoặc `npm start`**, vì trình duyệt chặn đọc trực tiếp. Kịch bản dài cần nhiều lượt tạo giọng: Gemini miễn phí có giới hạn số lượt mỗi ngày, nên dùng Azure (500k ký tự/tháng) hoặc edge-tts.
+Đọc dữ liệu YouTube cần **bản app (.exe) hoặc `npm start`**, vì trình duyệt chặn đọc trực tiếp.
 
-## 🎙 Giọng đọc Piper (offline, miễn phí, không giới hạn)
+## 🎙 Giọng đọc: VOICEVOX / AivisSpeech (tiếng Nhật, miễn phí)
 
-Bản app (.exe) kèm sẵn [Piper](https://github.com/rhasspy/piper) (MIT): giọng AI chạy ngay trên máy, không cần key, không giới hạn lượt. Lần đầu dùng một ngôn ngữ, app tải giọng từ [rhasspy/piper-voices](https://huggingface.co/rhasspy/piper-voices) (khoảng 20–110 MB), sau đó chạy offline. Chọn giọng trong **🎙 Cài đặt giọng đọc → Piper**.
+App chỉ dùng hai bộ máy giọng đọc tiếng Nhật miễn phí, chạy ngay trên máy bạn, không giới hạn lượt:
 
-**Tự chuyển dịch vụ khi hết lượt:** khi Gemini (hoặc Azure) báo hết hạn mức, app đánh dấu dịch vụ đó tạm nghỉ (Gemini làm mới lúc nửa đêm giờ Thái Bình Dương) và **đọc lại cả video** bằng dịch vụ kế tiếp (Azure → Piper → Gemini → giọng Windows) để cả video cùng một giọng. Ngôn ngữ Piper chưa có giọng (vd tiếng Nhật, Hàn) thì app tự bỏ qua Piper.
+- **AivisSpeech** (giọng tự nhiên): tải tại [aivis-project.com](https://aivis-project.com/), cổng 10101.
+- **VOICEVOX** (nhiều nhân vật): tải tại [voicevox.hiroshiba.jp](https://voicevox.hiroshiba.jp/), cổng 50021.
 
-## Giọng đọc ngay trên web (không cần cài gì)
+Cài một trong hai, mở lên để chạy nền, app tự kết nối. Trong **🎙 Giọng đọc**, app tự gán mỗi giọng trong kịch bản (Kore, Orus, Puck…) sang một nhân vật đúng nam/nữ và hợp vai (ông lão, quỷ, cậu bé, người kể chuyện…); bạn đổi được và bấm ▶ để nghe thử. App tạo sẵn dòng **ghi nguồn** (vd `VOICEVOX:四国めたん`) để dán vào mô tả video theo điều khoản của từng nhân vật.
 
-| Dịch vụ | Miễn phí | Tiếng Việt | Cần gì |
-|---|---|---|---|
-| **Google Gemini TTS** (khuyên dùng) | Có gói miễn phí, giới hạn số lượt mỗi phút/ngày | Có, 30 giọng đọc đa ngôn ngữ | API key tạo tại https://aistudio.google.com/apikey, không cần thẻ |
-| **Microsoft Azure Speech** | 500.000 ký tự/tháng (gói F0) | Hoài My (nữ), Nam Minh (nam) | Tài khoản Azure (cần thẻ để xác minh), tạo tài nguyên Speech gói Free F0, lấy Key + Region |
-| **edge-tts** (máy chủ local) | Miễn phí, không cần key | Hoài My, Nam Minh | `npm start` + `pip install edge-tts` |
-
-- Key được lưu trong trình duyệt của bạn (localStorage) và gửi thẳng tới Google/Microsoft, không qua máy chủ nào khác. Đừng chia sẻ máy hay trang khi đã nhập key.
-- Gemini: ô **Phong cách** nhận mô tả như "hào hứng", "ấm áp, chậm rãi". Thanh tốc độ được đổi thành mô tả "nhanh"/"chậm rãi". Khi chạm giới hạn miễn phí, tool tự chờ rồi tạo tiếp.
-- **Trang trên claude.ai không gọi được các API này** vì trang bị chặn kết nối ra ngoài. Hãy mở `public/index.html` trên máy (nhấp đúp là được), hoặc đưa file đó lên một trang web tĩnh miễn phí như GitHub Pages hay Netlify để dùng ở mọi nơi.
+Dán code xong, bấm **🎙 Tạo âm thanh** để tạo giọng đọc và nhạc nền.
 
 ## Bản Windows (.exe) + tự cập nhật
 
-Bản ứng dụng gói sẵn mọi thứ: giao diện, FFmpeg và máy chủ render. Nó render bằng **Microsoft Edge có sẵn trên Windows 10/11** (hoặc Chrome nếu máy có), nên **không cần cài Node, FFmpeg hay Python**. Gọi Gemini/Azure không bị chặn. Video được lưu thẳng vào thư mục bạn chọn. App tự kiểm tra và cài bản mới.
+Bản ứng dụng gói sẵn mọi thứ: giao diện, FFmpeg và máy chủ render. Nó render bằng **Microsoft Edge có sẵn trên Windows 10/11** (hoặc Chrome nếu máy có), nên **không cần cài Node, FFmpeg hay Python**. Video được lưu thẳng vào thư mục bạn chọn. App tự kiểm tra và cài bản mới.
 
 ### Thiết lập lần đầu (một lần duy nhất)
 
@@ -131,7 +124,7 @@ Muốn build thử mà không phát hành thì để trống ô phiên bản. Fi
 
 - Bộ cài chưa có chữ ký số, nên lần đầu cài Windows SmartScreen sẽ báo "Windows protected your PC". Bấm **More info → Run anyway**. Muốn hết cảnh báo thì cần mua chứng chỉ ký mã (code signing).
 - Một số phần mềm diệt virus có thể cảnh báo nhầm file .exe mới build. Nếu gặp, hãy thêm ngoại lệ.
-- Giọng đọc edge-tts trong app vẫn cần cài Python + `pip install edge-tts`. Gemini và Azure thì dùng được ngay.
+- Giọng đọc cần mở AivisSpeech hoặc VOICEVOX (chạy nền) trên cùng máy.
 - Chạy thử app trên máy khi đang sửa code: `npm install` rồi `npm run app`.
 
 ## Dùng CLI
@@ -160,7 +153,8 @@ node render.js --help
 ```
 public/index.html   web app (đã đóng gói, mở trực tiếp được)
 src/                mã nguồn web app: timeshim.js, capture.js, mp4mux.js, music.js, app.html
-lib/core.js         lõi render HQ (Playwright + FFmpeg + edge-tts)
+lib/core.js         lõi render HQ (Playwright + FFmpeg)
+lib/vvengine.js     kết nối VOICEVOX / AivisSpeech
 server.js           máy chủ local (cũng chạy bên trong bản .exe)
 electron/           bản ứng dụng Windows: cửa sổ app, tự cập nhật
 .github/workflows/  GitHub tự build bộ cài .exe và phát hành

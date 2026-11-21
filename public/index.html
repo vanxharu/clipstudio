@@ -172,6 +172,12 @@
   .anchor-ctl { display: flex; gap: 10px; align-items: center; padding: 10px 14px; font-size: 13px; }
   .anchor-ctl .sp { flex: 1; }
   .kbd { font: 11px var(--mono); border: 1px solid var(--line); padding: 0 5px; border-radius: 4px; color: var(--mute); }
+  .vv-status { display: flex; gap: 10px; align-items: flex-start; justify-content: space-between; margin: 10px 0; font-size: 13px; }
+  .vv-status .ok { color: var(--ok, #3fb950); } .vv-status .mute { color: var(--mute); }
+  .vv-head { font-weight: 600; font-size: 13px; margin: 6px 0; }
+  .vv-row { display: grid; grid-template-columns: 1fr minmax(180px, 46%) auto; gap: 8px; align-items: center; padding: 6px 0; border-top: 1px solid var(--line); font-size: 13px; }
+  .vv-desc { color: var(--mute); font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .vv-credit { margin-top: 8px; font-size: 12.5px; display: flex; gap: 6px; align-items: center; flex-wrap: wrap; } .vv-credit code { background: var(--bg); padding: 3px 6px; border-radius: 6px; }
   .skill-guide { font-size: 13px; line-height: 1.55; }
   .skill-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 8px; }
   .skill-cols > div { background: var(--bg); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; }
@@ -193,11 +199,6 @@
 
 <div class="autobar" id="autoBar">
   <div class="ab-text"><b id="abTitle">Dán code vào ô bên trái (Ctrl+V): app tự nhận kịch bản, giọng đọc và nhạc nền</b><span id="abSub"></span></div>
-  <div class="ab-key" id="abKey" style="display:none">
-    <input id="abKeyInput" class="inp" type="password" placeholder="Dán Gemini API key (AIza…)" autocomplete="off">
-    <button class="btn" id="abKeySave">Lưu & tạo giọng</button>
-    <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">Lấy key miễn phí</a>
-  </div>
   <button class="btn" id="abPaste" title="Dán code từ clipboard, thay toàn bộ code hiện tại">📋 Dán code</button>
   <button class="btn" id="abVoice" style="display:none">🎙 Tạo giọng đọc</button>
   <button class="btn pri" id="abExport">▶ Xuất video</button>
@@ -272,41 +273,18 @@
         <input type="file" id="fileAudio" accept="audio/*,.mp3,.wav,.m4a,.ogg" hidden multiple>
       </div>
       <details class="ttsbox" id="ttsBox">
-        <summary>🎙 Cài đặt giọng đọc</summary>
+        <summary>🎙 Giọng đọc (VOICEVOX / AivisSpeech)</summary>
         <div class="grid" style="margin-top:10px">
-          <label class="f">Dịch vụ giọng đọc<select id="ttsProvider">
-            <option value="piper">Piper: AI trên máy (miễn phí, không giới hạn)</option>
-            <option value="gemini">Google Gemini (miễn phí, ít lượt)</option>
-            <option value="azure">Microsoft Azure (miễn phí 500k ký tự/tháng)</option>
-            <option value="local">Giọng Windows (miễn phí, offline, không cần key)</option></select></label>
+          <label class="f">Bộ máy giọng đọc<select id="vvEngine">
+            <option value="auto">Tự động (AivisSpeech, nếu không có thì VOICEVOX)</option>
+            <option value="aivis">AivisSpeech (giọng tự nhiên)</option>
+            <option value="voicevox">VOICEVOX (nhiều nhân vật)</option></select></label>
+          <label class="f">Ngữ điệu <input type="range" id="vvInton" min="-50" max="50" step="5" value="0"><span id="vvIntonV">0%</span></label>
         </div>
-        <div id="ttsCfg-piper" class="ttscfg">
-          <div class="grid" style="margin-top:8px">
-            <label class="f">Ngôn ngữ<select id="pLang"></select></label>
-            <label class="f">Giọng<select id="pVoice"><option value="">Tự chọn</option></select></label>
-          </div>
-          <p class="note">Giọng AI chạy ngay trên máy bạn (Piper, mã nguồn mở): miễn phí, <b>không giới hạn</b>, không cần key, không cần mạng sau khi tải giọng. Mỗi giọng tải một lần (~20–110 MB). Nghe tự nhiên kém Gemini/Azure một chút. Chỉ có trong bản app. <span id="piperState"></span></p>
-        </div>
-        <div id="ttsCfg-gemini" class="ttscfg">
-          <div class="grid" style="margin-top:8px">
-            <label class="f">Gemini API key<input type="password" id="gKey" placeholder="AIza…" autocomplete="off"></label>
-            <label class="f">Model<select id="gModel">
-              <option value="gemini-3.1-flash-tts-preview">gemini-3.1-flash-tts-preview</option>
-              <option value="gemini-2.5-flash-preview-tts">gemini-2.5-flash-preview-tts</option></select></label>
-          </div>
-          <p class="note">⚠️ Gói miễn phí chỉ được rất ít lượt mỗi ngày. Hết lượt thì app <b>tự chuyển sang Piper</b> (hoặc Azure nếu có key) và đọc lại cả video bằng một giọng cho đồng nhất. Lấy key miễn phí tại <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">aistudio.google.com/apikey</a>: đăng nhập Google → Create API key, không cần thẻ. Gói miễn phí giới hạn số lượt mỗi phút/ngày, và Google có thể dùng dữ liệu gói miễn phí để cải thiện sản phẩm.</p>
-        </div>
-        <div id="ttsCfg-azure" class="ttscfg">
-          <div class="grid" style="margin-top:8px">
-            <label class="f">Azure Speech key<input type="password" id="azKey" autocomplete="off"></label>
-            <label class="f">Vùng (region)<input id="azRegion" placeholder="southeastasia"></label>
-          </div>
-          <p class="note">Tạo tài nguyên <b>Speech</b> gói <b>Free F0</b> tại <a href="https://portal.azure.com/#create/Microsoft.CognitiveServicesSpeechServices" target="_blank" rel="noopener">portal.azure.com</a>, rồi chép Key và Region ở mục "Keys and Endpoint". Có giọng Hoài My, Nam Minh. Đăng ký Azure cần thẻ để xác minh.</p>
-        </div>
-        <div id="ttsCfg-local" class="ttscfg">
-          <p class="note">Dùng giọng đọc có sẵn trong Windows, miễn phí, chạy offline, không cần key (chỉ bản app .exe). Chưa có giọng tiếng Việt thì vào <b>Cài đặt Windows › Thời gian &amp; ngôn ngữ › Giọng nói › Thêm giọng nói › Tiếng Việt</b>, rồi mở lại app. Giọng Windows nghe máy hơn Gemini/Azure; muốn giọng tự nhiên hãy dùng Gemini (key miễn phí). <span id="localTtsState"></span></p>
-        </div>
-        <p class="note">🔒 Key chỉ lưu trong trình duyệt của bạn và gửi thẳng tới Google/Microsoft. Đừng chia sẻ trang khi đã nhập key.</p>
+        <div class="vv-status"><div id="vvStatus">Đang kiểm tra…</div><button class="btn" id="vvRecheck">↻ Kiểm tra lại</button></div>
+        <div id="vvMap"></div>
+        <p class="note">Cả hai phần mềm miễn phí, không giới hạn, chạy ngay trên máy bạn (chỉ đọc tiếng Nhật). Cài một trong hai, mở lên để chạy nền, app tự kết nối (AivisSpeech cổng 10101, VOICEVOX cổng 50021).
+          Mỗi nhân vật giọng có điều khoản riêng, thường phải <b>ghi nguồn</b> khi đăng video: app tạo sẵn dòng ghi nguồn ở trên để bạn copy vào mô tả.</p>
       </details>
       <p class="note" id="audioNote">Nhạc nền tự tạo là âm thanh tổng hợp mới hoàn toàn nên không vướng bản quyền. Muốn dùng nhạc có sẵn thì tải về từ
         <a href="https://pixabay.com/music/" target="_blank" rel="noopener">Pixabay Music</a> hoặc
@@ -808,7 +786,7 @@ var H2VMusic = (function () {
 </script>
 <script>
 /* 📺 YouTube Studio: dự án · phân tích video · viết lại kịch bản · SEO · thumbnail · mô tả.
-   Dùng chung AI (aiCall) và giọng đọc với trình dựng video. */
+   Dùng chung AI (aiCall) và giọng đọc VOICEVOX/AivisSpeech với trình dựng video. */
 var H2VStudio = (function () {
   'use strict';
   var ST = { projects: [], curId: null, page: 'dash', busy: null, ctrl: null, stats: { runs: 0, lastMs: 0, totalMs: 0 }, channel: { name: '', email: '', fanpage: '', links: '' }, rwTab: 'script', seoTab: 'result' };
@@ -1314,7 +1292,7 @@ var H2VStudio = (function () {
       '<div class="st-row">Giọng <select class="inp" id="stVvoice" style="width:auto">' + GEMINI_VOICES.slice(0, 8).map(function (g) { return '<option value="' + g[0] + '"' + (g[0] === v.voice ? ' selected' : '') + '>' + g[1] + '</option>'; }).join('') + '</select>' +
       ' Nhạc <select class="inp" id="stVmusic" style="width:auto">' + Object.keys(H2VMusic.PRESETS).map(function (k) { return '<option value="' + k + '"' + (k === v.music ? ' selected' : '') + '>' + H2VMusic.PRESETS[k].name + '</option>'; }).join('') + '<option value="none"' + (v.music === 'none' ? ' selected' : '') + '>Không nhạc</option></select>' +
       ' Nền <select class="inp" id="stVtheme" style="width:auto"><option value="dark"' + (v.theme === 'dark' ? ' selected' : '') + '>Tối</option><option value="light"' + (v.theme === 'light' ? ' selected' : '') + '>Sáng</option><option value="paper"' + (v.theme === 'paper' ? ' selected' : '') + '>Giấy</option></select></div>' +
-      '<div class="st-empty">Kịch bản: ' + nWords + ' từ · ≈ ' + fmtTime(nWords / 2.5) + ' · cần ~' + nChunks + ' lượt tạo giọng. ' + (nChunks > 15 && TTS.provider === 'gemini' ? '⚠️ Gemini miễn phí giới hạn số lượt mỗi ngày: với video dài nên dùng Azure (500k ký tự/tháng) hoặc giọng Windows trong bản app.' : '') + '</div>' +
+      '<div class="st-empty">Kịch bản: ' + nWords + ' từ · ≈ ' + fmtTime(nWords / 2.5) + ' · cần ~' + nChunks + ' câu đọc. Giọng đọc dùng VOICEVOX/AivisSpeech (tiếng Nhật); kịch bản ngôn ngữ khác sẽ đọc không đúng.</div>' +
       '<div class="st-row"><span class="sp" style="flex:1"></span><button class="btn pri" data-v="go">Dựng video</button></div></div></div>';
     document.body.appendChild(el);
     el.onclick = function (e) {
@@ -1483,7 +1461,7 @@ var H2VSkill = (function () {
       '',
       'CÁCH LÀM VIỆC',
       '1. Người dùng mô tả video (chủ đề, phong cách, độ dài, khung). Thiếu thông tin thì TỰ CHỌN hợp lý, không hỏi lại: khung dọc 1080×1920, 30–60 giây, phong cách hợp nội dung, giọng nữ Kore, nhạc lofi.',
-      '2. Viết lời thoại tiếng Việt tự nhiên, chia cảnh khớp lời thoại, hình minh hoạ đúng nội dung từng câu.',
+      '2. Lời thoại (lines) viết bằng TIẾNG NHẬT tự nhiên (app đọc bằng VOICEVOX/AivisSpeech, chỉ đọc được tiếng Nhật). Chữ hiển thị và phụ đề có thể song ngữ Nhật–Việt. Chia cảnh khớp lời thoại, hình minh hoạ đúng nội dung từng câu. Hội thoại nhiều nhân vật thì mỗi câu ghi voice/style riêng.',
       '3. Khi người dùng yêu cầu sửa: sửa trên file gần nhất, giữ nguyên phần không được yêu cầu đổi, trả lại TOÀN BỘ file.',
       '4. Nhân vật, con vật, đồ vật: tự vẽ bằng SVG/CSS/Canvas ngay trong file (không dùng ảnh ngoài).',
       '5. Video dài hơn 60 giây: bắt buộc làm theo mục "Video dài" trong file 1 ("chain": true, cảnh bám theo window.H2V_VOICE) để hình luôn khớp giọng đọc.',
@@ -1506,11 +1484,11 @@ var H2VSkill = (function () {
       '',
       '- Trong khối h2v-audio thêm `"chain": true`: app đọc từng câu nối tiếp nhau theo độ dài giọng thật (mốc giây trong lines chỉ là ước lượng), cách nhau `"gap": 0.35` giây.',
       '- Mỗi câu thoại 1–3 câu văn, dưới 300 ký tự. Duration trong meta để dư; app tự chỉnh theo giọng thật khi có `"fit": true`.',
-      '- Hình phải bám theo mốc giọng THẬT: app chèn `window.H2V_VOICE = [[bắt_đầu, kết_thúc, "câu"], ...]` (giây). Đọc mảng này để biết câu nào đang đọc, nếu chưa có thì tự ước lượng (~14 ký tự/giây):',
+      '- Hình phải bám theo mốc giọng THẬT: app chèn `window.H2V_VOICE = [[bắt_đầu, kết_thúc, "câu"], ...]` (giây). Đọc mảng này để biết câu nào đang đọc, nếu chưa có thì tự ước lượng (~7 ký tự tiếng Nhật/giây):',
       '',
       '```js',
       "const AUDIO = JSON.parse(document.getElementById('h2v-audio').textContent);",
-      'const TIMES = (window.H2V_VOICE && window.H2V_VOICE.length) ? window.H2V_VOICE : (function () { let t = 0.5; return AUDIO.lines.map(([, s]) => { const a = t; t += s.length / 14 + 0.35; return [a, t - 0.35, s]; }); })();',
+      'const TIMES = (window.H2V_VOICE && window.H2V_VOICE.length) ? window.H2V_VOICE : (function () { let t = 0.5; return AUDIO.lines.map(([, s]) => { const a = t; t += s.length / 7 + 0.35; return [a, t - 0.35, s]; }); })();',
       'function lineAt(t) { let i = 0; while (i + 1 < TIMES.length && TIMES[i + 1][0] <= t) i++; return i; }',
       '// trong h2vSeek(t): const i = lineAt(t); vẽ cảnh theo i, phụ đề = TIMES[i][2]',
       '```',
@@ -1574,37 +1552,6 @@ var H2VSkill = (function () {
 <script>
 const SHIM = "/* html2video time-shim: đóng băng thời gian của trang để chụp từng khung hình chính xác.\n   Được chèn vào <head> trước mọi script của người dùng. */\n(function () {\n  if (window.__h2v) return;\n  var RealDate = Date;\n  var realSetTimeout = window.setTimeout.bind(window);\n  var epoch = RealDate.now();\n  var t = 0;                       // thời gian ảo (ms)\n  var timers = new Map(), nextTimer = 1;\n  var rafs = new Map(), nextRaf = 1;\n  var seen = new WeakMap();        // animation -> thời điểm ảo lần đầu thấy\n\n  // ---- Đồng hồ ----\n  performance.now = function () { return t; };\n  var FakeDate = function Date() {\n    var a = Array.prototype.slice.call(arguments);\n    if (!(this instanceof FakeDate)) return new RealDate(epoch + t).toString();\n    var d = a.length ? new (Function.prototype.bind.apply(RealDate, [null].concat(a)))() : new RealDate(epoch + t);\n    Object.setPrototypeOf(d, FakeDate.prototype);\n    return d;\n  };\n  FakeDate.prototype = Object.create(RealDate.prototype);\n  FakeDate.prototype.constructor = FakeDate;\n  FakeDate.now = function () { return epoch + t; };\n  FakeDate.parse = RealDate.parse;\n  FakeDate.UTC = RealDate.UTC;\n  window.Date = FakeDate;\n\n  // ---- Hẹn giờ ----\n  window.setTimeout = function (fn, ms) {\n    var args = Array.prototype.slice.call(arguments, 2);\n    var id = nextTimer++;\n    timers.set(id, { fn: fn, at: t + Math.max(0, +ms || 0), every: 0, args: args });\n    return id;\n  };\n  window.setInterval = function (fn, ms) {\n    var args = Array.prototype.slice.call(arguments, 2);\n    var id = nextTimer++;\n    var every = Math.max(1, +ms || 0);\n    timers.set(id, { fn: fn, at: t + every, every: every, args: args });\n    return id;\n  };\n  window.clearTimeout = window.clearInterval = function (id) { timers.delete(id); };\n  window.requestAnimationFrame = function (cb) { var id = nextRaf++; rafs.set(id, cb); return id; };\n  window.cancelAnimationFrame = function (id) { rafs.delete(id); };\n\n  // ---- WebGL: giữ lại buffer để chụp được ----\n  var origGetContext = HTMLCanvasElement.prototype.getContext;\n  HTMLCanvasElement.prototype.getContext = function (type, opts) {\n    if (/webgl/.test(type)) opts = Object.assign({}, opts || {}, { preserveDrawingBuffer: true });\n    return origGetContext.call(this, type, opts);\n  };\n\n  function runTimersUntil(target) {\n    var guard = 0;\n    while (guard++ < 100000) {\n      var bestId = null, best = null;\n      timers.forEach(function (v, k) { if (v.at <= target && (!best || v.at < best.at)) { best = v; bestId = k; } });\n      if (!best) break;\n      t = Math.max(t, best.at);\n      if (best.every) best.at += best.every; else timers.delete(bestId);\n      try { typeof best.fn === 'function' ? best.fn.apply(window, best.args) : (0, eval)(best.fn); }\n      catch (e) { console.error(e); }\n    }\n  }\n\n  function syncAnimations() {\n    if (!document.getAnimations) return;\n    document.getAnimations().forEach(function (a) {\n      try {\n        if (!seen.has(a)) seen.set(a, t);\n        if (a.playState !== 'paused') a.pause();\n        a.currentTime = t - seen.get(a);\n      } catch (e) {}\n    });\n  }\n\n  function syncMedia() {\n    var ps = [];\n    document.querySelectorAll('video,audio').forEach(function (m) {\n      try {\n        m.muted = true; if (!m.paused) m.pause();\n        var target = (t / 1000) % (m.duration || Infinity);\n        if (Math.abs(m.currentTime - target) > 0.001) {\n          ps.push(new Promise(function (r) { m.addEventListener('seeked', r, { once: true }); realSetTimeout(r, 500); }));\n          m.currentTime = target;\n        }\n      } catch (e) {}\n    });\n    return Promise.all(ps);\n  }\n\n  async function advance(ms) {\n    if (ms < t) throw new Error('h2v: không thể lùi thời gian (' + ms + ' < ' + t + ')');\n    runTimersUntil(ms);\n    t = ms;\n    var cbs = Array.from(rafs.values()); rafs.clear();\n    cbs.forEach(function (cb) { try { cb(t); } catch (e) { console.error(e); } });\n    if (typeof window.h2vSeek === 'function') { try { await window.h2vSeek(t / 1000); } catch (e) { console.error(e); } }\n    syncAnimations();\n    await syncMedia();\n    return t;\n  }\n\n  window.__h2v = {\n    advance: advance,\n    now: function () { return t; },\n    ready: function () {\n      var imgs = Array.from(document.images).map(function (i) { return i.complete ? 0 : new Promise(function (r) { i.onload = i.onerror = r; }); });\n      return Promise.all([document.fonts ? document.fonts.ready : 0].concat(imgs));\n    }\n  };\n  syncAnimations();\n})();\n";
 const EXAMPLES = [{"name":"Intro motion graphics","file":"01-intro-16x9.html","html":"<!DOCTYPE html>\n<html lang=\"vi\">\n<head>\n<meta charset=\"utf-8\">\n<meta name=\"h2v\" content=\"width=1920,height=1080,fps=30,duration=6\">\n<title>Intro motion graphics<\/title>\n<link rel=\"stylesheet\" href=\"https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;800&display=swap\">\n<style>\n  html, body { margin: 0; width: 100%; height: 100%; overflow: hidden; }\n  body {\n    font-family: 'Be Vietnam Pro', system-ui, sans-serif;\n    background: radial-gradient(circle at 30% 30%, #2b1055, #0b0b1a 70%);\n    color: #fff; display: grid; place-items: center;\n  }\n  .ring { position: absolute; border-radius: 50%; border: 3px solid rgba(255,255,255,.15); animation: spin 8s linear infinite; }\n  .ring.a { width: 900px; height: 900px; border-top-color: #ff5f6d; }\n  .ring.b { width: 650px; height: 650px; border-right-color: #ffc371; animation-duration: 5s; animation-direction: reverse; }\n  .dot { position: absolute; width: 22px; height: 22px; border-radius: 50%; background: #ffc371; animation: float 3s ease-in-out infinite alternate; }\n  .wrap { position: relative; text-align: center; }\n  h1 { font-size: 150px; font-weight: 800; margin: 0; letter-spacing: -3px; }\n  h1 span { display: inline-block; opacity: 0; transform: translateY(80px) rotate(8deg); animation: up .7s cubic-bezier(.2,.8,.2,1.2) forwards; }\n  .line { height: 8px; width: 0; margin: 24px auto; border-radius: 4px; background: linear-gradient(90deg, #ff5f6d, #ffc371); animation: grow 1s 1.6s ease-out forwards; }\n  p { font-size: 44px; margin: 0; opacity: 0; animation: fade 1s 2.2s forwards; color: #ddd; }\n  .out { animation: out .8s 5s ease-in forwards; }\n  @keyframes spin { to { transform: rotate(360deg); } }\n  @keyframes float { from { transform: translate(-500px, -300px); } to { transform: translate(-460px, -240px); } }\n  @keyframes up { to { opacity: 1; transform: none; } }\n  @keyframes grow { to { width: 520px; } }\n  @keyframes fade { to { opacity: 1; } }\n  @keyframes out { to { opacity: 0; transform: scale(1.15); filter: blur(10px); } }\n<\/style>\n<\/head>\n<body>\n  <div class=\"ring a\"><\/div><div class=\"ring b\"><\/div><div class=\"dot\"><\/div>\n  <div class=\"wrap out\">\n    <h1 id=\"title\">Xin chào!<\/h1>\n    <div class=\"line\"><\/div>\n    <p>Video này được tạo từ HTML, CSS và JS<\/p>\n  <\/div>\n<script>\n  const h = document.getElementById('title');\n  h.innerHTML = [...h.textContent].map((c, i) =>\n    `<span style=\"animation-delay:${0.2 + i * 0.08}s\">${c === ' ' ? '&nbsp;' : c}<\/span>`).join('');\n<\/script>\n<\/body>\n<\/html>\n"},{"name":"Video dọc 9:16","file":"02-social-9x16.html","html":"<!DOCTYPE html>\n<html lang=\"vi\">\n<head>\n<meta charset=\"utf-8\">\n<meta name=\"h2v\" content=\"width=1080,height=1920,fps=30,duration=10\">\n<title>Video dọc 9:16<\/title>\n<link rel=\"stylesheet\" href=\"https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@500;800&display=swap\">\n<style>\n  html, body { margin: 0; width: 100%; height: 100%; overflow: hidden; }\n  body { font-family: 'Be Vietnam Pro', system-ui, sans-serif; background: linear-gradient(160deg, #fceabb, #f8b500); color: #1d1d1f; }\n  .bar { position: absolute; top: 60px; left: 60px; right: 60px; height: 14px; border-radius: 7px; background: rgba(0,0,0,.12); overflow: hidden; }\n  .bar i { display: block; height: 100%; width: 0; background: #1d1d1f; }\n  h1 { position: absolute; top: 170px; left: 70px; right: 70px; font-size: 104px; line-height: 1.05; margin: 0; font-weight: 800; }\n  .card { position: absolute; left: 70px; right: 70px; padding: 48px 56px; border-radius: 40px; background: #fff;\n          box-shadow: 0 30px 60px rgba(0,0,0,.15); display: flex; gap: 36px; align-items: center; opacity: 0; }\n  .card b { font-size: 120px; line-height: 1; color: #f8b500; font-weight: 800; }\n  .card span { font-size: 54px; font-weight: 500; line-height: 1.2; }\n  .cta { position: absolute; bottom: 150px; left: 0; right: 0; text-align: center; font-size: 60px; font-weight: 800; opacity: 0; }\n<\/style>\n<\/head>\n<body>\n  <div class=\"bar\"><i id=\"prog\"><\/i><\/div>\n  <h1 id=\"title\">3 mẹo học code nhanh hơn<\/h1>\n  <div class=\"card\" style=\"top:700px\"><b>1<\/b><span>Làm dự án nhỏ mỗi ngày<\/span><\/div>\n  <div class=\"card\" style=\"top:1030px\"><b>2<\/b><span>Đọc code của người khác<\/span><\/div>\n  <div class=\"card\" style=\"top:1360px\"><b>3<\/b><span>Giải thích lại cho bạn bè<\/span><\/div>\n  <div class=\"cta\" id=\"cta\">Lưu lại & theo dõi 👉<\/div>\n<script>\n  // Hoạt ảnh điều khiển bằng JS + requestAnimationFrame (tool sẽ đóng băng thời gian khi render)\n  const DURATION = 10;\n  const ease = t => 1 - Math.pow(1 - Math.min(Math.max(t, 0), 1), 3);\n  const cards = [...document.querySelectorAll('.card')];\n  const title = document.getElementById('title'), cta = document.getElementById('cta'), prog = document.getElementById('prog');\n  const start = performance.now();\n  function frame(now) {\n    const t = (now - start) / 1000;\n    prog.style.width = Math.min(100, t / DURATION * 100) + '%';\n    const k = ease(t / 0.8);\n    title.style.opacity = k; title.style.transform = `translateY(${(1 - k) * 60}px)`;\n    cards.forEach((c, i) => {\n      const p = ease((t - 1.2 - i * 1.6) / 0.6);\n      c.style.opacity = p;\n      c.style.transform = `translateX(${(1 - p) * (i % 2 ? 300 : -300)}px) scale(${0.9 + 0.1 * p})`;\n    });\n    const q = ease((t - 6.6) / 0.6);\n    cta.style.opacity = q; cta.style.transform = `scale(${0.8 + 0.2 * q + Math.sin(t * 6) * 0.02 * q})`;\n    requestAnimationFrame(frame);\n  }\n  requestAnimationFrame(frame);\n<\/script>\n<\/body>\n<\/html>\n"},{"name":"Biểu đồ động","file":"03-bieu-do.html","html":"<!DOCTYPE html>\n<html lang=\"vi\">\n<head>\n<meta charset=\"utf-8\">\n<meta name=\"h2v\" content=\"width=1920,height=1080,fps=30,duration=8\">\n<title>Biểu đồ động<\/title>\n<style>\n  html, body { margin: 0; width: 100%; height: 100%; overflow: hidden; }\n  body { font-family: system-ui, 'Segoe UI', sans-serif; background: #0f172a; color: #e2e8f0; padding: 90px 120px; box-sizing: border-box; }\n  h1 { font-size: 64px; margin: 0 0 8px; }\n  .sub { font-size: 30px; color: #94a3b8; margin-bottom: 60px; }\n  .row { display: grid; grid-template-columns: 260px 1fr 180px; align-items: center; gap: 24px; height: 110px; }\n  .name { font-size: 36px; text-align: right; }\n  .track { height: 70px; }\n  .fill { height: 100%; border-radius: 0 14px 14px 0; width: 0; }\n  .val { font-size: 40px; font-weight: 700; font-variant-numeric: tabular-nums; }\n<\/style>\n<\/head>\n<body>\n  <h1>Doanh thu theo quý<\/h1>\n  <div class=\"sub\">Đơn vị: tỷ đồng · dữ liệu minh hoạ<\/div>\n  <div id=\"chart\"><\/div>\n<script>\n  const data = [\n    { name: 'Quý 1', v: 42, c: '#38bdf8' },\n    { name: 'Quý 2', v: 67, c: '#a78bfa' },\n    { name: 'Quý 3', v: 55, c: '#f472b6' },\n    { name: 'Quý 4', v: 91, c: '#facc15' },\n  ];\n  const max = 100;\n  const chart = document.getElementById('chart');\n  const rows = data.map(d => {\n    const r = document.createElement('div'); r.className = 'row';\n    r.innerHTML = `<div class=\"name\">${d.name}<\/div><div class=\"track\"><div class=\"fill\" style=\"background:${d.c}\"><\/div><\/div><div class=\"val\">0<\/div>`;\n    chart.appendChild(r); return { d, fill: r.querySelector('.fill'), val: r.querySelector('.val') };\n  });\n  const easeOut = t => 1 - Math.pow(1 - Math.min(Math.max(t, 0), 1), 4);\n  // Cách khuyên dùng: viết hàm vẽ theo thời gian t (giây). Tool gọi window.h2vSeek(t) cho mỗi khung hình.\n  window.h2vSeek = function (t) {\n    rows.forEach((r, i) => {\n      const p = easeOut((t - 0.6 - i * 0.5) / 1.6);\n      r.fill.style.width = (r.d.v / max * 100 * p) + '%';\n      r.val.textContent = (r.d.v * p).toFixed(0);\n    });\n  };\n  window.h2vSeek(0);\n<\/script>\n<\/body>\n<\/html>\n"},{"name":"Canvas hạt","file":"04-canvas-hat.html","html":"<!DOCTYPE html>\n<html lang=\"vi\">\n<head>\n<meta charset=\"utf-8\">\n<meta name=\"h2v\" content=\"width=1080,height=1080,fps=60,duration=8\">\n<title>Canvas hạt<\/title>\n<style>html, body { margin: 0; height: 100%; overflow: hidden; background: #000; } canvas { display: block; width: 100%; height: 100%; }<\/style>\n<\/head>\n<body>\n<canvas id=\"c\"><\/canvas>\n<script>\n  const c = document.getElementById('c'), x = c.getContext('2d');\n  const W = c.width = innerWidth, H = c.height = innerHeight;\n  let seed = 7; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647; // ngẫu nhiên có seed -> video lặp lại được\n  const P = Array.from({ length: 500 }, () => ({ a: rnd() * Math.PI * 2, r: 60 + rnd() * W * 0.45, s: 0.2 + rnd() * 0.8, z: 1 + rnd() * 3, h: 180 + rnd() * 140 }));\n  const t0 = performance.now();\n  function draw(now) {\n    const t = (now - t0) / 1000;\n    x.fillStyle = 'rgba(0,0,10,0.18)'; x.fillRect(0, 0, W, H);\n    for (const p of P) {\n      const a = p.a + t * p.s * 0.6, rr = p.r * (0.85 + 0.15 * Math.sin(t * 1.5 + p.a * 3));\n      x.fillStyle = `hsl(${p.h + t * 20},90%,65%)`;\n      x.beginPath(); x.arc(W / 2 + Math.cos(a) * rr, H / 2 + Math.sin(a) * rr * 0.9, p.z, 0, 7); x.fill();\n    }\n    x.fillStyle = '#fff'; x.font = `800 ${W * 0.09}px system-ui, sans-serif`; x.textAlign = 'center'; x.textBaseline = 'middle';\n    x.globalAlpha = Math.min(1, t / 1.5); x.fillText('CANVAS', W / 2, H / 2); x.globalAlpha = 1;\n    requestAnimationFrame(draw);\n  }\n  requestAnimationFrame(draw);\n<\/script>\n<\/body>\n<\/html>\n"},{"name":"Three.js 3D","file":"05-threejs.html","html":"<!DOCTYPE html>\n<html lang=\"vi\">\n<head>\n<meta charset=\"utf-8\">\n<meta name=\"h2v\" content=\"width=1920,height=1080,fps=30,duration=8\">\n<title>Three.js 3D<\/title>\n<style>html, body { margin: 0; height: 100%; overflow: hidden; background: #111; } canvas { display: block; }<\/style>\n<script src=\"https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js\"><\/script>\n<\/head>\n<body>\n<script>\n  const W = innerWidth, H = innerHeight;\n  const renderer = new THREE.WebGLRenderer({ antialias: true });\n  renderer.setSize(W, H); renderer.setPixelRatio(1);\n  document.body.appendChild(renderer.domElement);\n  const scene = new THREE.Scene();\n  scene.background = new THREE.Color(0x111122);\n  const cam = new THREE.PerspectiveCamera(45, W / H, 0.1, 100); cam.position.set(0, 0, 9);\n  const mesh = new THREE.Mesh(new THREE.TorusKnotGeometry(1.8, 0.55, 220, 32),\n    new THREE.MeshStandardMaterial({ color: 0xff6b6b, metalness: 0.35, roughness: 0.25 }));\n  scene.add(mesh);\n  scene.add(new THREE.AmbientLight(0x404060, 1.2));\n  const l1 = new THREE.PointLight(0x66ccff, 2, 30); l1.position.set(5, 4, 6); scene.add(l1);\n  const l2 = new THREE.PointLight(0xffcc66, 1.5, 30); l2.position.set(-6, -3, 4); scene.add(l2);\n  const clock = new THREE.Clock(); // dùng performance.now -> tool điều khiển được\n  function loop() {\n    const t = clock.getElapsedTime();\n    mesh.rotation.x = t * 0.5; mesh.rotation.y = t * 0.8;\n    mesh.scale.setScalar(Math.min(1, t / 1.2));\n    renderer.render(scene, cam);\n    requestAnimationFrame(loop);\n  }\n  loop();\n<\/script>\n<\/body>\n<\/html>\n"},{"name":"Hoạt hình bảng trắng vẽ tay (9:16)","file":"06-bang-trang-ve-tay.html","html":"<!DOCTYPE html>\n<html lang=\"vi\">\n<head>\n<meta charset=\"utf-8\">\n<meta name=\"h2v\" content=\"width=1080,height=1920,fps=30,duration=26\">\n<title>Hoạt hình bảng trắng vẽ tay (9:16)<\/title>\n<link rel=\"stylesheet\" href=\"https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@700;800&family=Patrick+Hand&display=swap\">\n<style>\n  html, body { margin: 0; width: 100%; height: 100%; overflow: hidden; background: #0b0b0c; }\n  body { font-family: 'Be Vietnam Pro', system-ui, sans-serif; color: #fff; }\n  .band { position: absolute; left: 0; right: 0; text-align: center; font-weight: 800; line-height: 1.25; }\n  #hook { top: 150px; font-size: 62px; }\n  #cta { top: 1590px; font-size: 56px; }\n  #board { position: absolute; left: 0; top: 330px; width: 1080px; height: 1180px; background: #fbfbf8; display: block; }\n  #sub { position: absolute; left: 60px; right: 60px; top: 1375px; text-align: center; font: 50px/1.25 'Patrick Hand', 'Comic Sans MS', cursive; color: #111; }\n  .d { fill: none; stroke: #141414; stroke-width: 7; stroke-linecap: round; stroke-linejoin: round; }\n  .d.thin { stroke-width: 5; }\n  .d.red { stroke: #e63946; }\n  .f { fill: #141414; }\n  .w { font-family: 'Patrick Hand', 'Comic Sans MS', cursive; fill: #141414; text-anchor: middle; }\n<\/style>\n<\/head>\n<body>\n  <div class=\"band\" id=\"hook\">Biến code thành video<br>Không cần biết dựng phim<\/div>\n  <svg id=\"board\" viewBox=\"0 0 1080 1180\" xmlns=\"http://www.w3.org/2000/svg\">\n    <defs>\n      <filter id=\"rough\" x=\"-5%\" y=\"-5%\" width=\"110%\" height=\"110%\">\n        <feTurbulence type=\"fractalNoise\" baseFrequency=\"0.035\" numOctaves=\"2\" seed=\"4\"/>\n        <feDisplacementMap in=\"SourceGraphic\" scale=\"3.5\"/>\n      <\/filter>\n    <\/defs>\n    <g id=\"scenes\" filter=\"url(#rough)\"><\/g>\n    <g id=\"pen\" style=\"display:none\">\n      <path d=\"M0,0 L16,-6 L128,-118 L110,-136 L-2,-24 Z\" fill=\"#f4c542\" stroke=\"#141414\" stroke-width=\"4\" stroke-linejoin=\"round\"/>\n      <path d=\"M0,0 L16,-6 L-2,-24 Z\" fill=\"#f2d3a7\" stroke=\"#141414\" stroke-width=\"3\" stroke-linejoin=\"round\"/>\n      <path d=\"M0,0 L5,-2 L-1,-7 Z\" fill=\"#141414\"/>\n      <path d=\"M110,-136 L128,-118 L140,-130 L122,-148 Z\" fill=\"#f08a9b\" stroke=\"#141414\" stroke-width=\"4\" stroke-linejoin=\"round\"/>\n    <\/g>\n  <\/svg>\n  <div id=\"sub\"><\/div>\n  <div class=\"band\" id=\"cta\">Lưu lại để dùng nha 👇<br><span style=\"font-weight:700;font-size:44px;opacity:.75\">Theo dõi để xem thêm mẹo<\/span><\/div>\n\n<\!-- Kịch bản âm thanh: app tự đọc khối này để tạo giọng đọc + nhạc nền -->\n<script type=\"application/json\" id=\"h2v-audio\">\n{\n  \"voice\": \"Kore\",\n  \"style\": \"thân thiện, rõ ràng\",\n  \"lines\": [\n    [0.3,  \"Muốn làm video mà không biết dựng phim?\"],\n    [5.4,  \"Chỉ cần viết vài dòng HTML, CSS và JS.\"],\n    [10.5, \"Tool sẽ chụp từng khung hình, rồi ghép lại thành video.\"],\n    [16.4, \"Thêm nhạc nền, giọng đọc, bấm xuất là xong.\"],\n    [21.4, \"Hoàn toàn miễn phí. Lưu lại để dùng nha!\"]\n  ],\n  \"music\": { \"preset\": \"lofi\", \"volume\": 0.3 },\n  \"fit\": true\n}\n<\/script>\n<script>\n// Phụ đề lấy luôn từ kịch bản ở trên\nconst AUDIO = JSON.parse(document.getElementById('h2v-audio').textContent);\nconst SUBS = AUDIO.lines.map(([t, text], i, a) => [t, i + 1 < a.length ? a[i + 1][0] - 0.4 : 26, text]);\n\n/* ---------- Nhân vật người que ---------- */\nconst MOUTH = {\n  happy: '<path class=\"d\" d=\"M -26,20 Q 0,46 26,20\"/>',\n  big: '<path class=\"d\" d=\"M -32,14 Q 0,64 32,14 Q 0,26 -32,14\"/>',\n  worried: '<path class=\"d\" d=\"M -22,34 Q -11,24 0,32 Q 11,40 22,30\"/>'\n};\nconst BROW = {\n  happy: '', big: '',\n  worried: '<path class=\"d thin\" d=\"M -36,-26 L -14,-36\"/><path class=\"d thin\" d=\"M 36,-26 L 14,-36\"/>'\n};\nconst ARMS = {\n  down: 'M 0,100 L -52,190|M 0,100 L 52,190',\n  point: 'M 0,100 L -50,188|M 0,100 L 72,64 L 118,52',\n  scratch: 'M 0,100 L -50,188|M 0,100 L 66,58 L 52,-34',\n  up: 'M 0,100 L -56,184|M 0,100 L 62,36 L 84,-34',\n  wave: 'M 0,100 L -66,30 L -84,-40|M 0,100 L 62,36 L 84,-34'\n};\nfunction guy(x, y, mood = 'happy', arms = 'down', s = 1) {\n  const a = ARMS[arms].split('|');\n  const end = p => p.trim().split(' ').slice(-1)[0].split(',').map(Number);\n  const hands = a.map(p => { const [hx, hy] = end(p); return `<circle class=\"d\" cx=\"${hx}\" cy=\"${hy}\" r=\"11\"/>`; }).join('');\n  return `<g transform=\"translate(${x},${y}) scale(${s})\">\n    <path class=\"d\" d=\"M -2,-62 C 36,-64 64,-34 62,2 C 60,38 32,62 -2,62 C -38,62 -64,34 -62,-2 C -60,-38 -34,-60 6,-61\"/>\n    ${BROW[mood]}\n    <ellipse class=\"f\" cx=\"-22\" cy=\"-6\" rx=\"9\" ry=\"13\"/><ellipse class=\"f\" cx=\"22\" cy=\"-6\" rx=\"9\" ry=\"13\"/>\n    ${MOUTH[mood]}\n    <path class=\"d\" d=\"M 0,62 C 3,120 -3,170 0,232\"/>\n    <path class=\"d\" d=\"${a[0]}\"/><path class=\"d\" d=\"${a[1]}\"/>${hands}\n    <path class=\"d\" d=\"M 0,232 L -42,340 L -66,342\"/><path class=\"d\" d=\"M 0,232 L 42,340 L 66,342\"/>\n  <\/g>`;\n}\nconst star = (x, y, r = 22) => `<path class=\"d thin\" d=\"M ${x},${y - r} Q ${x + 4},${y - 4} ${x + r},${y} Q ${x + 4},${y + 4} ${x},${y + r} Q ${x - 4},${y + 4} ${x - r},${y} Q ${x - 4},${y - 4} ${x},${y - r}\"/>`;\nconst text = (x, y, s, size = 60, extra = '') => `<text class=\"w\" x=\"${x}\" y=\"${y}\" font-size=\"${size}\" ${extra}>${s}<\/text>`;\n\n/* ---------- Các cảnh ---------- */\nconst SCENES = [\n  { start: 0, end: 5.2, draw: [0.15, 3.8], svg: `\n      <path class=\"d\" d=\"M 90,760 L 990,760\"/>\n      ${guy(260, 420, 'worried', 'scratch')}\n      <g class=\"wig\" data-cx=\"390\" data-cy=\"300\">\n        <path class=\"d\" d=\"M 352,250 C 350,186 446,184 446,246 C 446,296 398,298 398,346\"/>\n        <circle class=\"f\" cx=\"398\" cy=\"384\" r=\"10\"/>\n      <\/g>\n      <path class=\"d\" d=\"M 470,560 L 960,560\"/><path class=\"d\" d=\"M 500,560 L 500,760\"/><path class=\"d\" d=\"M 930,560 L 930,760\"/>\n      <circle class=\"d\" cx=\"620\" cy=\"500\" r=\"56\"/><circle class=\"d thin\" cx=\"620\" cy=\"500\" r=\"12\"/>\n      <circle class=\"d thin\" cx=\"620\" cy=\"466\" r=\"10\"/><circle class=\"d thin\" cx=\"592\" cy=\"518\" r=\"10\"/><circle class=\"d thin\" cx=\"648\" cy=\"518\" r=\"10\"/>\n      <circle class=\"d\" cx=\"760\" cy=\"500\" r=\"56\"/><circle class=\"d thin\" cx=\"760\" cy=\"500\" r=\"12\"/>\n      <circle class=\"d thin\" cx=\"760\" cy=\"466\" r=\"10\"/><circle class=\"d thin\" cx=\"732\" cy=\"518\" r=\"10\"/><circle class=\"d thin\" cx=\"788\" cy=\"518\" r=\"10\"/>\n      <path class=\"d thin\" d=\"M 800,540 C 860,600 780,640 860,680 C 930,712 840,740 900,756\"/>\n      ${text(720, 880, 'Không biết làm…', 64)}` },\n\n  { start: 5.2, end: 10.3, draw: [5.35, 9.0], svg: `\n      <path class=\"d\" d=\"M 90,760 L 990,760\"/>\n      ${guy(220, 420, 'happy', 'point')}\n      <path class=\"d\" d=\"M 470,320 L 910,320 L 910,600 L 470,600 Z\"/>\n      <path class=\"d\" d=\"M 430,600 L 950,600 L 990,650 L 390,650 Z\"/>\n      <path class=\"d\" d=\"M 400,650 L 400,760\"/><path class=\"d\" d=\"M 980,650 L 980,760\"/>\n      <path class=\"d red\" d=\"M 600,410 L 548,460 L 600,510\"/>\n      <path class=\"d red\" d=\"M 712,392 L 670,528\"/>\n      <path class=\"d red\" d=\"M 782,410 L 834,460 L 782,510\"/>\n      ${star(950, 270)}${star(420, 260, 16)}\n      ${text(690, 880, 'HTML · CSS · JS', 72)}` },\n\n  { start: 10.3, end: 16.2, draw: [10.45, 14.6], svg: `\n      ${text(540, 250, 'Chụp từng khung hình', 66)}\n      <path class=\"d\" d=\"M 90,300 L 990,300 L 990,520 L 90,520 Z\"/>\n      <path class=\"d thin\" d=\"M 130,316 h20 v18 h-20 z M 330,316 h20 v18 h-20 z M 530,316 h20 v18 h-20 z M 730,316 h20 v18 h-20 z M 930,316 h20 v18 h-20 z\"/>\n      <path class=\"d thin\" d=\"M 130,486 h20 v18 h-20 z M 330,486 h20 v18 h-20 z M 530,486 h20 v18 h-20 z M 730,486 h20 v18 h-20 z M 930,486 h20 v18 h-20 z\"/>\n      <path class=\"d\" d=\"M 140,350 L 370,350 L 370,470 L 140,470 Z\"/>\n      <circle class=\"d thin\" cx=\"255\" cy=\"410\" r=\"28\"/><path class=\"d thin\" d=\"M 255,362 v-6 M 255,458 v6 M 207,410 h-6 M 303,410 h6 M 222,377 l-5,-5 M 288,443 l5,5 M 288,377 l5,-5 M 222,443 l-5,5\"/>\n      <path class=\"d\" d=\"M 425,350 L 655,350 L 655,470 L 425,470 Z\"/>\n      ${star(540, 410, 40)}\n      <path class=\"d\" d=\"M 710,350 L 940,350 L 940,470 L 710,470 Z\"/>\n      <path class=\"d red\" d=\"M 825,450 C 760,410 780,365 825,392 C 870,365 890,410 825,450\"/>\n      <path class=\"d\" d=\"M 540,540 C 530,610 600,620 600,690\"/><path class=\"d\" d=\"M 574,664 L 600,694 L 626,664\"/>\n      <path class=\"d\" d=\"M 520,720 L 640,720 L 690,770 L 690,960 L 520,960 Z\"/><path class=\"d thin\" d=\"M 640,720 L 640,770 L 690,770\"/>\n      ${text(605, 880, 'MP4', 60, 'font-weight=\"700\"')}\n      ${guy(860, 700, 'big', 'up', 0.62)}` },\n\n  { start: 16.2, end: 21.2, draw: [16.35, 19.8], svg: `\n      <path class=\"d\" d=\"M 90,760 L 520,760\"/>\n      ${guy(270, 420, 'big', 'wave')}\n      <path class=\"d\" d=\"M 640,290 L 640,170 L 740,146 L 740,266\"/><path class=\"d\" d=\"M 640,190 L 740,166\"/>\n      <ellipse class=\"f\" cx=\"622\" cy=\"292\" rx=\"22\" ry=\"16\" transform=\"rotate(-20 622 292)\"/>\n      <ellipse class=\"f\" cx=\"722\" cy=\"268\" rx=\"22\" ry=\"16\" transform=\"rotate(-20 722 268)\"/>\n      ${text(860, 250, 'Nhạc nền', 56)}\n      <path class=\"d\" d=\"M 640,410 C 640,370 700,370 700,410 L 700,490 C 700,530 640,530 640,490 Z\"/>\n      <path class=\"d thin\" d=\"M 640,440 h60 M 640,465 h60\"/>\n      <path class=\"d\" d=\"M 618,470 C 618,560 722,560 722,470\"/><path class=\"d\" d=\"M 670,546 L 670,600 M 630,600 L 710,600\"/>\n      ${text(860, 480, 'Giọng đọc', 56)}\n      <path class=\"d\" d=\"M 560,700 C 560,676 576,664 600,664 L 940,664 C 964,664 980,676 980,700 L 980,770 C 980,794 964,806 940,806 L 600,806 C 576,806 560,794 560,770 Z\"/>\n      ${text(770, 755, 'Xuất video ▶', 60, 'font-weight=\"700\"')}\n      <path class=\"d thin\" d=\"M 900,790 L 900,880 L 922,860 L 940,898 L 956,890 L 938,852 L 966,850 Z\"/>` },\n\n  { start: 21.2, end: 26.01, draw: [21.35, 24.2], svg: `\n      ${text(600, 400, 'MIỄN PHÍ!', 128, 'font-weight=\"700\"')}\n      <path class=\"d red\" d=\"M 300,440 C 460,470 700,420 900,450\"/>\n      <path class=\"d red thin\" d=\"M 230,330 C 240,240 520,226 770,236 C 960,244 1010,300 990,384 C 968,476 720,494 520,490 C 320,486 206,444 226,356\"/>\n      ${guy(230, 640, 'big', 'up')}\n      ${star(880, 220)}${star(980, 560, 18)}${star(420, 600, 16)}\n      ${text(680, 720, 'Lưu lại để dùng nha!', 62)}\n      <path class=\"d\" d=\"M 560,760 C 640,790 760,780 820,756\"/>` }\n];\n\n/* ---------- Bộ máy vẽ ---------- */\nconst NS = 'http://www.w3.org/2000/svg';\nconst root = document.getElementById('scenes'), defs = document.querySelector('defs');\nconst pen = document.getElementById('pen'), sub = document.getElementById('sub');\nconst clamp = v => Math.max(0, Math.min(1, v));\nconst ease = v => v < 0.5 ? 2 * v * v : 1 - Math.pow(-2 * v + 2, 2) / 2;\nlet clipN = 0;\nSCENES.forEach(s => {\n  const g = document.createElementNS(NS, 'g'); g.innerHTML = s.svg; root.appendChild(g); s.g = g;\n  s.items = [...g.querySelectorAll('.d, .f, .w')].map(el => {\n    if (el.classList.contains('d')) { const L = el.getTotalLength(); el.style.strokeDasharray = L + ' ' + (L + 10); return { el, type: 'd', L, wgt: Math.max(40, L) }; }\n    if (el.classList.contains('f')) return { el, type: 'f', wgt: 60 };\n    const cp = document.createElementNS(NS, 'clipPath'); cp.id = 'c' + clipN++;\n    const r = document.createElementNS(NS, 'rect'); r.setAttribute('width', 0); r.setAttribute('height', 0);\n    cp.appendChild(r); defs.appendChild(cp); el.setAttribute('clip-path', `url(#${cp.id})`);\n    return { el, type: 'w', clip: r, wgt: el.textContent.length * 38 };\n  });\n  const total = s.items.reduce((n, i) => n + i.wgt, 0), span = s.draw[1] - s.draw[0];\n  let acc = 0;\n  s.items.forEach(i => { i.t0 = s.draw[0] + acc / total * span; i.dur = i.wgt / total * span; acc += i.wgt; });\n});\nfunction toRoot(el, x, y) { const m = el.getCTM(); return { x: m.a * x + m.c * y + m.e, y: m.b * x + m.d * y + m.f }; }\n\nwindow.h2vSeek = function (t) {\n  let tip = null;\n  for (const s of SCENES) {\n    const on = t >= s.start && t < s.end;\n    s.g.style.display = on ? '' : 'none';\n    if (!on) continue;\n    s.g.style.opacity = clamp((s.end - t) / 0.35);\n    for (const i of s.items) {\n      const p = clamp((t - i.t0) / i.dur), e = i.type === 'd' ? ease(p) : p;\n      if (i.type === 'd') {\n        i.el.style.strokeDashoffset = i.L * (1 - e);\n        if (p > 0 && p < 1) { const q = i.el.getPointAtLength(i.L * e); tip = toRoot(i.el, q.x, q.y); }\n      } else if (i.type === 'f') {\n        i.el.style.opacity = p;\n      } else {\n        const b = i.el.getBBox();\n        i.clip.setAttribute('x', b.x - 12); i.clip.setAttribute('y', b.y - 30);\n        i.clip.setAttribute('height', b.height + 60); i.clip.setAttribute('width', (b.width + 24) * p);\n        if (p > 0 && p < 1) tip = toRoot(i.el, b.x + b.width * p, b.y + b.height * 0.75);\n      }\n    }\n    s.g.querySelectorAll('.wig').forEach(w => w.setAttribute('transform', `rotate(${Math.sin(t * 5) * 6} ${w.dataset.cx} ${w.dataset.cy})`));\n  }\n  pen.style.display = tip ? '' : 'none';\n  if (tip) pen.setAttribute('transform', `translate(${tip.x},${tip.y})`);\n  const line = SUBS.find(([a, b]) => t >= a && t < b);\n  sub.textContent = line ? line[2] : '';\n  sub.style.opacity = line ? clamp(Math.min((t - line[0]) / 0.2, (line[1] - t) / 0.2)) : 0;\n  const k = clamp(t / 0.5);\n  document.getElementById('hook').style.transform = `scale(${0.9 + 0.1 * k})`;\n  document.getElementById('hook').style.opacity = k;\n};\nwindow.h2vSeek(0);\n// Mở file trực tiếp trên trình duyệt (không qua tool) thì tự phát lặp lại\nif (!window.__h2v) { const t0 = performance.now(); const loop = n => { window.h2vSeek(((n - t0) / 1000) % 26); requestAnimationFrame(loop); }; requestAnimationFrame(loop); }\n<\/script>\n<\/body>\n<\/html>\n"}];
-// Giọng Azure/Windows theo ngôn ngữ: [mã, tên ngôn ngữ, giọng nữ, giọng nam]
-const LANGS = [
-  ['vi-VN', 'Tiếng Việt', 'HoaiMy', 'NamMinh'], ['en-US', 'English (US)', 'Jenny', 'Guy'], ['en-GB', 'English (UK)', 'Sonia', 'Ryan'],
-  ['ja-JP', '日本語', 'Nanami', 'Keita'], ['ko-KR', '한국어', 'SunHi', 'InJoon'], ['zh-CN', '中文 (普通话)', 'Xiaoxiao', 'Yunxi'], ['zh-TW', '中文 (台灣)', 'HsiaoChen', 'YunJhe'],
-  ['fr-FR', 'Français', 'Denise', 'Henri'], ['de-DE', 'Deutsch', 'Katja', 'Conrad'], ['es-ES', 'Español (España)', 'Elvira', 'Alvaro'], ['es-MX', 'Español (México)', 'Dalia', 'Jorge'],
-  ['pt-BR', 'Português (Brasil)', 'Francisca', 'Antonio'], ['it-IT', 'Italiano', 'Elsa', 'Diego'], ['ru-RU', 'Русский', 'Svetlana', 'Dmitry'], ['th-TH', 'ไทย', 'Premwadee', 'Niwat'],
-  ['id-ID', 'Bahasa Indonesia', 'Gadis', 'Ardi'], ['hi-IN', 'हिन्दी', 'Swara', 'Madhur'], ['ar-SA', 'العربية', 'Zariyah', 'Hamed'], ['tr-TR', 'Türkçe', 'Emel', 'Ahmet'], ['nl-NL', 'Nederlands', 'Colette', 'Maarten']
-];
-const VOICES = LANGS.flatMap(([c, n, f, m]) => [[`${c}-${f}Neural`, `${n} · ${f} (nữ)`], [`${c}-${m}Neural`, `${n} · ${m} (nam)`]]);
-/** Đoán ngôn ngữ từ chữ viết. */
-function detectLang(text) {
-  const t = String(text || '').normalize('NFC');
-  // Đếm ký tự theo hệ chữ, hệ nào nhiều nhất thì chọn (vài tên riêng tiếng Nhật trong câu tiếng Việt không làm sai)
-  const n = re => (t.match(re) || []).length;
-  const scripts = [
-    ['vi-VN', n(/[ăâđêôơưạảấầẩẫậắằẳẵặẹẻẽếềểễệỉịọỏốồổỗộớờởỡợụủứừửữựỳỵỷỹáàãéèíìóòõúùýĂÂĐÊÔƠƯÁÀẢÃẠÉÈẺẼẸÍÌỈĨỊÓÒỎÕỌÚÙỦŨỤÝỲỶỸỴ]/g) * 3],
-    ['ja-JP', n(/[\u3040-\u30ff]/g) * 2], ['ko-KR', n(/[\uac00-\ud7af]/g) * 2], ['zh-CN', n(/[\u4e00-\u9fff]/g)],
-    ['th-TH', n(/[\u0e00-\u0e7f]/g)], ['ru-RU', n(/[\u0400-\u04ff]/g)], ['hi-IN', n(/[\u0900-\u097f]/g)], ['ar-SA', n(/[\u0600-\u06ff]/g)]
-  ].sort((a, b) => b[1] - a[1]);
-  if (scripts[0][1] >= 3) {
-    // Chữ Hán có kèm kana thì là tiếng Nhật
-    if (scripts[0][0] === 'zh-CN' && n(/[\u3040-\u30ff]/g) > 0) return 'ja-JP';
-    return scripts[0][0];
-  }
-  const w = ' ' + t.toLowerCase().replace(/[^a-zà-ÿğışçöü\s]/g, ' ') + ' ', score = (re) => (w.match(re) || []).length;
-  const c = { 'en-US': score(/ (the|and|you|is|to|of|this|that|with) /g), 'fr-FR': score(/ (le|la|les|et|vous|est|des|une|pour) /g), 'es-ES': score(/ (el|los|las|y|que|es|una|para|con) /g),
-    'de-DE': score(/ (der|die|das|und|ist|nicht|ein|mit|sie) /g), 'pt-BR': score(/ (o|os|as|você|não|uma|para|com|é) /g), 'it-IT': score(/ (il|gli|che|è|una|per|non|sono) /g),
-    'id-ID': score(/ (dan|yang|ini|itu|untuk|dengan|tidak|anda) /g), 'tr-TR': score(/ (ve|bir|bu|için|çok|ile|değil) /g), 'nl-NL': score(/ (de|het|een|en|niet|van|ik|je) /g) };
-  const best = Object.entries(c).sort((a, b) => b[1] - a[1])[0];
-  return best && best[1] > 0 ? best[0] : (/[a-z]/i.test(t) ? 'en-US' : 'vi-VN');
-}
 const SIZES = [
   ['16:9 · 1080p', 1920, 1080], ['9:16 · TikTok/Reels', 1080, 1920], ['1:1 · Vuông', 1080, 1080],
   ['4:5 · Instagram', 1080, 1350], ['16:9 · 720p', 1280, 720], ['4K', 3840, 2160]
@@ -1831,11 +1778,10 @@ function renderTracks() {
       extra = `<div class="row"><select class="inp" data-k="preset">${Object.entries(H2VMusic.PRESETS).map(([k, p]) => `<option value="${k}" ${k === tr.preset ? 'selected' : ''}>${p.name}</option>`).join('')}</select>
         <button class="btn" data-act="reroll">🎲 Biến thể khác</button><span>${tr.info ? tr.info.bpm + ' BPM · giọng ' + tr.info.key : ''}</span></div>`;
     } else if (tr.kind === 'tts') {
-      const g = (tr.provider || TTS.provider) === 'gemini', vk = g ? 'gvoice' : 'voice', cur = g ? (tr.gvoice || 'Kore') : tr.voice;
+      const eng = tr.engine || activeEngine(), who = eng && tr.speaker != null ? speakerOf(eng, tr.speaker) : null;
       const nr = ttsNotReady();
       extra = `<textarea data-k="text" placeholder="Nhập nội dung cần đọc…">${escapeHtml(tr.text || '')}</textarea>
-        <div class="row"><select class="inp" data-k="${vk}">${(g ? GEMINI_VOICES : VOICES).map(([v, n]) => `<option value="${v}" ${v === cur ? 'selected' : ''}>${n}</option>`).join('')}</select>
-        ${g ? `<input class="inp" data-k="style" style="width:150px" placeholder="Phong cách: vd hào hứng" value="${escapeHtml(tr.style || '')}">` : ''}
+        <div class="row"><span class="mute">${who ? escapeHtml(who.name + ' · ' + who.style) : 'Giọng: chọn trong 🎙 Giọng đọc'}</span>
         Tốc độ <input type="range" min="-50" max="50" step="5" data-k="rate" value="${tr.rate || 0}"><span>${tr.rate > 0 ? '+' : ''}${tr.rate || 0}%</span>
         <button class="btn" data-act="tts" ${nr ? `title="${escapeHtml(nr)}"` : ''}>${tr.buffer ? '↻ Tạo lại giọng' : '🎙 Tạo giọng đọc'}</button>
         <span>${tr.buffer ? tr.buffer.duration.toFixed(1) + 's' : ''}</span></div>`;
@@ -1872,187 +1818,151 @@ function renderTracks() {
 }
 function escapeHtml(s) { return String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])); }
 
-/* ---------------- Giọng đọc (TTS) ---------------- */
-const TTS = { provider: 'gemini', gKey: '', gModel: 'gemini-3.1-flash-tts-preview', azKey: '', azRegion: 'southeastasia' };
-const GEMINI_VOICES = [
-  ['Kore', 'Kore · nữ, rõ ràng'], ['Aoede', 'Aoede · nữ, nhẹ nhàng'], ['Zephyr', 'Zephyr · nữ, tươi sáng'], ['Leda', 'Leda · nữ, trẻ trung'],
-  ['Puck', 'Puck · nam, vui tươi'], ['Charon', 'Charon · nam, truyền đạt'], ['Fenrir', 'Fenrir · nam, hào hứng'], ['Orus', 'Orus · nam, chắc chắn'],
-  ...['Callirrhoe', 'Autonoe', 'Enceladus', 'Iapetus', 'Umbriel', 'Algieba', 'Despina', 'Erinome', 'Algenib', 'Rasalgethi', 'Laomedeia',
-    'Achernar', 'Alnilam', 'Schedar', 'Gacrux', 'Pulcherrima', 'Achird', 'Zubenelgenubi', 'Vindemiatrix', 'Sadachbia', 'Sadaltager', 'Sulafat'].map(v => [v, v])
-];
-function loadTtsCfg() { try { Object.assign(TTS, JSON.parse(localStorage.getItem('h2v-tts') || '{}')); } catch (e) {} }
+/* ---------------- Giọng đọc: VOICEVOX / AivisSpeech (tiếng Nhật, miễn phí, chạy trên máy) ---------------- */
+// gKey vẫn giữ: YouTube Studio dùng Gemini API key cho phần AI viết chữ.
+const TTS = { engine: 'auto', map: {}, gKey: '', intonation: 0 };
+const ENGINE_INFO = {
+  aivis: { name: 'AivisSpeech', port: 10101, url: 'https://aivis-project.com/', credit: 'AivisSpeech' },
+  voicevox: { name: 'VOICEVOX', port: 50021, url: 'https://voicevox.hiroshiba.jp/', credit: 'VOICEVOX' }
+};
+const VV = { engines: [], speakers: {}, checkedAt: 0 };
+function loadTtsCfg() { try { Object.assign(TTS, JSON.parse(localStorage.getItem('h2v-tts') || '{}')); } catch (e) {} if (!TTS.map || typeof TTS.map !== 'object') TTS.map = {}; }
 function saveTtsCfg() { try { localStorage.setItem('h2v-tts', JSON.stringify(TTS)); } catch (e) {} }
-let SERVER_TTS = false, SERVER_PIPER = false;
-// Dịch vụ giọng đọc: dùng được không, và đang "hết lượt" tới khi nào
-const TTS_NAMES = { piper: 'Piper', gemini: 'Gemini', azure: 'Azure', local: 'giọng Windows' };
-let TTS_EXH = {}; try { TTS_EXH = JSON.parse(localStorage.getItem('h2v-tts-exh') || '{}'); } catch (e) {}
-function ttsReady(p) {
-  if (p === 'gemini') return !!TTS.gKey.trim();
-  if (p === 'azure') return !!(TTS.azKey.trim() && TTS.azRegion.trim());
-  if (p === 'piper') return SERVER && SERVER_PIPER;
-  if (p === 'local') return SERVER && SERVER_TTS;
-  return false;
+
+/** Gọi bộ máy: qua máy chủ của app (không vướng CORS), bản web thì gọi thẳng. */
+async function vvFetch(engine, path, opts = {}) {
+  if (SERVER) {
+    if (path === '/speakers') return fetch('/api/vv/speakers?engine=' + engine);
+    if (path.startsWith('/tts')) return fetch('/api/vv/tts', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(Object.assign({ engine }, opts.body)) });
+  }
+  const base = 'http://127.0.0.1:' + ENGINE_INFO[engine].port;
+  if (path === '/speakers') return fetch(base + '/speakers');
+  if (path.startsWith('/tts')) {
+    const b = opts.body, q = await (await fetch(`${base}/audio_query?text=${encodeURIComponent(b.text)}&speaker=${b.speaker}`, { method: 'POST' })).json();
+    q.speedScale = Math.max(0.5, Math.min(2, 1 + (b.rate || 0) / 100)); q.intonationScale = 1 + (b.intonation || 0) / 100;
+    return fetch(`${base}/synthesis?speaker=${b.speaker}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(q) });
+  }
 }
-const ttsExhausted = p => (TTS_EXH[p] || 0) > Date.now();
-/** Thứ tự thử: dịch vụ bạn chọn trước, rồi Azure → Piper → Gemini → giọng Windows. */
-function ttsChain() {
-  return [...new Set([TTS.provider, 'azure', 'piper', 'gemini', 'local'])].filter(p => ttsReady(p) && !ttsExhausted(p));
+async function checkEngines(force) {
+  if (!force && Date.now() - VV.checkedAt < 4000) return VV.engines;
+  if (SERVER) { try { VV.engines = await (await fetch('/api/vv/engines')).json(); } catch (e) { VV.engines = []; } }
+  else {
+    VV.engines = await Promise.all(Object.keys(ENGINE_INFO).map(async id => {
+      try { const r = await fetch('http://127.0.0.1:' + ENGINE_INFO[id].port + '/version', { signal: AbortSignal.timeout(1500) }); return { id, name: ENGINE_INFO[id].name, ok: r.ok, version: (await r.text()).replace(/"/g, '') }; }
+      catch (e) { return { id, name: ENGINE_INFO[id].name, ok: false }; }
+    }));
+  }
+  VV.checkedAt = Date.now();
+  return VV.engines;
 }
-function markExhausted(p, untilMs) { TTS_EXH[p] = untilMs; try { localStorage.setItem('h2v-tts-exh', JSON.stringify(TTS_EXH)); } catch (e) {} }
-/** Hạn mức theo ngày của Gemini làm mới lúc nửa đêm giờ Thái Bình Dương. */
-function nextPacificMidnight() {
-  const f = new Intl.DateTimeFormat('en-US', { timeZone: 'America/Los_Angeles', hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' });
-  const [h, m, sec] = f.format(new Date()).split(':').map(Number);
-  return Date.now() + ((24 - (h % 24)) * 3600 - m * 60 - sec) * 1000 + 60000;
+/** Bộ máy sẽ dùng: theo lựa chọn, hoặc tự động (AivisSpeech trước, rồi VOICEVOX) */
+function activeEngine() {
+  const ok = VV.engines.filter(e => e.ok).map(e => e.id);
+  if (TTS.engine !== 'auto') return ok.includes(TTS.engine) ? TTS.engine : null;
+  return ok[0] || null;
 }
-class QuotaError extends Error { constructor(msg, provider, untilMs) { super(msg); this.quota = true; this.provider = provider; this.until = untilMs; } }
+async function loadSpeakers(engine, force) {
+  if (!force && VV.speakers[engine]) return VV.speakers[engine];
+  const r = await vvFetch(engine, '/speakers'); if (!r.ok) throw new Error(await r.text());
+  VV.speakers[engine] = (await r.json()).map(s => ({ name: s.name, styles: (s.styles || []).filter(x => !x.type || x.type === 'talk').map(x => ({ id: x.id, name: x.name })) })).filter(s => s.styles.length);
+  return VV.speakers[engine];
+}
 function ttsNotReady() {
-  if (ttsChain().length) return '';
-  if (!ttsReady(TTS.provider) && TTS.provider === 'piper') return 'Piper chỉ có trong bản app (.exe). Hãy chọn Gemini hoặc Azure và nhập key.';
-  if (ttsExhausted(TTS.provider)) return TTS_NAMES[TTS.provider] + ' đã hết lượt hôm nay. Chọn dịch vụ khác trong "Cài đặt giọng đọc".';
-  if (TTS.provider === 'local') return SERVER ? '' : 'Cần bản app (.exe) hoặc máy chủ local';
-  if (TTS.provider === 'gemini') return 'Nhập Gemini API key trong "Cài đặt giọng đọc"';
-  if (TTS.provider === 'azure') return 'Nhập Azure key và region trong "Cài đặt giọng đọc"';
-  return 'Chưa chọn dịch vụ';
-}
-function syncTtsUI() {
-  $('ttsProvider').value = TTS.provider; $('gKey').value = TTS.gKey; $('gModel').value = TTS.gModel;
-  $('azKey').value = TTS.azKey; $('azRegion').value = TTS.azRegion;
-  ['piper', 'gemini', 'azure', 'local'].forEach(p => $('ttsCfg-' + p).classList.toggle('on', p === TTS.provider));
-  if (TTS.provider === 'piper') loadPiperVoices();
-  $('localTtsState').textContent = SERVER ? '✓ Đã kết nối máy chủ local.' : 'Chưa thấy máy chủ local.';
-  $('piperState').textContent = SERVER_PIPER ? '' : '(Bản đang mở chưa có Piper.)';
-}
-/* ---- Piper: chọn giọng theo ngôn ngữ ---- */
-let piperLoadT = null;
-async function loadPiperVoices() {
-  if (!SERVER_PIPER) return;
-  const sel = $('pLang');
-  if (!sel.options.length) sel.innerHTML = LANGS.map(l => `<option value="${l[0]}">${l[1]}</option>`).join('');
-  const lang = TTS.pLang || (AUTO.spec && AUTO.spec.lines && AUTO.spec.lines.length ? resolveVoice(AUTO.spec).lang : 'vi-VN');
-  sel.value = lang;
-  const vs = $('pVoice'); vs.innerHTML = '<option value="">Đang tải danh sách…</option>';
-  try {
-    const r = await fetch('/api/piper/voices?lang=' + encodeURIComponent(lang)); if (!r.ok) throw new Error(await r.text());
-    const list = await r.json(), cur = (TTS.piperVoices || {})[lang] || '';
-    vs.innerHTML = `<option value="">Tự chọn (theo giọng nam/nữ trong code)</option>` + list.map(v => `<option value="${v.key}" ${v.key === cur ? 'selected' : ''}>${escapeHtml(v.name)} · ${v.quality}${v.gender ? ' · ' + (v.gender === 'female' ? 'nữ' : 'nam') : ''}${v.speakers > 1 ? ' · ' + v.speakers + ' người' : ''} · ${v.installed ? '✓ đã tải' : Math.round(v.size / 1048576) + ' MB'}</option>`).join('');
-    if (!list.length) vs.innerHTML = '<option value="">Piper chưa có giọng cho ngôn ngữ này</option>';
-  } catch (e) { vs.innerHTML = '<option value="">Không tải được danh sách (cần Internet lần đầu)</option>'; }
+  if (activeEngine()) return '';
+  const want = TTS.engine === 'auto' ? 'VOICEVOX hoặc AivisSpeech' : ENGINE_INFO[TTS.engine].name;
+  return `Chưa thấy ${want} đang chạy. Mở phần mềm ${want} (miễn phí) rồi bấm ↻ Kiểm tra lại.`;
 }
 
-const escXml = s => String(s).replace(/[<>&'"]/g, c => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;', "'": '&apos;', '"': '&quot;' }[c]));
-function b64ToBytes(b64) { const s = atob(b64), u = new Uint8Array(s.length); for (let i = 0; i < s.length; i++) u[i] = s.charCodeAt(i); return u; }
-async function pcmToBuffer(b64, mime) {
-  const bytes = b64ToBytes(b64);
-  if (/wav|mpeg|mp3|ogg/i.test(mime || '')) return ac().decodeAudioData(bytes.buffer);
-  const rate = +((mime || '').match(/rate=(\d+)/) || [, 24000])[1];
-  const n = bytes.length >> 1, dv = new DataView(bytes.buffer), buf = ac().createBuffer(1, n, rate), ch = buf.getChannelData(0);
-  for (let i = 0; i < n; i++) ch[i] = dv.getInt16(i * 2, true) / 32768;
-  return buf;
-}
-function netHint(e) {
-  if (e instanceof TypeError) return 'Không kết nối được tới dịch vụ. Nếu bạn đang mở trang này trên claude.ai thì trang bị chặn gọi ra ngoài: hãy mở file public/index.html trên máy hoặc bản đã đưa lên GitHub Pages/Netlify.';
-  return e.message;
-}
-
-// Có máy chủ local / bản .exe: gọi API qua máy chủ để không bị chặn CORS
-function cloudFetch(url, opts) {
-  if (SERVER_PROXY) return fetch('/api/proxy', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ url, method: opts.method, headers: opts.headers, body: opts.body }) });
-  return fetch(url, opts);
-}
-async function synthesizeAs(P, tr, onWait, onInfo) {
-  const text = tr.text.trim();
-  if (P === 'piper') {
-    // Ngôn ngữ và nam/nữ lấy theo giọng đã chọn của câu (vd vi-VN-NamMinhNeural → tiếng Việt, nam)
-    const vm = (tr.voice || '').match(/^[a-z]{2,3}-[A-Z]{2}/), vl = VOICES.find(x => x[0] === tr.voice);
-    const lang = vm ? vm[0] : (tr.lang || 'vi-VN'), gender = vl ? (/\(nam\)/.test(vl[1]) ? 'male' : 'female') : (tr.gender || '');
-    const body = JSON.stringify({ engine: 'piper', text, lang, gender, piperVoice: (TTS.piperVoices || {})[lang] || '', rate: tr.rate || 0 });
-    let poll = null;
-    if (onInfo) poll = setInterval(async () => {
-      try { const pr = await (await fetch('/api/piper/progress')).json(); const k = Object.keys(pr)[0];
-        if (k && pr[k].total) onInfo(`Đang tải giọng Piper "${k}" lần đầu: ${Math.round(pr[k].got / 1048576)}/${Math.round(pr[k].total / 1048576)} MB…`); } catch (e) {}
-    }, 1000);
-    try {
-      const r = await fetch('/api/tts', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body });
-      if (r.status === 422) throw Object.assign(new Error(await r.text()), { quota: true, skip: true, provider: 'piper' });
-      if (!r.ok) throw new Error(await r.text());
-      return ac().decodeAudioData(await r.arrayBuffer());
-    } finally { clearInterval(poll); }
-  }
-  if (P === 'local') {
-    const r = await fetch('/api/tts', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text, voice: tr.voice, rate: tr.rate || 0, pitch: tr.pitch || 0 }) });
-    if (!r.ok) throw new Error(await r.text());
-    return ac().decodeAudioData(await r.arrayBuffer());
-  }
-  if (P === 'azure') {
-    const voice = tr.voice || 'vi-VN-HoaiMyNeural', lang = voice.split('-').slice(0, 2).join('-'), rate = Math.round(tr.rate || 0);
-    const pitch = Math.round(tr.pitch || 0);
-    const ssml = `<speak version='1.0' xml:lang='${lang}'><voice name='${voice}'><prosody rate='${rate >= 0 ? '+' : ''}${rate}%' pitch='${pitch >= 0 ? '+' : ''}${pitch}%'>${escXml(text)}</prosody></voice></speak>`;
-    const r = await cloudFetch(`https://${TTS.azRegion.trim()}.tts.speech.microsoft.com/cognitiveservices/v1`, {
-      method: 'POST', body: ssml,
-      headers: { 'Ocp-Apim-Subscription-Key': TTS.azKey.trim(), 'Content-Type': 'application/ssml+xml', 'X-Microsoft-OutputFormat': 'audio-24khz-96kbitrate-mono-mp3' }
-    });
-    if (r.status === 401) throw new Error('Azure từ chối key (401). Kiểm tra lại key và region.');
-    if (r.status === 429 || r.status === 403) throw new QuotaError('Azure báo hết hạn mức miễn phí (' + r.status + ').', 'azure', Date.now() + (r.status === 403 ? 6 * 3600e3 : 120e3));
-    if (!r.ok) throw new Error('Azure lỗi ' + r.status + ': ' + (await r.text()).slice(0, 200));
-    return ac().decodeAudioData(await r.arrayBuffer());
-  }
-  // Gemini
-  const speed = (tr.rate || 0) >= 20 ? 'nhanh' : (tr.rate || 0) <= -20 ? 'chậm rãi' : '';
-  const style = [tr.style && tr.style.trim(), speed && 'tốc độ ' + speed].filter(Boolean).join(', ');
-  const prompt = style ? (detectLang(text) === 'vi-VN' ? `Đọc đoạn sau với giọng ${style}: ${text}` : `Read the following in its original language, in a ${style} tone: ${text}`) : text;
-  const body = JSON.stringify({
-    contents: [{ parts: [{ text: prompt }] }],
-    generationConfig: { responseModalities: ['AUDIO'], speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: tr.gvoice || 'Kore' } } } }
+/* ---- Gán nhân vật VOICEVOX/AivisSpeech cho từng giọng trong kịch bản ---- */
+const VV_MALE = /玄野武宏|白上虎太郎|青山龍星|剣崎雌雄|ちび式じい|雀松朱司|麒ヶ島宗麟|栗田まろん|紅桜|離途|男|male/i;
+// Gợi ý theo mô tả cách đọc (style) của câu
+const VV_HINTS = [
+  [/おじいさん|老人|老|ông lão|ông cụ|old man|grandpa/i, /ちび式じい/],
+  [/鬼|低く|恐ろし|悪役|demon|villain|quỷ/i, /青山龍星|玄野武宏|剣崎雌雄/],
+  [/少年|男の子|元気な少年|boy|cậu bé/i, /白上虎太郎|栗田まろん/],
+  [/おばあさん|老婆|bà lão|grandma/i, /波音リツ|雨晴はう|四国めたん/],
+  [/語[りる]|ナレーション|kể chuyện|narrat/i, /冥鳴ひまり|春日部つむぎ|四国めたん|まい|Anneli/],
+  [/犬|猿|動物|キジ|animal|chó|khỉ/i, /ずんだもん|春日部つむぎ|猫使/]
+];
+/** Các "nhân vật" trong kịch bản: tên voice → giới tính, mô tả, câu mẫu */
+function scriptCharacters(spec) {
+  const lv = lineVoices(spec), out = new Map();
+  spec.lines.forEach((ln, i) => {
+    const k = lv[i].name || '_';
+    if (!out.has(k)) out.set(k, { key: k, gender: lv[i].gender, styles: [], sample: ln.text, count: 0 });
+    const c = out.get(k); c.count++; if (lv[i].style && c.styles.length < 3 && !c.styles.includes(lv[i].style)) c.styles.push(lv[i].style);
   });
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(TTS.gModel)}:generateContent`;
-  for (let attempt = 0; ; attempt++) {
-    const r = await cloudFetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-goog-api-key': TTS.gKey.trim() }, body });
-    let j = null; try { j = await r.json(); } catch (e) {}
-    if (r.status === 429) {
-      const det = (j && j.error && j.error.details) || [], msg = (j && j.error && j.error.message) || '';
-      const daily = /per ?day|PerDay|daily/i.test(msg + JSON.stringify(det));
-      if (daily || attempt >= 2) throw new QuotaError(daily ? 'Gemini đã hết lượt miễn phí hôm nay.' : 'Gemini đang quá tải lượt (429).', 'gemini', daily ? nextPacificMidnight() : Date.now() + 120e3);
-      let wait = 20 * (attempt + 1);
-      const d = det.find(x => x.retryDelay); if (d) wait = Math.ceil(parseFloat(d.retryDelay)) + 1;
-      if (wait > 70) throw new QuotaError('Gemini bắt chờ ' + wait + 's.', 'gemini', Date.now() + wait * 1000);
-      if (onWait) onWait(wait);
-      await sleep(wait * 1000); continue;
-    }
-    if (!r.ok) {
-      const msg = j && j.error ? j.error.message : 'HTTP ' + r.status;
-      if (r.status === 400 && /API key/i.test(msg)) throw new Error('Gemini API key không hợp lệ.');
-      if (r.status === 404) throw new Error('Không thấy model "' + TTS.gModel + '". Hãy chọn model khác trong Cài đặt giọng đọc.');
-      throw new Error('Gemini: ' + msg);
-    }
-    const parts = (j && j.candidates && j.candidates[0] && j.candidates[0].content && j.candidates[0].content.parts) || [];
-    const audio = parts.find(p => p.inlineData && p.inlineData.data);
-    if (!audio) throw new Error('Gemini không trả về âm thanh' + (j && j.candidates && j.candidates[0] ? ' (' + j.candidates[0].finishReason + ')' : '') + '. Thử lại hoặc sửa câu.');
-    return pcmToBuffer(audio.inlineData.data, audio.inlineData.mimeType);
+  return [...out.values()];
+}
+/** Gán tự động những giọng chưa gán: đúng nam/nữ, hợp mô tả, mỗi nhân vật một người khác nhau */
+function autoAssign(engine, spec) {
+  const sp = VV.speakers[engine] || [], m = TTS.map[engine] = TTS.map[engine] || {};
+  const used = new Set(Object.values(m).map(id => (sp.find(s => s.styles.some(x => x.id === id)) || {}).name));
+  const chars = scriptCharacters(spec).sort((a, b) => b.count - a.count);
+  for (const c of chars) {
+    if (m[c.key] != null && sp.some(s => s.styles.some(x => x.id === m[c.key]))) continue;
+    const desc = c.styles.join(' ');
+    const byGender = sp.filter(s => (VV_MALE.test(s.name) ? 'male' : 'female') === c.gender);
+    const pool = byGender.length ? byGender : sp;
+    const hint = VV_HINTS.find(h => h[0].test(desc));
+    const pick = (hint && pool.find(s => hint[1].test(s.name) && !used.has(s.name))) || pool.find(s => !used.has(s.name)) || pool[0];
+    if (pick) { m[c.key] = pick.styles[0].id; used.add(pick.name); }
   }
+  saveTtsCfg();
+}
+const speakerOf = (engine, id) => { for (const s of VV.speakers[engine] || []) { const st = s.styles.find(x => x.id === id); if (st) return { name: s.name, style: st.name }; } return null; };
+/** Dòng ghi nguồn bắt buộc theo điều khoản: "VOICEVOX:四国めたん" … */
+function creditLine(engine, ids) {
+  const names = [...new Set(ids.map(id => (speakerOf(engine, id) || {}).name).filter(Boolean))];
+  return names.map(n => ENGINE_INFO[engine].credit + ':' + n).join('、');
 }
 
-/** Một câu: thử lần lượt các dịch vụ, gặp hết lượt thì chuyển dịch vụ kế tiếp. */
-async function synthesize(tr, onWait, onInfo) {
-  let last = null; const skip = new Set();
-  for (;;) {
-    const P = ttsChain().find(p => !skip.has(p)); if (!P) break;
-    try { const buf = await synthesizeAs(P, tr, onWait, onInfo); tr.provider = P; return buf; }
-    catch (e) {
-      if (!e.quota) throw e;
-      if (e.skip) skip.add(P); else markExhausted(e.provider, e.until);
-      last = e; const next = ttsChain().find(p => !skip.has(p));
-      if (next) toast(e.message + ' Chuyển sang ' + TTS_NAMES[next] + '…', 6000);
-    }
-  }
-  throw last || new Error(ttsNotReady() || 'Không có dịch vụ giọng đọc nào dùng được');
+/* ---- Bảng cài đặt giọng đọc ---- */
+async function syncTtsUI(force) {
+  $('vvEngine').value = TTS.engine; $('vvInton').value = TTS.intonation || 0; $('vvIntonV').textContent = (TTS.intonation > 0 ? '+' : '') + (TTS.intonation || 0) + '%';
+  await checkEngines(force);
+  $('vvStatus').innerHTML = VV.engines.map(e => e.ok ? `<span class="ok">✓ ${e.name} ${escapeHtml(e.version || '')} đang chạy</span>`
+    : `<span class="mute">✗ ${e.name} chưa mở · <a href="${ENGINE_INFO[e.id].url}" target="_blank" rel="noopener">tải miễn phí</a></span>`).join('<br>');
+  const eng = activeEngine(), box = $('vvMap');
+  if (!eng) { box.innerHTML = `<p class="note">Mở <b>AivisSpeech</b> hoặc <b>VOICEVOX</b> (để chạy nền), rồi bấm ↻ Kiểm tra lại.</p>`; return; }
+  let sp; try { sp = await loadSpeakers(eng, force); } catch (e) { box.innerHTML = `<p class="note err">Không đọc được danh sách giọng: ${escapeHtml(e.message)}</p>`; return; }
+  const spec = AUTO.spec && !AUTO.spec.error && AUTO.spec.lines.length ? AUTO.spec : null;
+  if (!spec) { box.innerHTML = `<p class="note">Dán code có kịch bản để gán giọng cho từng nhân vật. ${ENGINE_INFO[eng].name} có ${sp.length} nhân vật.</p>`; return; }
+  autoAssign(eng, spec);
+  const m = TTS.map[eng], opts = id => sp.map(s => `<optgroup label="${escapeHtml(s.name)}">${s.styles.map(x => `<option value="${x.id}" ${x.id === id ? 'selected' : ''}>${escapeHtml(s.name)} · ${escapeHtml(x.name)}</option>`).join('')}</optgroup>`).join('');
+  const chars = scriptCharacters(spec);
+  box.innerHTML = `<div class="vv-head">Giọng cho từng nhân vật trong kịch bản (${ENGINE_INFO[eng].name})</div>` + chars.map(c => `
+    <div class="vv-row"><div class="vv-who"><b>${escapeHtml(c.key === '_' ? 'Giọng chung' : c.key)}</b> · ${c.gender === 'male' ? 'nam' : 'nữ'} · ${c.count} câu
+      <div class="vv-desc">${escapeHtml(c.styles.join(' / ') || c.sample.slice(0, 50))}</div></div>
+      <select class="inp" data-vvkey="${escapeHtml(c.key)}">${opts(m[c.key])}</select>
+      <button class="btn icon" data-vvtest="${escapeHtml(c.key)}" title="Nghe thử">▶</button></div>`).join('') +
+    `<div class="vv-credit"><span>Ghi nguồn khi đăng video:</span> <code id="vvCredit">${escapeHtml(creditLine(eng, chars.map(c => m[c.key])))}</code> <button class="btn" id="vvCreditCopy">Copy</button></div>`;
+}
+async function testVoice(key) {
+  const eng = activeEngine(), spec = AUTO.spec; if (!eng || !spec) return;
+  const c = scriptCharacters(spec).find(x => x.key === key); if (!c) return;
+  try {
+    const buf = await vvSynth(eng, { text: c.sample.slice(0, 80), speaker: TTS.map[eng][key], rate: 0 });
+    const src = ac().createBufferSource(); src.buffer = buf; src.connect(ac().destination); src.start();
+  } catch (e) { toast('Nghe thử lỗi: ' + e.message, 6000); }
+}
+async function vvSynth(engine, body) {
+  const r = await vvFetch(engine, '/tts', { body: Object.assign({ intonation: TTS.intonation || 0 }, body) });
+  if (!r.ok) throw new Error(await r.text());
+  return ac().decodeAudioData(await r.arrayBuffer());
+}
+/** Một track giọng đọc (nút "Tạo lại giọng" trên từng track) */
+async function synthesize(tr) {
+  await checkEngines();
+  const eng = activeEngine(); if (!eng) throw new Error(ttsNotReady());
+  await loadSpeakers(eng);
+  return vvSynth(eng, { text: tr.text.trim(), speaker: tr.speaker != null ? tr.speaker : ((VV.speakers[eng][0] || { styles: [{ id: 0 }] }).styles[0].id), rate: tr.rate || 0 });
 }
 async function makeTts(tr, btn) {
   if (!tr.text || !tr.text.trim()) { toast('Hãy nhập nội dung cần đọc'); return false; }
-  const nr = ttsNotReady(); if (nr) { toast(nr, 5000); $('ttsBox').open = true; return false; }
   if (btn) { btn.disabled = true; btn.textContent = 'Đang tạo…'; }
   try {
-    tr.buffer = await synthesize(tr, s => { if (btn) btn.textContent = `Chờ ${s}s (giới hạn miễn phí)…`; });
+    tr.buffer = await synthesize(tr);
     tr.name = tr.text.slice(0, 40) + (tr.text.length > 40 ? '…' : '');
     markAudioDirty(); renderTracks();
     if (btn) toast('Đã tạo giọng đọc ' + tr.buffer.duration.toFixed(1) + 's');
@@ -2111,47 +2021,22 @@ function readAudioSpec(html) {
   const timed = parseScript(html).filter(l => l.start != null);
   return timed.length ? normSpec({ lines: timed.map(l => [l.start, l.text]) }) : null;
 }
-/** Ngôn ngữ lời thoại: đoán theo chữ; chữ Latin không rõ thì tin thuộc tính <html lang>. */
-function langFromText(spec) {
-  const txt = (spec.lines || []).map(x => x.text).join(' '), det = detectLang(txt);
-  const hl = spec.htmlLang && LANGS.find(l => l[0].slice(0, 2) === spec.htmlLang.toLowerCase().slice(0, 2));
-  const strong = det === 'vi-VN' || /[^\u0000-\u024f]/.test(txt);
-  return hl && !strong ? hl[0] : det;
-}
-const GEMINI_MALE = /^(puck|charon|fenrir|orus|enceladus|iapetus|umbriel|algieba|algenib|rasalgethi|alnilam|schedar|achird|zubenelgenubi|sadachbia|sadaltager)$/i;
-function resolveVoice(spec) {
-  const v = spec.voice.trim().toLowerCase();
-  const g = GEMINI_VOICES.find(x => x[0].toLowerCase() === v);
-  const a = VOICES.find(x => x[0].toLowerCase() === v) || (/^[a-z]{2}-[a-z]{2}-\w+neural$/i.test(spec.voice.trim()) ? [spec.voice.trim()] : null);
-  const male = /^(nam|male|man|boy)\b/.test(v) || (g && GEMINI_MALE.test(g[0])) || (a && VOICES.some(x => x[0] === a[0] && /\(nam\)/.test(x[1])));
-  // Ngôn ngữ: "lang" trong khối h2v-audio, hoặc theo mã giọng Azure, hoặc đoán từ lời thoại
-  const lang = (spec.lang && LANGS.find(l => l[0].toLowerCase() === spec.lang.toLowerCase() || l[0].slice(0, 2) === spec.lang.toLowerCase().slice(0, 2))) ||
-    (a && LANGS.find(l => a[0].startsWith(l[0]))) || LANGS.find(l => l[0] === langFromText(spec)) || LANGS[0];
-  const voice = a && a[0].startsWith(lang[0]) ? a[0] : `${lang[0]}-${male ? lang[3] : lang[2]}Neural`;
-  return { gvoice: g ? g[0] : (male ? 'Charon' : 'Kore'), voice, lang: lang[0], gender: male ? 'male' : 'female' };
-}
-/** Giọng cho từng câu. Cùng ngôn ngữ cho cả video; nam/nữ và "nhân vật" theo voice của câu. */
+/* ---- "Nhân vật" giọng trong kịch bản: tên voice (Kore, Orus…) chỉ dùng để phân biệt nhân vật và nam/nữ ---- */
+const GEMINI_VOICES = [ // tên quen thuộc mà AI hay dùng trong code; app gán sang nhân vật VOICEVOX/AivisSpeech
+  ['Kore', 'Kore · nữ'], ['Aoede', 'Aoede · nữ'], ['Zephyr', 'Zephyr · nữ'], ['Leda', 'Leda · nữ'],
+  ['Puck', 'Puck · nam'], ['Charon', 'Charon · nam'], ['Fenrir', 'Fenrir · nam'], ['Orus', 'Orus · nam']
+];
+const MALE_NAME = /^(puck|charon|fenrir|orus|enceladus|iapetus|umbriel|algieba|algenib|rasalgethi|alnilam|schedar|achird|zubenelgenubi|sadachbia|sadaltager)$|^(nam|male|man|boy|男)|玄野武宏|白上虎太郎|青山龍星|剣崎雌雄|ちび式じい|雀松朱司|麒ヶ島宗麟|栗田まろん|NamMinh|Keita|Guy|Ryan/i;
 function lineVoices(spec) {
-  const base = resolveVoice(spec), seen = { male: [], female: [] }, PITCH = [0, 12, -10, 22, -18, 30];
   return spec.lines.map(ln => {
-    const vname = (ln.voice || spec.voice || '').trim();
-    const r = vname ? resolveVoice(Object.assign({}, spec, { voice: vname, lang: base.lang })) : base;
-    // Các nhân vật cùng giới: dịch vụ chỉ có 1 giọng nam/1 giọng nữ thì đổi cao độ cho dễ phân biệt
-    const list = seen[r.gender], ch = vname.toLowerCase() || '_';
-    if (!list.includes(ch)) list.push(ch);
-    return Object.assign({}, r, { lang: base.lang, name: vname, pitch: PITCH[list.indexOf(ch) % PITCH.length], style: ln.style != null ? ln.style : spec.style, rate: ln.rate != null ? ln.rate : spec.rate });
+    const name = (ln.voice || spec.voice || '').trim();
+    return { name, gender: MALE_NAME.test(name) ? 'male' : 'female', style: ln.style != null ? ln.style : spec.style, rate: ln.rate != null ? ln.rate : spec.rate };
   });
 }
 function voiceLabel(spec) {
   const lv = lineVoices(spec), names = [...new Set(lv.map(v => v.name || '_'))];
-  if (names.length > 1) {
-    const m = new Set(lv.filter(v => v.gender === 'male').map(v => v.name)).size, f = names.length - m;
-    return `${(LANGS.find(l => l[0] === lv[0].lang) || [, lv[0].lang])[1]} · ${names.length} giọng (${m} nam, ${f} nữ)`;
-  }
-  const r = resolveVoice(spec);
-  if (TTS.provider === 'gemini') return (GEMINI_VOICES.find(x => x[0] === r.gvoice) || [, r.gvoice])[1];
-  if (TTS.provider === 'piper') return 'Piper · ' + (LANGS.find(l => l[0] === r.lang) || [, r.lang])[1] + ' · ' + (r.gender === 'male' ? 'nam' : 'nữ');
-  return (VOICES.find(x => x[0] === r.voice) || [, r.voice])[1];
+  const m = new Set(lv.filter(v => v.gender === 'male').map(v => v.name)).size, eng = activeEngine();
+  return `${eng ? ENGINE_INFO[eng].name : 'VOICEVOX/AivisSpeech'} · ${names.length} giọng (${m} nam, ${names.length - m} nữ)`;
 }
 function setAuto(sub, cls, opts = {}) {
   const spec = AUTO.spec;
@@ -2165,7 +2050,6 @@ function setAuto(sub, cls, opts = {}) {
     $('abTitle').textContent = parts.join('   ');
   }
   $('abSub').textContent = sub || ''; $('abSub').className = cls || '';
-  $('abKey').style.display = opts.needKey ? '' : 'none';
   $('abVoice').style.display = opts.voiceBtn ? '' : 'none';
   if (opts.voiceBtn) $('abVoice').textContent = opts.voiceBtn;
   $('abVoice').classList.toggle('pri', !!opts.voiceBtn && /Tạo/.test(opts.voiceBtn));
@@ -2180,49 +2064,31 @@ async function applyAudioSpec() {
   if (spec.music) addTrack({ kind: 'music', auto: true, preset: spec.music.preset, seed: spec.music.seed, volume: spec.music.volume, fadeOut: 1.5, name: H2VMusic.PRESETS[spec.music.preset].name + ' (từ code)' });
   markAudioDirty(); renderTracks();
   if (!spec.lines.length) { setAuto('✓ Đã thêm nhạc nền. Bấm ▶ Xuất video khi sẵn sàng.', 'ok'); return; }
+  await checkEngines(true);
   const nr = ttsNotReady();
-  if (nr) {
-    const needKey = !SERVER && (TTS.provider === 'gemini' || TTS.provider === 'piper');
-    setAuto(needKey ? 'Cần Gemini API key (miễn phí, chỉ nhập một lần) để tạo giọng đọc.' : nr, 'err', { needKey });
-    return;
-  }
+  if (nr) { setAuto(nr, 'err', { voiceBtn: '↻ Thử lại' }); $('ttsBox').open = true; syncTtsUI(); return; }
   AUTO.busy = true; $('abExport').disabled = true;
-  const vv = resolveVoice(spec), LV = lineVoices(spec);
-  let made = [], switched = '';
+  const eng = activeEngine(), LV = lineVoices(spec);
+  let made = [];
   try {
-    // Cả video dùng MỘT dịch vụ cho đồng nhất giọng; dịch vụ hết lượt giữa chừng thì làm lại toàn bộ bằng dịch vụ kế tiếp
-    const skip = new Set();
-    for (;;) {
-      const P = ttsChain().find(p => !skip.has(p));
-      if (!P) throw new Error((switched ? switched.replace(/Đọc lại cả video bằng[^.]*\. $/, '') : '') + 'Không còn dịch vụ giọng đọc nào dùng được cho ' + ((LANGS.find(l => l[0] === vv.lang) || [, vv.lang])[1]) + '. ' +
-        (ttsExhausted('gemini') ? 'Gemini hết lượt đến khoảng 14–15h. ' : '') + 'Hãy nhập key Azure (500k ký tự/tháng miễn phí) hoặc cài giọng ngôn ngữ này cho Windows.');
-      S.tracks = S.tracks.filter(t => !(t.auto && t.kind === 'tts')); made = [];
-      try {
-        for (let i = 0; i < spec.lines.length; i++) {
-          const ln = spec.lines[i];
-          const lv = LV[i];
-          const tr = { kind: 'tts', auto: true, text: ln.text, start: ln.start, voice: lv.voice, gvoice: lv.gvoice, lang: lv.lang, gender: lv.gender, pitch: lv.pitch, style: lv.style, rate: lv.rate, volume: 1, provider: P };
-          const pv = P === 'gemini' ? TTS.gModel + ':' + lv.gvoice : P === 'piper' ? ((TTS.piperVoices || {})[lv.lang] || lv.lang + ':' + lv.gender) : lv.voice + ':' + lv.pitch;
-          const key = [P, pv, lv.style, lv.rate, ln.text].join('|');
-          if (voiceCache.has(key)) tr.buffer = voiceCache.get(key);
-          else {
-            setAuto(`${switched}Đang tạo giọng đọc (${TTS_NAMES[P]}) ${i + 1}/${spec.lines.length}: "${ln.text.slice(0, 60)}"…`);
-            tr.buffer = await synthesizeAs(P, tr, s => setAuto(`Đạt giới hạn miễn phí, chờ ${s}s rồi tạo tiếp (${i + 1}/${spec.lines.length})…`), msg => setAuto(msg));
-            voiceCache.set(key, tr.buffer);
-          }
-          tr.name = ln.text.slice(0, 40) + (ln.text.length > 40 ? '…' : '');
-          if (spec.chain && made.length) { const pv2 = made[made.length - 1]; tr.start = +(pv2.start + pv2.buffer.duration + spec.gap).toFixed(3); }
-          addTrack(tr); made.push(S.tracks[S.tracks.length - 1]);
-        }
-        break;
-      } catch (e) {
-        if (!e.quota) throw e;
-        if (e.skip) skip.add(P); else markExhausted(e.provider, e.until);
-        const next = ttsChain().find(p => !skip.has(p));
-        switched = `${e.message} Đọc lại cả video bằng ${next ? TTS_NAMES[next] : '…'}. `;
-        if (next) toast(switched, 7000);
+    await loadSpeakers(eng);
+    autoAssign(eng, spec);
+    S.tracks = S.tracks.filter(t => !(t.auto && t.kind === 'tts'));
+    for (let i = 0; i < spec.lines.length; i++) {
+      const ln = spec.lines[i], lv = LV[i], speaker = TTS.map[eng][lv.name || '_'];
+      const tr = { kind: 'tts', auto: true, text: ln.text, start: ln.start, engine: eng, speaker, rate: lv.rate || 0, volume: 1 };
+      const key = [eng, speaker, tr.rate, TTS.intonation || 0, ln.text].join('|');
+      if (voiceCache.has(key)) tr.buffer = voiceCache.get(key);
+      else {
+        setAuto(`Đang tạo giọng đọc (${ENGINE_INFO[eng].name}) ${i + 1}/${spec.lines.length}: "${ln.text.slice(0, 60)}"…`);
+        tr.buffer = await vvSynth(eng, { text: ln.text, speaker, rate: tr.rate });
+        voiceCache.set(key, tr.buffer);
       }
+      tr.name = ln.text.slice(0, 40) + (ln.text.length > 40 ? '…' : '');
+      if (spec.chain && made.length) { const pv2 = made[made.length - 1]; tr.start = +(pv2.start + pv2.buffer.duration + spec.gap).toFixed(3); }
+      addTrack(tr); made.push(S.tracks[S.tracks.length - 1]);
     }
+    AUTO.credit = creditLine(eng, made.map(t => t.speaker));
     // Cảnh báo câu đè lên nhau
     const warn = [];
     made.forEach((t, i) => { const n = made[i + 1]; if (n && t.start + t.buffer.duration > n.start + 0.05) warn.push(`câu ${i + 1} dài ${t.buffer.duration.toFixed(1)}s, đè sang câu ${i + 2}`); });
@@ -2231,9 +2097,10 @@ async function applyAudioSpec() {
     if (spec.fit && (end + spec.padEnd > S.duration || spec.chain)) { S.duration = Math.ceil((end + spec.padEnd) * 2) / 2; syncSettingsUI(); updateTime(); save(); }
     markAudioDirty(); renderTracks();
     if (/H2V_VOICE/.test(S.code.html + S.code.js)) reloadPreview(true);
-    setAuto(warn.length ? '⚠️ ' + warn.join('; ') + '. Hãy giãn mốc thời gian hoặc rút gọn câu.' : `${switched ? '↪ Đã chuyển dịch vụ. ' : ''}✓ Đã tạo ${made.length} câu giọng đọc (${TTS_NAMES[made[0] ? made[0].provider : TTS.provider]}) (đến giây ${end.toFixed(1)}). Bấm ▶ để nghe thử hoặc ▶ Xuất video.`, warn.length ? 'err' : 'ok');
+    setAuto(warn.length ? '⚠️ ' + warn.join('; ') + '. Hãy giãn mốc thời gian hoặc rút gọn câu.' : `✓ Đã tạo ${made.length} câu giọng đọc (${ENGINE_INFO[eng].name}, đến giây ${end.toFixed(1)}). Ghi nguồn: ${AUTO.credit}`, warn.length ? 'err' : 'ok');
+    syncTtsUI();
   } catch (e) {
-    setAuto('Lỗi tạo giọng đọc: ' + netHint(e), 'err', { voiceBtn: '↻ Thử lại', needKey: /key/i.test(e.message) });
+    setAuto('Lỗi tạo giọng đọc: ' + netHint(e), 'err', { voiceBtn: '↻ Thử lại' });
   } finally { AUTO.busy = false; $('abExport').disabled = false; }
 }
 
@@ -2346,10 +2213,11 @@ QUY TẮC BẮT BUỘC
 <script type="application/json" id="h2v-audio">
 {"voice":"Kore","style":"thân thiện, rõ ràng","lines":[[0.5,"Câu thoại 1."],[4.8,"Câu thoại 2."]],"music":{"preset":"lofi","volume":0.3},"fit":true}
 <\/script>
- - lines: [giây bắt đầu, câu thoại], viết bằng ngôn ngữ người dùng yêu cầu (mặc định tiếng Việt), khớp từng cảnh; ~2.5 từ/giây; các câu KHÔNG chồng lên nhau, cách nhau ≥0.3s. Không cần lời thoại thì "lines":[].
- - voice: nữ Kore | Aoede | Zephyr | Leda; nam Puck | Charon | Fenrir | Orus (đọc được mọi ngôn ngữ). style: cách đọc ngắn gọn.
- - NHIỀU NHÂN VẬT / HỘI THOẠI: thêm phần thứ ba cho từng câu: [giây, "câu", {"voice": "Orus", "style": "giọng ông lão hiền từ"}]. Mỗi nhân vật giữ MỘT voice suốt video, đúng giới tính (nữ Kore | Aoede | Zephyr | Leda, nam Puck | Charon | Fenrir | Orus); người kể chuyện dùng voice chung. App tự đổi sang giọng nam/nữ tương ứng khi dùng Piper, Azure hay giọng Windows.
- - lang: mã ngôn ngữ lời thoại khi KHÔNG phải tiếng Việt, ví dụ "en-US", "ja-JP", "ko-KR", "zh-CN", "fr-FR", "es-ES", "de-DE", "th-TH", "id-ID". Chữ trên hình và phụ đề cùng ngôn ngữ đó; font phải có đủ ký tự (Noto Sans JP/KR/SC, Noto Sans Thai…).
+ - lines: [giây bắt đầu, câu thoại], viết bằng TIẾNG NHẬT, khớp từng cảnh; ~7 ký tự/giây; các câu KHÔNG chồng lên nhau, cách nhau ≥0.3s. Không cần lời thoại thì "lines":[].
+ - Giọng đọc của app là VOICEVOX / AivisSpeech: CHỈ ĐỌC TIẾNG NHẬT. Lời thoại trong lines phải là tiếng Nhật (phụ đề dịch thì để trong biến JS riêng, không đưa vào lines).
+ - voice: tên "nhân vật giọng": nữ Kore | Aoede | Zephyr | Leda; nam Puck | Charon | Fenrir | Orus. App tự gán mỗi tên sang một nhân vật VOICEVOX/AivisSpeech đúng giới tính. style: mô tả ngắn vai/cách đọc (vd "おじいさん", "鬼の低い声", "語り手") để app chọn giọng hợp.
+ - NHIỀU NHÂN VẬT / HỘI THOẠI: thêm phần thứ ba cho từng câu: [giây, "câu", {"voice": "Orus", "style": "おじいさん"}]. Mỗi nhân vật giữ MỘT voice suốt video; người kể chuyện dùng voice chung.
+ - Chữ tiếng Nhật trên hình dùng font có đủ ký tự (Noto Sans JP / Noto Serif JP).
  - music.preset: lofi | ambient | upbeat | cinematic | corporate, hoặc "music": false.
  - Phụ đề (nếu có) đọc từ chính khối này: JSON.parse(document.getElementById('h2v-audio').textContent).
  - duration trong meta dài hơn câu thoại cuối ít nhất 1 giây.
@@ -2652,18 +2520,13 @@ function init() {
   };
   $('abExport').onclick = exportVideo;
   $('abVoice').onclick = () => applyAudioSpec();
-  $('abKeySave').onclick = () => {
-    const k = $('abKeyInput').value.trim();
-    if (!/^AIza/.test(k)) { toast('Key Gemini thường bắt đầu bằng "AIza…". Kiểm tra lại nhé.', 4000); if (!k) return; }
-    TTS.provider = 'gemini'; TTS.gKey = k; saveTtsCfg(); syncTtsUI(); renderTracks(); applyAudioSpec();
-  };
   $('code').addEventListener('keydown', e => {
     if (e.key === 'Tab') { e.preventDefault(); const ta = e.target, s = ta.selectionStart; ta.setRangeText('  ', s, ta.selectionEnd, 'end'); ta.dispatchEvent(new Event('input')); }
   });
   $('btnOpen').onclick = () => $('fileOpen').click();
   $('fileOpen').onchange = async e => { const f = e.target.files[0]; if (f) loadCode(await f.text()); e.target.value = ''; };
 
-  const refreshAutoTitle = () => { if (AUTO.spec) setAuto($('abSub').textContent, $('abSub').className, { needKey: $('abKey').style.display === '', voiceBtn: $('abVoice').style.display === '' ? $('abVoice').textContent : null }); };
+  const refreshAutoTitle = () => { if (AUTO.spec) setAuto($('abSub').textContent, $('abSub').className, { voiceBtn: $('abVoice').style.display === '' ? $('abVoice').textContent : null }); };
   const num = (id, key, fn) => $(id).addEventListener('change', () => { S[key] = fn($(id).value); syncSettingsUI(); save(); markAudioDirty(); reloadPreview(); refreshAutoTitle(); });
   num('w', 'width', v => even(+v || 1920)); num('h', 'height', v => even(+v || 1080));
   num('fps', 'fps', v => +v); num('dur', 'duration', v => Math.max(0.5, +v || 5));
@@ -2690,11 +2553,15 @@ function init() {
     await ensureMusic(t); renderTracks();
   };
   loadTtsCfg(); syncTtsUI();
-  $('ttsProvider').onchange = () => { TTS.provider = $('ttsProvider').value; delete TTS_EXH[TTS.provider]; saveTtsCfg(); syncTtsUI(); renderTracks(); };
-  $('pLang').onchange = () => { TTS.pLang = $('pLang').value; saveTtsCfg(); loadPiperVoices(); };
-  $('pVoice').onchange = () => { const l = $('pLang').value; TTS.piperVoices = Object.assign({}, TTS.piperVoices, { [l]: $('pVoice').value }); saveTtsCfg(); };
-  [['gKey', 'gKey'], ['gModel', 'gModel'], ['azKey', 'azKey'], ['azRegion', 'azRegion']].forEach(([id, k]) =>
-    $(id).addEventListener('change', () => { TTS[k] = $(id).value.trim(); saveTtsCfg(); renderTracks(); }));
+  $('vvEngine').onchange = () => { TTS.engine = $('vvEngine').value; saveTtsCfg(); syncTtsUI(true); };
+  $('vvInton').oninput = () => { TTS.intonation = +$('vvInton').value; $('vvIntonV').textContent = (TTS.intonation > 0 ? '+' : '') + TTS.intonation + '%'; saveTtsCfg(); };
+  $('vvRecheck').onclick = () => syncTtsUI(true);
+  $('ttsBox').addEventListener('toggle', () => { if ($('ttsBox').open) syncTtsUI(true); });
+  $('vvMap').addEventListener('change', e => { const sel = e.target.closest('[data-vvkey]'); if (!sel) return; const eng = activeEngine(); TTS.map[eng][sel.dataset.vvkey] = +sel.value; saveTtsCfg(); syncTtsUI(); });
+  $('vvMap').addEventListener('click', async e => {
+    const t = e.target.closest('[data-vvtest]'); if (t) { testVoice(t.dataset.vvtest); return; }
+    if (e.target.id === 'vvCreditCopy') { try { await navigator.clipboard.writeText($('vvCredit').textContent); toast('Đã copy dòng ghi nguồn'); } catch (x) { toast('Hãy bôi đen rồi Ctrl+C'); } }
+  });
   $('fitAudio').onclick = () => {
     let end = 0; S.tracks.forEach(t => { if (t.buffer && t.kind !== 'music' && !t.loop) end = Math.max(end, t.start + t.buffer.duration); });
     if (!end) { toast('Chưa có giọng đọc hay file audio để khớp'); return; }
@@ -2741,12 +2608,7 @@ async function detectServer() {
     SERVER = true; SERVER_PROXY = !!j.proxy;
     $('srvBadge').textContent = j.app ? 'Bản ứng dụng ✓' : 'Máy chủ local ✓';
     $('srvBadge').classList.add('on');
-    let saved = null; try { saved = localStorage.getItem('h2v-tts'); } catch (e) {}
-    SERVER_TTS = !!j.tts; SERVER_PIPER = !!j.piper;
-    if (j.piper && (!saved || (TTS.provider === 'gemini' && !TTS.gKey) || (TTS.provider === 'azure' && !TTS.azKey) || (TTS.provider === 'local' && !TTS.v2))) { TTS.provider = 'piper'; TTS.v2 = true; saveTtsCfg(); }
-    else if (j.tts && ((TTS.provider === 'gemini' && !TTS.gKey) || (TTS.provider === 'azure' && !TTS.azKey) || !saved)) TTS.provider = 'local';
-    if (TTS.provider === 'piper' && !j.piper) TTS.provider = 'gemini';
-    syncTtsUI();
+    syncTtsUI(true);
     renderTracks();
   } catch (e) {}
 }
